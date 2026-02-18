@@ -5,6 +5,225 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StatTeacher Toolkit | Kalil Warren</title>
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <style>
+    /* ── Loading ── */
+    .loading-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 1rem 0 0.5rem;
+    }
+    .loading-bar-fill {
+      height: 100%;
+      background: var(--gold);
+      border-radius: 3px;
+      animation: pulse-bar 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse-bar {
+      0%   { width: 5%;  }
+      50%  { width: 85%; }
+      100% { width: 5%;  }
+    }
+
+    /* ── Form ── */
+    .form-group { margin-bottom: 1rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    .form-group .hint {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      margin-top: 0.2rem;
+    }
+    .form-grid   { display: grid; grid-template-columns: 1fr 1fr;     gap: 0 1.5rem; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 1.5rem; }
+    @media (max-width: 600px) {
+      .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .test-section {
+      display: none;
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .test-section.active { display: block; }
+    .test-section > .section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--navy);
+      margin-bottom: 1rem;
+    }
+    .group-label {
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    /* ── Generate button ── */
+    .btn-generate {
+      display: block;
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.75rem;
+      background: var(--navy);
+      border: 2px solid var(--navy);
+      border-radius: 4px;
+      color: #fff;
+      font-family: 'Lato', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-generate:hover:not(:disabled) {
+      background: var(--navy-dark);
+      border-color: var(--navy-dark);
+    }
+    .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .spinner-row {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.6rem;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: bounce-dot 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce-dot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40%            { transform: scale(1);   opacity: 1;   }
+    }
+
+    /* ── Results ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 680px) { .results-grid { grid-template-columns: 1fr; } }
+
+    .result-block h3 {
+      font-size: 1rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+    .tbl-wrap { overflow-x: auto; }
+
+    .stat-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .stat-table th {
+      background: var(--light-gold);
+      color: var(--navy-dark);
+      text-align: left;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-table td {
+      padding: 0.38rem 0.7rem;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .stat-table tr:nth-child(even) td { background: #fdfaf7; }
+    .stat-table tr.row-decision td   { background: var(--light-gold); }
+
+    .val-reject { color: #8B1A00; font-weight: 700; }
+    .val-fail   { color: #4a4a00; font-weight: 700; }
+
+    .equation-box {
+      background: var(--light-gold);
+      border-left: 4px solid var(--gold);
+      padding: 0.9rem 1.2rem;
+      border-radius: 0 4px 4px 0;
+      font-family: 'EB Garamond', serif;
+      font-size: 1.15rem;
+      margin-bottom: 1.25rem;
+    }
+    .dataset-note {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      margin-bottom: 0.4rem;
+    }
+
+    .download-area {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+    }
+    .btn-download {
+      background: var(--gold);
+      border: 2px solid var(--gold);
+      border-radius: 4px;
+      color: #fff;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.25rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-download:hover {
+      background: #a86209;
+      border-color: #a86209;
+    }
+
+    .error-box {
+      background: #fff0ec;
+      border: 1px solid #ffb8a8;
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      color: #7a1a00;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -27,111 +246,418 @@
   <main class="page-container">
     <h1 class="page-title">StatTeacher Toolkit</h1>
 
-    <!-- App Overview -->
+    <!-- About -->
     <div class="card">
       <h2>About the App</h2>
       <p>
-        The <strong>StatTeacher Toolkit</strong> is an interactive web application built with
-        <strong>R Shiny</strong> to support statistics instructors and students. It provides
-        <!-- describe the app's purpose, e.g.:
-          "hands-on, visual demonstrations of core statistical concepts — including distributions,
-          hypothesis testing, confidence intervals, and regression — making abstract ideas concrete
-          and accessible for learners at all levels."
-        -->
+        The <strong>StatTeacher Toolkit</strong> is an interactive statistics problem generator
+        built for instructors and students. Configure population parameters, generate synthetic
+        datasets with controlled properties, and compute complete statistical results &mdash;
+        including test statistics, critical values, effect sizes, and confidence intervals &mdash;
+        all directly in your browser. No server required.
       </p>
       <p>
-        <!-- Add any additional context: who is the target audience? What problem does it solve?
-             Is it open-source? What pedagogical approach does it take? -->
+        Select a statistical test, adjust the parameters, and click <em>Generate Problem</em> to
+        produce a practice dataset with a full results table ready for lecture, homework, or exams.
+        Results can be downloaded as a CSV file.
       </p>
       <div class="tags mt-2">
-        <span class="tag">R Shiny</span>
+        <span class="tag">Python &middot; Pyodide</span>
         <span class="tag">Statistics Education</span>
-        <span class="tag">Interactive Visualization</span>
+        <span class="tag">Hypothesis Testing</span>
+        <span class="tag">Runs in Browser</span>
         <span class="tag">Open-Source</span>
-        <!-- Add more tags as appropriate -->
       </div>
     </div>
 
-    <!-- App Embed / Placeholder -->
+    <!-- Loading card -->
+    <div class="card" id="loading-card">
+      <h2>Loading Statistical Engine</h2>
+      <p>
+        Setting up the Python environment in your browser via Pyodide.
+        This takes about 15&ndash;30 seconds on first load.
+      </p>
+      <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+      <p id="loading-msg" class="text-muted" style="font-size:0.88rem;">Initializing&hellip;</p>
+    </div>
+
+    <!-- App card (hidden until Pyodide is ready) -->
+    <div class="card" id="app-card" style="display:none;">
+      <h2>Generate a Problem</h2>
+
+      <!-- Test selector -->
+      <div class="form-group">
+        <label for="test-select">Statistical Test</label>
+        <select id="test-select" onchange="onTestChange()">
+          <option value="">— Select a test —</option>
+          <option value="z_test">Z-Test (Known Population SD)</option>
+          <option value="t_test">One-Sample t-Test</option>
+          <option value="independent_t_test">Independent-Samples t-Test</option>
+          <option value="repeated_t_test">Repeated-Measures t-Test</option>
+          <option value="anova">Independent ANOVA (One-Way / Factorial)</option>
+          <option value="pearson">Pearson Correlation</option>
+          <option value="regression">Simple Linear Regression</option>
+        </select>
+      </div>
+
+      <!-- ── Z-TEST ── -->
+      <div class="test-section" id="params-z_test">
+        <p class="section-label">Z-Test Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Population Mean (μ₀)</label>
+            <input type="number" id="z-pop-mean" value="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Population SD (σ)</label>
+            <input type="number" id="z-pop-std" value="15" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Sample Size (n)</label>
+            <input type="number" id="z-n" value="10" min="2" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Treatment Effect</label>
+            <input type="number" id="z-tx-effect" value="5" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Noise SD</label>
+            <input type="number" id="z-noise-sd" value="3" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="z-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Tail Type</label>
+            <select id="z-tail">
+              <option value="two">Two-Tailed</option>
+              <option value="one">One-Tailed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="z-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ONE-SAMPLE t-TEST ── -->
+      <div class="test-section" id="params-t_test">
+        <p class="section-label">One-Sample t-Test Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Population Mean (μ₀)</label>
+            <input type="number" id="t-pop-mean" value="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Population SD (for generation)</label>
+            <input type="number" id="t-pop-std" value="15" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Sample Size (n)</label>
+            <input type="number" id="t-n" value="10" min="2" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Treatment Effect</label>
+            <input type="number" id="t-tx-effect" value="5" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Noise SD</label>
+            <input type="number" id="t-noise-sd" value="3" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="t-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Tail Type</label>
+            <select id="t-tail">
+              <option value="two">Two-Tailed</option>
+              <option value="one">One-Tailed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="t-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INDEPENDENT t-TEST ── -->
+      <div class="test-section" id="params-independent_t_test">
+        <p class="section-label">Independent t-Test Parameters</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2rem;">
+          <div>
+            <p class="group-label">Group 1</p>
+            <div class="form-group">
+              <label>Population Mean 1</label>
+              <input type="number" id="ind-pop-mean1" value="10" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Population SD 1</label>
+              <input type="number" id="ind-pop-sd1" value="15" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Sample Size (n₁)</label>
+              <input type="number" id="ind-n1" value="10" min="2" step="1" />
+            </div>
+            <div class="form-group">
+              <label>Seed 1 <span style="font-weight:400;">(optional)</span></label>
+              <input type="number" id="ind-seed1" placeholder="Leave blank" step="1" />
+            </div>
+          </div>
+          <div>
+            <p class="group-label">Group 2</p>
+            <div class="form-group">
+              <label>Population Mean 2</label>
+              <input type="number" id="ind-pop-mean2" value="20" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Population SD 2</label>
+              <input type="number" id="ind-pop-sd2" value="15" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Sample Size (n₂)</label>
+              <input type="number" id="ind-n2" value="10" min="2" step="1" />
+            </div>
+            <div class="form-group">
+              <label>Seed 2 <span style="font-weight:400;">(optional)</span></label>
+              <input type="number" id="ind-seed2" placeholder="Leave blank" step="1" />
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:0.25rem;">
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="ind-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Tail Type</label>
+            <select id="ind-tail">
+              <option value="two">Two-Tailed</option>
+              <option value="one">One-Tailed</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REPEATED t-TEST ── -->
+      <div class="test-section" id="params-repeated_t_test">
+        <p class="section-label">Repeated-Measures t-Test Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Baseline Population Mean</label>
+            <input type="number" id="rep-pop-mean" value="0" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Baseline Population SD</label>
+            <input type="number" id="rep-pop-std" value="15" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Sample Size (n)</label>
+            <input type="number" id="rep-n" value="10" min="2" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Treatment Effect</label>
+            <input type="number" id="rep-tx-effect" value="5" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Noise SD</label>
+            <input type="number" id="rep-noise-sd" value="3" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="rep-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Tail Type</label>
+            <select id="rep-tail">
+              <option value="two">Two-Tailed</option>
+              <option value="one">One-Tailed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="rep-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ANOVA ── -->
+      <div class="test-section" id="params-anova">
+        <p class="section-label">ANOVA Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Factors</label>
+            <input type="text" id="anova-factors" value="A:3" placeholder="e.g. A:3 or A:3,B:2" />
+            <p class="hint">Format: Name:Levels — e.g., <code>A:3</code> or <code>A:3,B:2</code></p>
+          </div>
+          <div class="form-group">
+            <label>Observations per Cell (n)</label>
+            <input type="number" id="anova-n" value="10" min="2" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Grand Mean</label>
+            <input type="number" id="anova-mean" value="10" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Within-Cell SD</label>
+            <input type="number" id="anova-std" value="2" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Effect Size (between-cell SD)</label>
+            <input type="number" id="anova-effect" value="2.0" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="anova-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="anova-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PEARSON CORRELATION ── -->
+      <div class="test-section" id="params-pearson">
+        <p class="section-label">Pearson Correlation Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>X Mean</label>
+            <input type="number" id="pear-x-mean" value="10" step="any" />
+          </div>
+          <div class="form-group">
+            <label>X SD</label>
+            <input type="number" id="pear-x-std" value="1" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Y Mean</label>
+            <input type="number" id="pear-y-mean" value="20" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Y SD</label>
+            <input type="number" id="pear-y-std" value="3" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Sample Size (n)</label>
+            <input type="number" id="pear-n" value="10" min="3" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Null ρ₀</label>
+            <input type="number" id="pear-ro" value="0" step="any" min="-1" max="1" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="pear-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Tail Type</label>
+            <select id="pear-tail">
+              <option value="two">Two-Tailed</option>
+              <option value="one">One-Tailed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="pear-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SIMPLE REGRESSION ── -->
+      <div class="test-section" id="params-regression">
+        <p class="section-label">Simple Linear Regression Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>X Mean</label>
+            <input type="number" id="reg-x-mean" value="10" step="any" />
+          </div>
+          <div class="form-group">
+            <label>X SD</label>
+            <input type="number" id="reg-x-std" value="1" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Y Mean</label>
+            <input type="number" id="reg-y-mean" value="20" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Y SD</label>
+            <input type="number" id="reg-y-std" value="3" step="any" />
+          </div>
+          <div class="form-group">
+            <label>Sample Size (n)</label>
+            <input type="number" id="reg-n" value="10" min="3" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (α)</label>
+            <input type="number" id="reg-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="reg-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate -->
+      <button class="btn-generate" id="generate-btn" onclick="generateProblem()" disabled>
+        Select a Test to Begin
+      </button>
+      <div class="spinner-row" id="spinner-row">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <span>Running computation&hellip;</span>
+      </div>
+    </div>
+
+    <!-- Results card (hidden until generated) -->
+    <div class="card" id="results-card" style="display:none;">
+      <h2>Results</h2>
+      <div id="results-content"></div>
+      <div class="download-area">
+        <button class="btn-download" onclick="downloadCSV()">&#x2B07; Download Dataset (CSV)</button>
+      </div>
+    </div>
+
+    <!-- Supported Tests -->
     <div class="card">
-      <h2>Launch the App</h2>
-
-      <!--
-        OPTION A — App is deployed (e.g., shinyapps.io):
-        Replace the placeholder below with an iframe embed like this:
-
-        <iframe
-          src="https://YOUR-USERNAME.shinyapps.io/StatTeacherToolkit/"
-          class="toolkit-embed"
-          frameborder="0"
-          allowfullscreen
-          title="StatTeacher Toolkit"
-        ></iframe>
-
-        OPTION B — Link out to the app:
-        <a href="https://YOUR-USERNAME.shinyapps.io/StatTeacherToolkit/"
-           class="btn btn-solid" target="_blank" rel="noopener">
-          Open App in New Tab
-        </a>
-      -->
-
-      <!-- PLACEHOLDER — remove this block once the app is deployed -->
-      <div class="toolkit-placeholder">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm3 3h2v2H8V8zm0 4h2v2H8v-2zm4-4h2v2h-2V8zm0 4h2v2h-2v-2zm4-4h2v2h-2V8zm0 4h2v2h-2v-2z"/>
-        </svg>
-        <h3>App Coming Soon</h3>
-        <p>
-          The StatTeacher Toolkit is currently under development.<br />
-          Check back soon, or
-          <a href="mailto:your.email@email.sc.edu">get in touch</a> for early access.
-        </p>
-        <p style="margin-top: 1rem;">
-          <!-- If you have a GitHub repo, add a link here -->
-          <!-- <a href="https://github.com/YOUR-USERNAME/StatTeacherToolkit" class="btn btn-outline" target="_blank" rel="noopener">View on GitHub</a> -->
-        </p>
-      </div>
-      <!-- END PLACEHOLDER -->
-
-    </div>
-
-    <!-- Features -->
-    <div class="card">
-      <h2>Features</h2>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-
+      <h2>Supported Tests</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
         <div>
-          <h3><!-- Feature 1 Title, e.g., Distribution Explorer --></h3>
+          <h3>Z-Test &amp; t-Tests</h3>
           <p class="text-muted">
-            <!-- Description of this feature. -->
+            One-sample Z-test (known &sigma;), one-sample t-test, independent-samples t-test,
+            and repeated-measures t-test. All report Cohen's d, r&sup2;, standard error,
+            and a 95% confidence interval.
           </p>
         </div>
-
         <div>
-          <h3><!-- Feature 2 Title, e.g., Hypothesis Test Simulator --></h3>
+          <h3>ANOVA</h3>
           <p class="text-muted">
-            <!-- Description of this feature. -->
+            One-way and fully-crossed factorial designs with arbitrary factor combinations.
+            Returns a complete source table with SS, df, MS, F, and p-values for all
+            main effects and interactions.
           </p>
         </div>
-
         <div>
-          <h3><!-- Feature 3 Title, e.g., Confidence Interval Builder --></h3>
+          <h3>Pearson Correlation</h3>
           <p class="text-muted">
-            <!-- Description of this feature. -->
+            Generates X and Y datasets and computes SS<sub>X</sub>, SS<sub>Y</sub>, SP<sub>XY</sub>,
+            Pearson r, and r&sup2;. Tests r against a null &rho;&sub0; using a t transformation.
           </p>
         </div>
-
         <div>
-          <h3><!-- Feature 4 Title, e.g., Regression Visualizer --></h3>
+          <h3>Simple Linear Regression</h3>
           <p class="text-muted">
-            <!-- Description of this feature. -->
+            Least-squares regression returning the slope, intercept, fitted equation,
+            and an ANOVA-style F-test with Regression / Residual / Total source table.
           </p>
         </div>
-
       </div>
     </div>
 
-    <!-- Citation / Attribution -->
+    <!-- Citation -->
     <div class="card">
       <h2>Citation</h2>
       <p>If you use the StatTeacher Toolkit in your course or research, please cite it as:</p>
@@ -144,12 +670,9 @@
         margin: 0.5rem 0;
         border-radius: 0 4px 4px 0;
       ">
-        Warren, K. (<span id="cite-year"></span>). <em>StatTeacher Toolkit</em> [R Shiny web application].
-        <!-- Add DOI or URL once published -->
+        Warren, K. (<span id="cite-year"></span>). <em>StatTeacher Toolkit</em>
+        [Python/Pyodide web application].
       </blockquote>
-      <p class="text-muted mt-1" style="font-size: 0.9rem;">
-        <!-- Add a DOI (e.g., via Zenodo) or GitHub repo link here once available. -->
-      </p>
     </div>
 
   </main>
@@ -160,15 +683,465 @@
       &copy; <span id="year"></span> Kalil Warren &mdash;
       PhD Student, Cognitive and Neural Sciences, University of South Carolina
     </p>
-    <p style="margin-top: 0.4rem;">
+    <p style="margin-top:0.4rem;">
       <a href="mailto:your.email@email.sc.edu">your.email@email.sc.edu</a>
     </p>
   </footer>
 
   <script>
+    /* ── Year ── */
     const yr = new Date().getFullYear();
     document.getElementById('year').textContent = yr;
     document.getElementById('cite-year').textContent = yr;
+
+    /* ════════════════════════════════════════════
+       Pyodide initialisation
+    ════════════════════════════════════════════ */
+    let pyodide   = null;
+    let lastResult = null;
+    let currentTest = null;
+
+    function setLoadMsg(msg) {
+      document.getElementById('loading-msg').textContent = msg;
+    }
+
+    async function initPyodide() {
+      try {
+        setLoadMsg('Initializing Python (Pyodide)…');
+        pyodide = await loadPyodide();
+
+        setLoadMsg('Installing NumPy, SciPy, Pandas…');
+        await pyodide.loadPackage(['numpy', 'scipy', 'pandas']);
+
+        setLoadMsg('Loading StatTeacher Engine…');
+        const resp = await fetch('toolkit/Engine_v07.py');
+        if (!resp.ok) throw new Error('Could not fetch toolkit/Engine_v07.py');
+        pyodide.runPython(await resp.text());
+
+        document.getElementById('loading-card').style.display = 'none';
+        document.getElementById('app-card').style.display = 'block';
+      } catch (err) {
+        setLoadMsg('Failed to load: ' + err.message + '. Please refresh and try again.');
+        console.error(err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', initPyodide);
+
+    /* ════════════════════════════════════════════
+       Form helpers
+    ════════════════════════════════════════════ */
+    function onTestChange() {
+      const sel = document.getElementById('test-select').value;
+      currentTest = sel;
+      document.querySelectorAll('.test-section').forEach(el => el.classList.remove('active'));
+      const btn = document.getElementById('generate-btn');
+      if (sel) {
+        document.getElementById('params-' + sel).classList.add('active');
+        btn.disabled = false;
+        btn.textContent = 'Generate Problem';
+      } else {
+        btn.disabled = true;
+        btn.textContent = 'Select a Test to Begin';
+      }
+      document.getElementById('results-card').style.display = 'none';
+    }
+
+    function gv(id)   { return document.getElementById(id).value; }
+    function seed(id) {
+      const v = document.getElementById(id).value.trim();
+      return v === '' ? 'None' : String(parseInt(v, 10));
+    }
+    function tail(id) {
+      return document.getElementById(id).value === 'two' ? 'True' : 'False';
+    }
+
+    /* ════════════════════════════════════════════
+       Generate
+    ════════════════════════════════════════════ */
+    async function generateProblem() {
+      if (!pyodide) return;
+      const btn     = document.getElementById('generate-btn');
+      const spinner = document.getElementById('spinner-row');
+      btn.disabled  = true;
+      spinner.style.display = 'flex';
+
+      try {
+        let result;
+        switch (currentTest) {
+          case 'z_test':             result = runZTest();            break;
+          case 't_test':             result = runTTest();            break;
+          case 'independent_t_test': result = runIndependentTTest(); break;
+          case 'repeated_t_test':    result = runRepeatedTTest();    break;
+          case 'anova':              result = runANOVA();            break;
+          case 'pearson':            result = runPearson();          break;
+          case 'regression':         result = runRegression();       break;
+        }
+        lastResult = result;
+        renderResults(result);
+      } catch (err) {
+        document.getElementById('results-content').innerHTML =
+          `<div class="error-box"><strong>Error:</strong> ${err.message}</div>`;
+        document.getElementById('results-card').style.display = 'block';
+        console.error(err);
+      }
+
+      btn.disabled = false;
+      spinner.style.display = 'none';
+    }
+
+    /* ════════════════════════════════════════════
+       Test runners  (synchronous Python via Pyodide)
+    ════════════════════════════════════════════ */
+    function py(code) {
+      return JSON.parse(pyodide.runPython(code));
+    }
+
+    function runZTest() {
+      return py(`
+import json
+_s = ${seed('z-seed')}
+_d, _r = generate_z_score_problem(
+    population_mean=${gv('z-pop-mean')},
+    population_std=${gv('z-pop-std')},
+    n=${gv('z-n')}, seed=_s,
+    tx_effect=${gv('z-tx-effect')},
+    noise_sd=${gv('z-noise-sd')},
+    alpha=${gv('z-alpha')},
+    two_tailed=${tail('z-tail')}
+)
+json.dumps({'type':'z_test','dataset':_d.tolist(),'results':_r.to_dict(orient='records')})
+`);
+    }
+
+    function runTTest() {
+      return py(`
+import json
+_s = ${seed('t-seed')}
+_d, _r = generate_t_test_problem(
+    population_mean=${gv('t-pop-mean')},
+    population_std=${gv('t-pop-std')},
+    n=${gv('t-n')}, seed=_s,
+    tx_effect=${gv('t-tx-effect')},
+    noise_sd=${gv('t-noise-sd')},
+    alpha=${gv('t-alpha')},
+    two_tailed=${tail('t-tail')}
+)
+json.dumps({'type':'t_test','dataset':_d.tolist(),'results':_r.to_dict(orient='records')})
+`);
+    }
+
+    function runIndependentTTest() {
+      return py(`
+import json
+_s1 = ${seed('ind-seed1')}
+_s2 = ${seed('ind-seed2')}
+_d1, _d2, _r = generate_independent_t_test_problem(
+    population_mean1=${gv('ind-pop-mean1')},
+    population_sd1=${gv('ind-pop-sd1')},
+    n1=${gv('ind-n1')}, seed1=_s1,
+    population_mean2=${gv('ind-pop-mean2')},
+    population_sd2=${gv('ind-pop-sd2')},
+    n2=${gv('ind-n2')}, seed2=_s2,
+    alpha=${gv('ind-alpha')},
+    two_tailed=${tail('ind-tail')}
+)
+json.dumps({'type':'independent_t_test','dataset1':_d1.tolist(),'dataset2':_d2.tolist(),'results':_r.to_dict(orient='records')})
+`);
+    }
+
+    function runRepeatedTTest() {
+      return py(`
+import json
+_s = ${seed('rep-seed')}
+_pre, _post, _r = generate_repeated_t_test_problem(
+    population_mean=${gv('rep-pop-mean')},
+    population_std=${gv('rep-pop-std')},
+    n=${gv('rep-n')}, seed=_s,
+    tx_effect=${gv('rep-tx-effect')},
+    noise_sd=${gv('rep-noise-sd')},
+    alpha=${gv('rep-alpha')},
+    two_tailed=${tail('rep-tail')}
+)
+json.dumps({'type':'repeated_t_test','pre':_pre.tolist(),'post':_post.tolist(),'results':_r.to_dict(orient='records')})
+`);
+    }
+
+    function runANOVA() {
+      /* Build factors dict safely inside Python from the text field */
+      const raw = gv('anova-factors').replace(/"/g, '').replace(/\n/g, '');
+      return py(`
+import json
+_factors = {}
+for _part in "${raw}".split(","):
+    _part = _part.strip()
+    if ":" in _part:
+        _name, _lvl = _part.split(":")
+        _factors[_name.strip()] = int(_lvl.strip())
+_s = ${seed('anova-seed')}
+_ds, _tbl = generate_Independent_ANOVA(
+    factors_dictionary=_factors,
+    n=${gv('anova-n')},
+    mean=${gv('anova-mean')},
+    std=${gv('anova-std')},
+    effect_size=${gv('anova-effect')},
+    alpha=${gv('anova-alpha')},
+    seed=_s
+)
+json.dumps({'type':'anova','dataset':_ds.to_dict(orient='records'),'table':_tbl.to_dict(orient='records')})
+`);
+    }
+
+    function runPearson() {
+      return py(`
+import json
+_s = ${seed('pear-seed')}
+_x, _y, _r = generate_pearson_correlation(
+    x_mean=${gv('pear-x-mean')},
+    x_std=${gv('pear-x-std')},
+    y_mean=${gv('pear-y-mean')},
+    y_std=${gv('pear-y-std')},
+    n=${gv('pear-n')},
+    ro=${gv('pear-ro')},
+    alpha=${gv('pear-alpha')},
+    seed=_s,
+    two_tailed=${tail('pear-tail')}
+)
+json.dumps({'type':'pearson','x_data':_x.tolist(),'y_data':_y.tolist(),'results':_r.to_dict(orient='records')})
+`);
+    }
+
+    function runRegression() {
+      return py(`
+import json
+_s = ${seed('reg-seed')}
+_y, _x, _tbl, _eq = generate_1_predictor_regression(
+    x_mean=${gv('reg-x-mean')},
+    x_std=${gv('reg-x-std')},
+    y_mean=${gv('reg-y-mean')},
+    y_std=${gv('reg-y-std')},
+    n=${gv('reg-n')},
+    alpha=${gv('reg-alpha')},
+    seed=_s
+)
+json.dumps({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':_tbl.to_dict(orient='records'),'equation':_eq})
+`);
+    }
+
+    /* ════════════════════════════════════════════
+       Rendering helpers
+    ════════════════════════════════════════════ */
+    function fmt(v) {
+      if (v === null || v === undefined) return '&mdash;';
+      if (typeof v === 'number' && !isNaN(v)) return parseFloat(v.toFixed(4));
+      return String(v);
+    }
+
+    function valClass(v) {
+      const s = String(v);
+      if (s === 'Reject Null')          return ' class="val-reject"';
+      if (s === 'Fail to Reject Null')  return ' class="val-fail"';
+      return '';
+    }
+
+    function recordsTable(records, title) {
+      if (!records || !records.length) return '';
+      const keys = Object.keys(records[0]);
+      let h = `<div class="result-block"><div class="tbl-wrap">`;
+      if (title) h += `<h3>${title}</h3>`;
+      h += `<table class="stat-table"><thead><tr>`;
+      keys.forEach(k => { h += `<th>${k}</th>`; });
+      h += `</tr></thead><tbody>`;
+      records.forEach(row => {
+        const isDecision = row['Statistic'] === 'Decision';
+        h += `<tr${isDecision ? ' class="row-decision"' : ''}>`;
+        keys.forEach(k => {
+          const v = fmt(row[k]);
+          h += `<td${valClass(row[k])}>${v}</td>`;
+        });
+        h += `</tr>`;
+      });
+      h += `</tbody></table></div></div>`;
+      return h;
+    }
+
+    function arrayTable(arr, colHeader, title) {
+      let h = `<div class="result-block"><div class="tbl-wrap">`;
+      if (title) h += `<h3>${title}</h3>`;
+      h += `<table class="stat-table"><thead><tr><th>#</th><th>${colHeader}</th></tr></thead><tbody>`;
+      arr.forEach((v, i) => { h += `<tr><td>${i + 1}</td><td>${fmt(v)}</td></tr>`; });
+      h += `</tbody></table></div></div>`;
+      return h;
+    }
+
+    function xyTable(xArr, yArr, xH, yH, title) {
+      let h = `<div class="result-block"><div class="tbl-wrap">`;
+      if (title) h += `<h3>${title}</h3>`;
+      h += `<table class="stat-table"><thead><tr><th>#</th><th>${xH}</th><th>${yH}</th></tr></thead><tbody>`;
+      for (let i = 0; i < xArr.length; i++) {
+        h += `<tr><td>${i + 1}</td><td>${fmt(xArr[i])}</td><td>${fmt(yArr[i])}</td></tr>`;
+      }
+      h += `</tbody></table></div></div>`;
+      return h;
+    }
+
+    function anovaDatasetTable(records) {
+      if (!records || !records.length) return '';
+      const keys = Object.keys(records[0]);
+      const shown = records.slice(0, 25);
+      let h = `<div class="result-block" style="grid-column:1/-1"><div class="tbl-wrap">`;
+      h += `<h3>Dataset</h3>`;
+      if (records.length > 25) {
+        h += `<p class="dataset-note">Showing first 25 of ${records.length} observations.</p>`;
+      }
+      h += `<table class="stat-table"><thead><tr>`;
+      keys.forEach(k => { h += `<th>${k}</th>`; });
+      h += `</tr></thead><tbody>`;
+      shown.forEach(row => {
+        h += `<tr>`;
+        keys.forEach(k => { h += `<td>${fmt(row[k])}</td>`; });
+        h += `</tr>`;
+      });
+      h += `</tbody></table></div></div>`;
+      return h;
+    }
+
+    /* ════════════════════════════════════════════
+       Render results
+    ════════════════════════════════════════════ */
+    function renderResults(r) {
+      const el = document.getElementById('results-content');
+      let html = '';
+
+      switch (r.type) {
+        case 'z_test':
+        case 't_test':
+          html = `<div class="results-grid">
+            ${arrayTable(r.dataset, 'Score', 'Dataset')}
+            ${recordsTable(r.results, 'Statistical Results')}
+          </div>`;
+          break;
+
+        case 'independent_t_test':
+          html = `<div class="results-grid">
+            ${arrayTable(r.dataset1, 'Score', 'Group 1')}
+            ${arrayTable(r.dataset2, 'Score', 'Group 2')}
+          </div>
+          ${recordsTable(r.results, 'Statistical Results')}`;
+          break;
+
+        case 'repeated_t_test':
+          html = `<div class="results-grid">
+            ${arrayTable(r.pre,  'Score', 'Pre-Treatment')}
+            ${arrayTable(r.post, 'Score', 'Post-Treatment')}
+          </div>
+          ${recordsTable(r.results, 'Statistical Results')}`;
+          break;
+
+        case 'anova':
+          html = `<div class="results-grid">
+            ${anovaDatasetTable(r.dataset)}
+          </div>
+          ${recordsTable(r.table, 'ANOVA Summary Table')}`;
+          break;
+
+        case 'pearson':
+          html = `<div class="results-grid">
+            ${xyTable(r.x_data, r.y_data, 'X', 'Y', 'Dataset')}
+            ${recordsTable(r.results, 'Statistical Results')}
+          </div>`;
+          break;
+
+        case 'regression':
+          html = `<div class="equation-box">Regression Equation: <strong>${r.equation}</strong></div>
+          <div class="results-grid">
+            ${xyTable(r.x_data, r.y_data, 'X (Predictor)', 'Y (Outcome)', 'Dataset')}
+            ${recordsTable(r.table, 'Regression ANOVA Table')}
+          </div>`;
+          break;
+      }
+
+      el.innerHTML = html;
+      document.getElementById('results-card').style.display = 'block';
+      document.getElementById('results-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* ════════════════════════════════════════════
+       CSV download
+    ════════════════════════════════════════════ */
+    function toCSV(records) {
+      if (!records || !records.length) return '';
+      const keys = Object.keys(records[0]);
+      const esc  = v => {
+        if (v === null || v === undefined) return '';
+        const s = String(v);
+        return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      return [keys.join(','), ...records.map(r => keys.map(k => esc(r[k])).join(','))].join('\n');
+    }
+
+    function arrToCSV(arr, header) {
+      return [header, ...arr.map((v, i) => `${i + 1},${v}`)].join('\n');
+    }
+
+    function xyToCSV(xArr, yArr) {
+      return ['#,X,Y', ...xArr.map((x, i) => `${i + 1},${x},${yArr[i]}`)].join('\n');
+    }
+
+    function downloadCSV() {
+      if (!lastResult) return;
+      const r = lastResult;
+      const parts = [];
+
+      switch (r.type) {
+        case 'z_test':
+        case 't_test':
+          parts.push(arrToCSV(r.dataset, '#,Score'));
+          parts.push('');
+          parts.push(toCSV(r.results));
+          break;
+        case 'independent_t_test':
+          parts.push('# Group 1\n' + arrToCSV(r.dataset1, '#,Score'));
+          parts.push('');
+          parts.push('# Group 2\n' + arrToCSV(r.dataset2, '#,Score'));
+          parts.push('');
+          parts.push(toCSV(r.results));
+          break;
+        case 'repeated_t_test':
+          parts.push('# Pre-Treatment\n' + arrToCSV(r.pre, '#,Score'));
+          parts.push('');
+          parts.push('# Post-Treatment\n' + arrToCSV(r.post, '#,Score'));
+          parts.push('');
+          parts.push(toCSV(r.results));
+          break;
+        case 'anova':
+          parts.push(toCSV(r.dataset));
+          parts.push('');
+          parts.push(toCSV(r.table));
+          break;
+        case 'pearson':
+          parts.push(xyToCSV(r.x_data, r.y_data));
+          parts.push('');
+          parts.push(toCSV(r.results));
+          break;
+        case 'regression':
+          parts.push(`# Equation: ${r.equation}`);
+          parts.push(xyToCSV(r.x_data, r.y_data));
+          parts.push('');
+          parts.push(toCSV(r.table));
+          break;
+      }
+
+      const blob = new Blob([parts.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `statteacher_${r.type}_${Date.now()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   </script>
 </body>
 </html>
