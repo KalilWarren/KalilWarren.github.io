@@ -1,6 +1,6 @@
 /* ===================================================
    Kalil Warren — Academic Website
-   Classic Academic Style
+   Warm Mediterranean Style
    =================================================== */
 
 /* --- Google Fonts --- */
@@ -14,17 +14,17 @@
 }
 
 :root {
-  --navy:       #1a3560;
-  --navy-dark:  #122244;
-  --gold:       #b8960c;
-  --light-gold: #f5e9c0;
-  --bg:         #f7f6f2;
+  --navy:       #7B3B2A;   /* terracotta / Florentine brick  */
+  --navy-dark:  #5C2A1C;   /* deep brick for header          */
+  --gold:       #C4780E;   /* warm amber, afternoon sun      */
+  --light-gold: #F5E6D8;   /* blush / warm peach             */
+  --bg:         #FAF7F3;   /* warm off-white                 */
   --white:      #ffffff;
-  --text:       #2c2c2c;
-  --text-light: #5a5a5a;
-  --border:     #d0cfc8;
-  --link:       #1a3560;
-  --link-hover: #b8960c;
+  --text:       #2E1A0E;   /* deep warm brown                */
+  --text-light: #7A5A4A;   /* muted warm brown               */
+  --border:     #D9C9BC;   /* sandy warm border              */
+  --link:       #7B3B2A;
+  --link-hover: #C4780E;
   --max-width:  960px;
 }
 
@@ -53,7 +53,7 @@ h1, h2, h3, h4 {
   font-family: 'EB Garamond', serif;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--navy-dark);
+  color: var(--navy-dark);  /* deep brick */
 }
 
 p {
@@ -114,7 +114,7 @@ nav a.active {
 
 /* --- Hero Banner (Homepage) --- */
 .hero {
-  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+  background: linear-gradient(150deg, var(--navy-dark) 0%, #A04B35 60%, #B5622A 100%);
   color: #fff;
   padding: 4rem 1.5rem 3.5rem;
   text-align: center;
@@ -122,26 +122,27 @@ nav a.active {
 }
 
 .hero-photo {
-  width: 140px;
-  height: 140px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   border: 4px solid var(--gold);
   object-fit: cover;
+  object-position: center top;
   margin: 0 auto 1.5rem;
   display: block;
-  background-color: #3a5a8a;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 .hero-photo-placeholder {
-  width: 140px;
-  height: 140px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   border: 4px solid var(--gold);
   margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #2a4a7a;
+  background-color: #8B4035;
   color: rgba(255,255,255,0.6);
   font-size: 0.8rem;
   text-align: center;
@@ -206,8 +207,8 @@ nav a.active {
   color: #fff;
 }
 .btn-solid:hover {
-  background: #9e7c0a;
-  border-color: #9e7c0a;
+  background: #a86209;
+  border-color: #a86209;
   color: #fff;
   text-decoration: none;
 }
@@ -226,6 +227,11 @@ nav a.active {
   border-bottom: 2px solid var(--gold);
   padding-bottom: 0.5rem;
   margin-bottom: 2rem;
+}
+
+/* warm tint on card top border for depth */
+.card {
+  border-top: 3px solid var(--light-gold);
 }
 
 /* --- Section Card --- */
@@ -295,7 +301,7 @@ nav a.active {
 .tag {
   display: inline-block;
   background: var(--light-gold);
-  color: #6b5000;
+  color: #7B3B2A;
   font-size: 0.75rem;
   padding: 0.2rem 0.6rem;
   border-radius: 2px;
@@ -313,7 +319,7 @@ nav a.active {
   font-family: 'EB Garamond', serif;
   font-size: 1.4rem;
   color: var(--navy);
-  border-bottom: 2px solid var(--navy);
+  border-bottom: 2px solid var(--gold);
   padding-bottom: 0.3rem;
   margin-bottom: 1.25rem;
   text-transform: uppercase;
@@ -370,7 +376,7 @@ nav a.active {
 
 .cv-download-bar p {
   margin: 0;
-  color: #5a4500;
+  color: #5C2A1C;
   font-size: 0.9rem;
 }
 
@@ -407,7 +413,7 @@ nav a.active {
 
 /* --- Footer --- */
 footer {
-  background-color: var(--navy-dark);
+  background-color: #3D1A0E;
   color: rgba(255,255,255,0.6);
   text-align: center;
   padding: 1.5rem;
