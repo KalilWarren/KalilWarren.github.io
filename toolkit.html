@@ -718,6 +718,28 @@
         if (!resp.ok) throw new Error('Could not fetch toolkit/Engine_v07.py');
         pyodide.runPython(await resp.text());
 
+        /* Helper that replaces NaN/numpy types before JSON serialisation.
+           Python's json.dumps emits bare NaN for float('nan'), which is
+           invalid JSON and crashes JSON.parse in the browser. */
+        pyodide.runPython(`
+import json as _json, math as _math, numpy as _np
+
+def _to_json(obj):
+    def _fix(o):
+        if isinstance(o, float) and _math.isnan(o):
+            return None
+        if isinstance(o, _np.floating):
+            return None if _np.isnan(o) else float(o)
+        if isinstance(o, _np.integer):
+            return int(o)
+        if isinstance(o, dict):
+            return {k: _fix(v) for k, v in o.items()}
+        if isinstance(o, list):
+            return [_fix(x) for x in o]
+        return o
+    return _json.dumps(_fix(obj))
+`);
+
         document.getElementById('loading-card').style.display = 'none';
         document.getElementById('app-card').style.display = 'block';
       } catch (err) {
@@ -799,7 +821,6 @@
 
     function runZTest() {
       return py(`
-import json
 _s = ${seed('z-seed')}
 _d, _r = generate_z_score_problem(
     population_mean=${gv('z-pop-mean')},
@@ -810,13 +831,12 @@ _d, _r = generate_z_score_problem(
     alpha=${gv('z-alpha')},
     two_tailed=${tail('z-tail')}
 )
-json.dumps({'type':'z_test','dataset':_d.tolist(),'results':_r.to_dict(orient='records')})
+_to_json({'type':'z_test','dataset':_d.tolist(),'results':_r.to_dict(orient='records')})
 `);
     }
 
     function runTTest() {
       return py(`
-import json
 _s = ${seed('t-seed')}
 _d, _r = generate_t_test_problem(
     population_mean=${gv('t-pop-mean')},
@@ -827,13 +847,12 @@ _d, _r = generate_t_test_problem(
     alpha=${gv('t-alpha')},
     two_tailed=${tail('t-tail')}
 )
-json.dumps({'type':'t_test','dataset':_d.tolist(),'results':_r.to_dict(orient='records')})
+_to_json({'type':'t_test','dataset':_d.tolist(),'results':_r.to_dict(orient='records')})
 `);
     }
 
     function runIndependentTTest() {
       return py(`
-import json
 _s1 = ${seed('ind-seed1')}
 _s2 = ${seed('ind-seed2')}
 _d1, _d2, _r = generate_independent_t_test_problem(
@@ -846,13 +865,12 @@ _d1, _d2, _r = generate_independent_t_test_problem(
     alpha=${gv('ind-alpha')},
     two_tailed=${tail('ind-tail')}
 )
-json.dumps({'type':'independent_t_test','dataset1':_d1.tolist(),'dataset2':_d2.tolist(),'results':_r.to_dict(orient='records')})
+_to_json({'type':'independent_t_test','dataset1':_d1.tolist(),'dataset2':_d2.tolist(),'results':_r.to_dict(orient='records')})
 `);
     }
 
     function runRepeatedTTest() {
       return py(`
-import json
 _s = ${seed('rep-seed')}
 _pre, _post, _r = generate_repeated_t_test_problem(
     population_mean=${gv('rep-pop-mean')},
@@ -863,7 +881,7 @@ _pre, _post, _r = generate_repeated_t_test_problem(
     alpha=${gv('rep-alpha')},
     two_tailed=${tail('rep-tail')}
 )
-json.dumps({'type':'repeated_t_test','pre':_pre.tolist(),'post':_post.tolist(),'results':_r.to_dict(orient='records')})
+_to_json({'type':'repeated_t_test','pre':_pre.tolist(),'post':_post.tolist(),'results':_r.to_dict(orient='records')})
 `);
     }
 
@@ -871,7 +889,6 @@ json.dumps({'type':'repeated_t_test','pre':_pre.tolist(),'post':_post.tolist(),'
       /* Build factors dict safely inside Python from the text field */
       const raw = gv('anova-factors').replace(/"/g, '').replace(/\n/g, '');
       return py(`
-import json
 _factors = {}
 for _part in "${raw}".split(","):
     _part = _part.strip()
@@ -888,13 +905,12 @@ _ds, _tbl = generate_Independent_ANOVA(
     alpha=${gv('anova-alpha')},
     seed=_s
 )
-json.dumps({'type':'anova','dataset':_ds.to_dict(orient='records'),'table':_tbl.to_dict(orient='records')})
+_to_json({'type':'anova','dataset':_ds.to_dict(orient='records'),'table':_tbl.to_dict(orient='records')})
 `);
     }
 
     function runPearson() {
       return py(`
-import json
 _s = ${seed('pear-seed')}
 _x, _y, _r = generate_pearson_correlation(
     x_mean=${gv('pear-x-mean')},
@@ -907,13 +923,12 @@ _x, _y, _r = generate_pearson_correlation(
     seed=_s,
     two_tailed=${tail('pear-tail')}
 )
-json.dumps({'type':'pearson','x_data':_x.tolist(),'y_data':_y.tolist(),'results':_r.to_dict(orient='records')})
+_to_json({'type':'pearson','x_data':_x.tolist(),'y_data':_y.tolist(),'results':_r.to_dict(orient='records')})
 `);
     }
 
     function runRegression() {
       return py(`
-import json
 _s = ${seed('reg-seed')}
 _y, _x, _tbl, _eq = generate_1_predictor_regression(
     x_mean=${gv('reg-x-mean')},
@@ -924,7 +939,7 @@ _y, _x, _tbl, _eq = generate_1_predictor_regression(
     alpha=${gv('reg-alpha')},
     seed=_s
 )
-json.dumps({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':_tbl.to_dict(orient='records'),'equation':_eq})
+_to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':_tbl.to_dict(orient='records'),'equation':_eq})
 `);
     }
 
