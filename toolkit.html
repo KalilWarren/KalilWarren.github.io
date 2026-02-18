@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StatTeacher Toolkit | Kalil Warren</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="header-inner">
+      <span class="site-name">Kalil Warren</span>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="research.html">Research</a></li>
+          <li><a href="cv.html">CV</a></li>
+          <li><a href="toolkit.html" class="active">StatTeacher Toolkit</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="page-container">
+    <h1 class="page-title">StatTeacher Toolkit</h1>
+
+    <!-- App Overview -->
+    <div class="card">
+      <h2>About the App</h2>
+      <p>
+        The <strong>StatTeacher Toolkit</strong> is an interactive web application built with
+        <strong>R Shiny</strong> to support statistics instructors and students. It provides
+        <!-- describe the app's purpose, e.g.:
+          "hands-on, visual demonstrations of core statistical concepts — including distributions,
+          hypothesis testing, confidence intervals, and regression — making abstract ideas concrete
+          and accessible for learners at all levels."
+        -->
+      </p>
+      <p>
+        <!-- Add any additional context: who is the target audience? What problem does it solve?
+             Is it open-source? What pedagogical approach does it take? -->
+      </p>
+      <div class="tags mt-2">
+        <span class="tag">R Shiny</span>
+        <span class="tag">Statistics Education</span>
+        <span class="tag">Interactive Visualization</span>
+        <span class="tag">Open-Source</span>
+        <!-- Add more tags as appropriate -->
+      </div>
+    </div>
+
+    <!-- App Embed / Placeholder -->
+    <div class="card">
+      <h2>Launch the App</h2>
+
+      <!--
+        OPTION A — App is deployed (e.g., shinyapps.io):
+        Replace the placeholder below with an iframe embed like this:
+
+        <iframe
+          src="https://YOUR-USERNAME.shinyapps.io/StatTeacherToolkit/"
+          class="toolkit-embed"
+          frameborder="0"
+          allowfullscreen
+          title="StatTeacher Toolkit"
+        ></iframe>
+
+        OPTION B — Link out to the app:
+        <a href="https://YOUR-USERNAME.shinyapps.io/StatTeacherToolkit/"
+           class="btn btn-solid" target="_blank" rel="noopener">
+          Open App in New Tab
+        </a>
+      -->
+
+      <!-- PLACEHOLDER — remove this block once the app is deployed -->
+      <div class="toolkit-placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm3 3h2v2H8V8zm0 4h2v2H8v-2zm4-4h2v2h-2V8zm0 4h2v2h-2v-2zm4-4h2v2h-2V8zm0 4h2v2h-2v-2z"/>
+        </svg>
+        <h3>App Coming Soon</h3>
+        <p>
+          The StatTeacher Toolkit is currently under development.<br />
+          Check back soon, or
+          <a href="mailto:your.email@email.sc.edu">get in touch</a> for early access.
+        </p>
+        <p style="margin-top: 1rem;">
+          <!-- If you have a GitHub repo, add a link here -->
+          <!-- <a href="https://github.com/YOUR-USERNAME/StatTeacherToolkit" class="btn btn-outline" target="_blank" rel="noopener">View on GitHub</a> -->
+        </p>
+      </div>
+      <!-- END PLACEHOLDER -->
+
+    </div>
+
+    <!-- Features -->
+    <div class="card">
+      <h2>Features</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+
+        <div>
+          <h3><!-- Feature 1 Title, e.g., Distribution Explorer --></h3>
+          <p class="text-muted">
+            <!-- Description of this feature. -->
+          </p>
+        </div>
+
+        <div>
+          <h3><!-- Feature 2 Title, e.g., Hypothesis Test Simulator --></h3>
+          <p class="text-muted">
+            <!-- Description of this feature. -->
+          </p>
+        </div>
+
+        <div>
+          <h3><!-- Feature 3 Title, e.g., Confidence Interval Builder --></h3>
+          <p class="text-muted">
+            <!-- Description of this feature. -->
+          </p>
+        </div>
+
+        <div>
+          <h3><!-- Feature 4 Title, e.g., Regression Visualizer --></h3>
+          <p class="text-muted">
+            <!-- Description of this feature. -->
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Citation / Attribution -->
+    <div class="card">
+      <h2>Citation</h2>
+      <p>If you use the StatTeacher Toolkit in your course or research, please cite it as:</p>
+      <blockquote style="
+        background: #f7f6f2;
+        border-left: 4px solid var(--gold);
+        padding: 1rem 1.25rem;
+        font-style: italic;
+        color: var(--text-light);
+        margin: 0.5rem 0;
+        border-radius: 0 4px 4px 0;
+      ">
+        Warren, K. (<span id="cite-year"></span>). <em>StatTeacher Toolkit</em> [R Shiny web application].
+        <!-- Add DOI or URL once published -->
+      </blockquote>
+      <p class="text-muted mt-1" style="font-size: 0.9rem;">
+        <!-- Add a DOI (e.g., via Zenodo) or GitHub repo link here once available. -->
+      </p>
+    </div>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>
+      &copy; <span id="year"></span> Kalil Warren &mdash;
+      PhD Student, Cognitive and Neural Sciences, University of South Carolina
+    </p>
+    <p style="margin-top: 0.4rem;">
+      <a href="mailto:your.email@email.sc.edu">your.email@email.sc.edu</a>
+    </p>
+  </footer>
+
+  <script>
+    const yr = new Date().getFullYear();
+    document.getElementById('year').textContent = yr;
+    document.getElementById('cite-year').textContent = yr;
+  </script>
+</body>
+</html>

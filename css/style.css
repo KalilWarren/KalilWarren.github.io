@@ -1,0 +1,458 @@
+/* ===================================================
+   Kalil Warren — Academic Website
+   Classic Academic Style
+   =================================================== */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap');
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --navy:       #1a3560;
+  --navy-dark:  #122244;
+  --gold:       #b8960c;
+  --light-gold: #f5e9c0;
+  --bg:         #f7f6f2;
+  --white:      #ffffff;
+  --text:       #2c2c2c;
+  --text-light: #5a5a5a;
+  --border:     #d0cfc8;
+  --link:       #1a3560;
+  --link-hover: #b8960c;
+  --max-width:  960px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'EB Garamond', serif;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--navy-dark);
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+/* --- Header / Nav --- */
+header {
+  background-color: var(--navy);
+  border-bottom: 4px solid var(--gold);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.header-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.site-name {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.3rem;
+  color: #ffffff;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 0.25rem;
+}
+
+nav a {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.85rem;
+  border-radius: 3px;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+}
+
+nav a:hover,
+nav a.active {
+  background-color: var(--gold);
+  color: var(--white);
+  text-decoration: none;
+}
+
+/* --- Hero Banner (Homepage) --- */
+.hero {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 100%);
+  color: #fff;
+  padding: 4rem 1.5rem 3.5rem;
+  text-align: center;
+  border-bottom: 4px solid var(--gold);
+}
+
+.hero-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 4px solid var(--gold);
+  object-fit: cover;
+  margin: 0 auto 1.5rem;
+  display: block;
+  background-color: #3a5a8a;
+}
+
+.hero-photo-placeholder {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 4px solid var(--gold);
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2a4a7a;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.8rem;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.hero h1 {
+  font-family: 'EB Garamond', serif;
+  font-size: 2.4rem;
+  color: #ffffff;
+  margin-bottom: 0.4rem;
+}
+
+.hero .subtitle {
+  font-size: 1.05rem;
+  color: var(--light-gold);
+  margin-bottom: 0.25rem;
+  font-weight: 300;
+}
+
+.hero .institution {
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.7);
+  font-style: italic;
+}
+
+.hero-links {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  text-decoration: none;
+}
+
+.btn-outline {
+  border: 2px solid var(--gold);
+  color: var(--light-gold);
+  background: transparent;
+}
+.btn-outline:hover {
+  background: var(--gold);
+  color: #fff;
+  text-decoration: none;
+}
+
+.btn-solid {
+  background: var(--gold);
+  border: 2px solid var(--gold);
+  color: #fff;
+}
+.btn-solid:hover {
+  background: #9e7c0a;
+  border-color: #9e7c0a;
+  color: #fff;
+  text-decoration: none;
+}
+
+/* --- Page Layout --- */
+.page-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.page-title {
+  font-family: 'EB Garamond', serif;
+  font-size: 2rem;
+  color: var(--navy-dark);
+  border-bottom: 2px solid var(--gold);
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+/* --- Section Card --- */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.card h2 {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin-bottom: 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.card h3 {
+  font-size: 1.15rem;
+  color: var(--navy);
+  margin-bottom: 0.4rem;
+}
+
+/* --- Homepage Two-Column Layout --- */
+.home-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 0;
+}
+
+@media (max-width: 680px) {
+  .home-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Research Page --- */
+.research-project {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.research-project:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.research-project h3 {
+  font-size: 1.2rem;
+  color: var(--navy);
+  margin-bottom: 0.3rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.6rem 0 0.75rem;
+}
+
+.tag {
+  display: inline-block;
+  background: var(--light-gold);
+  color: #6b5000;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 2px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* --- CV Page --- */
+.cv-section {
+  margin-bottom: 2.5rem;
+}
+
+.cv-section h2 {
+  font-family: 'EB Garamond', serif;
+  font-size: 1.4rem;
+  color: var(--navy);
+  border-bottom: 2px solid var(--navy);
+  padding-bottom: 0.3rem;
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cv-entry {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 1.25rem;
+  align-items: start;
+}
+
+.cv-year {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  padding-top: 0.2rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cv-details strong {
+  display: block;
+  color: var(--navy-dark);
+  font-size: 1rem;
+}
+
+.cv-details em {
+  display: block;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.cv-details span {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.cv-download-bar {
+  background: var(--light-gold);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.cv-download-bar p {
+  margin: 0;
+  color: #5a4500;
+  font-size: 0.9rem;
+}
+
+/* --- Toolkit Page --- */
+.toolkit-embed {
+  width: 100%;
+  min-height: 650px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #f0f0f0;
+}
+
+.toolkit-placeholder {
+  background: var(--white);
+  border: 2px dashed var(--border);
+  border-radius: 4px;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-light);
+}
+
+.toolkit-placeholder svg {
+  width: 56px;
+  height: 56px;
+  fill: var(--border);
+  margin-bottom: 1rem;
+}
+
+.toolkit-placeholder h3 {
+  color: var(--text-light);
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* --- Footer --- */
+footer {
+  background-color: var(--navy-dark);
+  color: rgba(255,255,255,0.6);
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.85rem;
+  margin-top: 4rem;
+  border-top: 3px solid var(--gold);
+}
+
+footer a {
+  color: var(--light-gold);
+}
+
+/* --- Utilities --- */
+.text-muted {
+  color: var(--text-light);
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+
+/* --- Responsive Nav --- */
+@media (max-width: 600px) {
+  .header-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .cv-entry {
+    grid-template-columns: 1fr;
+  }
+
+  .cv-year {
+    text-align: left;
+    padding-top: 0;
+  }
+}
