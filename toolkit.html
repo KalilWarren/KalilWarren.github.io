@@ -223,6 +223,33 @@
       color: #7a1a00;
       font-size: 0.9rem;
     }
+
+    /* ── Treatment effect toggle ── */
+    .tx-toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 0.7rem;
+      background: var(--light-gold);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      margin-bottom: 1rem;
+    }
+    .tx-toggle-row input[type="checkbox"] {
+      width: auto;
+      padding: 0;
+      cursor: pointer;
+      accent-color: var(--navy);
+    }
+    .tx-toggle-row label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-transform: none;
+      letter-spacing: normal;
+      margin-bottom: 0;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -316,13 +343,19 @@
             <label>Sample Size (n)</label>
             <input type="number" id="z-n" value="10" min="2" step="1" />
           </div>
-          <div class="form-group">
-            <label>Treatment Effect</label>
-            <input type="number" id="z-tx-effect" value="5" step="any" />
+          <div style="grid-column:1/-1;" class="tx-toggle-row">
+            <input type="checkbox" id="z-tx-switch" checked onchange="onTxToggle('z')" />
+            <label for="z-tx-switch">Apply Treatment Effect</label>
           </div>
-          <div class="form-group">
-            <label>Noise SD</label>
-            <input type="number" id="z-noise-sd" value="3" step="any" />
+          <div id="z-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
+            <div class="form-group">
+              <label>Treatment Effect</label>
+              <input type="number" id="z-tx-effect" value="5" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Noise SD</label>
+              <input type="number" id="z-noise-sd" value="3" step="any" />
+            </div>
           </div>
           <div class="form-group">
             <label>Alpha (&alpha;)</label>
@@ -358,13 +391,19 @@
             <label>Sample Size (n)</label>
             <input type="number" id="t-n" value="10" min="2" step="1" />
           </div>
-          <div class="form-group">
-            <label>Treatment Effect</label>
-            <input type="number" id="t-tx-effect" value="5" step="any" />
+          <div style="grid-column:1/-1;" class="tx-toggle-row">
+            <input type="checkbox" id="t-tx-switch" checked onchange="onTxToggle('t')" />
+            <label for="t-tx-switch">Apply Treatment Effect</label>
           </div>
-          <div class="form-group">
-            <label>Noise SD</label>
-            <input type="number" id="t-noise-sd" value="3" step="any" />
+          <div id="t-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
+            <div class="form-group">
+              <label>Treatment Effect</label>
+              <input type="number" id="t-tx-effect" value="5" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Noise SD</label>
+              <input type="number" id="t-noise-sd" value="3" step="any" />
+            </div>
           </div>
           <div class="form-group">
             <label>Alpha (&alpha;)</label>
@@ -548,6 +587,20 @@
             <label>Null ρ₀</label>
             <input type="number" id="pear-ro" value="0" step="any" min="-1" max="1" />
           </div>
+          <div style="grid-column:1/-1;" class="tx-toggle-row">
+            <input type="checkbox" id="pear-tx-switch" checked onchange="onTxToggle('pear')" />
+            <label for="pear-tx-switch">Apply Treatment Effect to Y (introduces X–Y covariance)</label>
+          </div>
+          <div id="pear-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
+            <div class="form-group">
+              <label>Treatment Effect</label>
+              <input type="number" id="pear-tx-effect" value="10" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Noise SD</label>
+              <input type="number" id="pear-noise-sd" value="3" step="any" />
+            </div>
+          </div>
           <div class="form-group">
             <label>Alpha (&alpha;)</label>
             <input type="number" id="pear-alpha" value="0.05" step="any" min="0.001" max="0.5" />
@@ -589,6 +642,20 @@
           <div class="form-group">
             <label>Sample Size (n)</label>
             <input type="number" id="reg-n" value="10" min="3" step="1" />
+          </div>
+          <div style="grid-column:1/-1;" class="tx-toggle-row">
+            <input type="checkbox" id="reg-tx-switch" checked onchange="onTxToggle('reg')" />
+            <label for="reg-tx-switch">Apply Treatment Effect to Y (introduces X–Y relationship)</label>
+          </div>
+          <div id="reg-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
+            <div class="form-group">
+              <label>Treatment Effect</label>
+              <input type="number" id="reg-tx-effect" value="10" step="any" />
+            </div>
+            <div class="form-group">
+              <label>Noise SD</label>
+              <input type="number" id="reg-noise-sd" value="3" step="any" />
+            </div>
           </div>
           <div class="form-group">
             <label>Alpha (&alpha;)</label>
@@ -777,6 +844,13 @@ def _to_json(obj):
     function tail(id) {
       return document.getElementById(id).value === 'two' ? 'True' : 'False';
     }
+    function txSwitch(id) {
+      return document.getElementById(id).checked ? 'True' : 'False';
+    }
+    function onTxToggle(prefix) {
+      const checked = document.getElementById(prefix + '-tx-switch').checked;
+      document.getElementById(prefix + '-tx-fields').style.display = checked ? '' : 'none';
+    }
 
     /* ════════════════════════════════════════════
        Generate
@@ -826,6 +900,7 @@ _d, _r = generate_z_score_problem(
     population_mean=${gv('z-pop-mean')},
     population_std=${gv('z-pop-std')},
     n=${gv('z-n')}, seed=_s,
+    tx_effect_switch=${txSwitch('z-tx-switch')},
     tx_effect=${gv('z-tx-effect')},
     noise_sd=${gv('z-noise-sd')},
     alpha=${gv('z-alpha')},
@@ -842,6 +917,7 @@ _d, _r = generate_t_test_problem(
     population_mean=${gv('t-pop-mean')},
     population_std=${gv('t-pop-std')},
     n=${gv('t-n')}, seed=_s,
+    tx_effect_switch=${txSwitch('t-tx-switch')},
     tx_effect=${gv('t-tx-effect')},
     noise_sd=${gv('t-noise-sd')},
     alpha=${gv('t-alpha')},
@@ -919,6 +995,9 @@ _x, _y, _r = generate_pearson_correlation(
     y_std=${gv('pear-y-std')},
     n=${gv('pear-n')},
     ro=${gv('pear-ro')},
+    tx_effect_switch=${txSwitch('pear-tx-switch')},
+    tx_effect=${gv('pear-tx-effect')},
+    noise_sd=${gv('pear-noise-sd')},
     alpha=${gv('pear-alpha')},
     seed=_s,
     two_tailed=${tail('pear-tail')}
@@ -936,6 +1015,9 @@ _y, _x, _tbl, _eq = generate_1_predictor_regression(
     y_mean=${gv('reg-y-mean')},
     y_std=${gv('reg-y-std')},
     n=${gv('reg-n')},
+    tx_effect_switch=${txSwitch('reg-tx-switch')},
+    tx_effect=${gv('reg-tx-effect')},
+    noise_sd=${gv('reg-noise-sd')},
     alpha=${gv('reg-alpha')},
     seed=_s
 )
