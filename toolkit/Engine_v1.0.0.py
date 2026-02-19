@@ -405,8 +405,8 @@ def _build_independent_anova_table(
 
 
 def generate_z_score_problem(dataset=None,
-                            population_mean=0,population_std=15, n=10, seed=None,
-                            tx_effect=5, noise_sd=3,
+                            population_mean=0, population_std=15, n=10, seed=None,
+                            tx_effect_switch=True, tx_effect=5, noise_sd=3,
                             alpha=0.05, two_tailed=True):
     """
     Generate a Z-test practice problem with a synthetic dataset and results.
@@ -448,7 +448,9 @@ def generate_z_score_problem(dataset=None,
     """
     if dataset is None:
         dataset = generate_normal_data(population_mean, population_std, n, seed)
+    if tx_effect_switch == True:
         dataset = _apply_treatment(dataset, tx_effect, noise_sd)
+
     n = len(dataset)
     sample_mean = np.mean(dataset)
     standard_error = population_std / np.sqrt(n)
@@ -486,7 +488,7 @@ def generate_z_score_problem(dataset=None,
 
 def generate_t_test_problem(dataset=None,
                             population_mean=0, population_std=15, n=10, seed=None,
-                            tx_effect=5, noise_sd=3,
+                            tx_effect_switch=True, tx_effect=5, noise_sd=3,
                             alpha=0.05, two_tailed=True):
     """
     Generate a one-sample t-test practice problem with a synthetic dataset and results.
@@ -528,7 +530,9 @@ def generate_t_test_problem(dataset=None,
     """
     if dataset is None:
         dataset = generate_normal_data(population_mean, population_std, n, seed)
+    if tx_effect_switch == True:
         dataset = _apply_treatment(dataset, tx_effect, noise_sd)
+    
     sample_std = np.std(dataset,ddof=1)
     sample_mean = np.mean(dataset)
     standard_error = sample_std / np.sqrt(n)
@@ -919,6 +923,7 @@ def generate_Independent_ANOVA(factors_dictionary={"A":3, "B":2},
 
 def generate_pearson_correlation(x_dataset=None, y_dataset=None,
                                  x_mean=10, x_std=1, y_mean=20, y_std=3,
+                                 tx_effect_switch=True, tx_effect=10, noise_sd=3,
                                  ro=0, n=10, alpha=0.05, seed=None, two_tailed=True):
     """
     Generate a Pearson correlation practice problem with two synthetic datasets.
@@ -969,7 +974,8 @@ def generate_pearson_correlation(x_dataset=None, y_dataset=None,
         x_dataset = generate_normal_data(x_mean, x_std, n, seed)
     if y_dataset is None:
         y_dataset = generate_normal_data(y_mean, y_std, n, seed)
-        y_dataset = _apply_treatment(y_dataset, effect=10)
+    if tx_effect_switch == True:
+        y_dataset = _apply_treatment(y_dataset, tx_effect, noise_sd)
     
     mean_x = np.mean(x_dataset)
     mean_y = np.mean(y_dataset)
@@ -1014,6 +1020,7 @@ def generate_pearson_correlation(x_dataset=None, y_dataset=None,
 
 def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
                                     x_mean=10, x_std=1, y_mean=20, y_std=3,
+                                    tx_effect_switch=True, tx_effect=10, noise_sd=3,
                                     n=10, alpha=0.05, seed=None):
     """
     Generate a simple (one-predictor) linear regression practice problem.
@@ -1062,7 +1069,8 @@ def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
         x_dataset = generate_normal_data(x_mean, x_std, n, seed)
     if y_dataset is None:
         y_dataset = generate_normal_data(y_mean, y_std, n, seed)
-        y_dataset = _apply_treatment(y_dataset, effect=10)
+    if tx_effect_switch == True:
+        y_dataset = _apply_treatment(y_dataset, tx_effect, noise_sd)
     
     mean_x = np.mean(x_dataset)
     mean_y = np.mean(y_dataset)
@@ -1126,7 +1134,5 @@ def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
     return y_dataset, x_dataset, pd.DataFrame(rows), regression_equation
 
 if __name__ == "__main__":
-    print(generate_z_score_problem(population_mean=85, population_std=8, n=35, seed=None,
-                                  tx_effect=5, noise_sd=5, alpha=0.05, two_tailed=False))
     pass
 

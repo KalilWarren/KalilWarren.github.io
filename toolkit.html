@@ -305,11 +305,11 @@
         <p class="section-label">Z-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Population Mean (μ₀)</label>
+            <label>Population Mean (&mu;)</label>
             <input type="number" id="z-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Population SD (σ)</label>
+            <label>Population SD (&sigma;)</label>
             <input type="number" id="z-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
@@ -325,7 +325,7 @@
             <input type="number" id="z-noise-sd" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="z-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -347,11 +347,11 @@
         <p class="section-label">One-Sample t-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Population Mean (μ₀)</label>
+            <label>Population Mean (&mu;)</label>
             <input type="number" id="t-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Population SD (for generation)</label>
+            <label>Population SD (&sigma;)</label>
             <input type="number" id="t-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
@@ -367,7 +367,7 @@
             <input type="number" id="t-noise-sd" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="t-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -391,11 +391,11 @@
           <div>
             <p class="group-label">Group 1</p>
             <div class="form-group">
-              <label>Population Mean 1</label>
+              <label>Population Mean 1 (&mu;₁)</label>
               <input type="number" id="ind-pop-mean1" value="10" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 1</label>
+              <label>Population SD 1 (&sigma;₁)</label>
               <input type="number" id="ind-pop-sd1" value="15" step="any" />
             </div>
             <div class="form-group">
@@ -410,11 +410,11 @@
           <div>
             <p class="group-label">Group 2</p>
             <div class="form-group">
-              <label>Population Mean 2</label>
+              <label>Population Mean 2 (&mu;₂)</label>
               <input type="number" id="ind-pop-mean2" value="20" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 2</label>
+              <label>Population SD 2 (&sigma;₂)</label>
               <input type="number" id="ind-pop-sd2" value="15" step="any" />
             </div>
             <div class="form-group">
@@ -429,7 +429,7 @@
         </div>
         <div class="form-grid" style="margin-top:0.25rem;">
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="ind-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -447,11 +447,11 @@
         <p class="section-label">Repeated-Measures t-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Baseline Population Mean</label>
+            <label>Baseline Population Mean (&mu;)</label>
             <input type="number" id="rep-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Baseline Population SD</label>
+            <label>Baseline Population SD (&sigma;)</label>
             <input type="number" id="rep-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
@@ -467,7 +467,7 @@
             <input type="number" id="rep-noise-sd" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="rep-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -498,7 +498,7 @@
             <input type="number" id="anova-n" value="10" min="2" step="1" />
           </div>
           <div class="form-group">
-            <label>Grand Mean</label>
+            <label>Grand Mean (&mu;)</label>
             <input type="number" id="anova-mean" value="10" step="any" />
           </div>
           <div class="form-group">
@@ -510,7 +510,7 @@
             <input type="number" id="anova-effect" value="2.0" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="anova-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -525,19 +525,19 @@
         <p class="section-label">Pearson Correlation Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>X Mean</label>
+            <label>X Mean (X&mu;)</label>
             <input type="number" id="pear-x-mean" value="10" step="any" />
           </div>
           <div class="form-group">
-            <label>X SD</label>
+            <label>X SD (X&sigma;)</label>
             <input type="number" id="pear-x-std" value="1" step="any" />
           </div>
           <div class="form-group">
-            <label>Y Mean</label>
+            <label>Y Mean (Y&mu;)</label>
             <input type="number" id="pear-y-mean" value="20" step="any" />
           </div>
           <div class="form-group">
-            <label>Y SD</label>
+            <label>Y SD (Y&sigma;)</label>
             <input type="number" id="pear-y-std" value="3" step="any" />
           </div>
           <div class="form-group">
@@ -549,7 +549,7 @@
             <input type="number" id="pear-ro" value="0" step="any" min="-1" max="1" />
           </div>
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="pear-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -571,19 +571,19 @@
         <p class="section-label">Simple Linear Regression Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>X Mean</label>
+            <label>X Mean (X&mu;)</label>
             <input type="number" id="reg-x-mean" value="10" step="any" />
           </div>
           <div class="form-group">
-            <label>X SD</label>
+            <label>X SD (X&sigma;)</label>
             <input type="number" id="reg-x-std" value="1" step="any" />
           </div>
           <div class="form-group">
-            <label>Y Mean</label>
+            <label>Y Mean (Y&mu;)</label>
             <input type="number" id="reg-y-mean" value="20" step="any" />
           </div>
           <div class="form-group">
-            <label>Y SD</label>
+            <label>Y SD (Y&sigma;)</label>
             <input type="number" id="reg-y-std" value="3" step="any" />
           </div>
           <div class="form-group">
@@ -591,7 +591,7 @@
             <input type="number" id="reg-n" value="10" min="3" step="1" />
           </div>
           <div class="form-group">
-            <label>Alpha (α)</label>
+            <label>Alpha (&alpha;)</label>
             <input type="number" id="reg-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
