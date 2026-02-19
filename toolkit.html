@@ -633,7 +633,7 @@
           </p>
         </div>
         <div>
-          <h3>ANOVA</h3>
+          <h3>Independent ANOVA</h3>
           <p class="text-muted">
             One-way and fully-crossed factorial designs with arbitrary factor combinations.
             Returns a complete source table with SS, df, MS, F, and p-values for all
@@ -644,7 +644,7 @@
           <h3>Pearson Correlation</h3>
           <p class="text-muted">
             Generates X and Y datasets and computes SS<sub>X</sub>, SS<sub>Y</sub>, SP<sub>XY</sub>,
-            Pearson r, and r&sup2;. Tests r against a null &rho;&sub0; using a t transformation.
+            Pearson r, and r&sup2;. Tests r against a null &rho;; using a t transformation.
           </p>
         </div>
         <div>
@@ -714,7 +714,7 @@
         await pyodide.loadPackage(['numpy', 'scipy', 'pandas']);
 
         setLoadMsg('Loading StatTeacher Engine…');
-        const resp = await fetch('toolkit/Engine_v07.py');
+        const resp = await fetch('toolkit/Engine_v1.0.0.py');
         if (!resp.ok) throw new Error('Could not fetch toolkit/Engine_v07.py');
         pyodide.runPython(await resp.text());
 
