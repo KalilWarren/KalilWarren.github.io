@@ -1445,8 +1445,9 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
 </div>`;
 
       /* ── Instructor key ── */
-      const h0      = `H₀: μ = ${mu0} ${unit}`;
       const h1op    = twoTailed ? '≠' : (parseFloat(xbar) > parseFloat(mu0) ? '>' : '<');
+      const h0op    = twoTailed ? '=' : (h1op === '>' ? '≤' : '≥');
+      const h0      = `H₀: μ ${h0op} ${mu0} ${unit}`;
       const h1      = `H₁: μ ${h1op} ${mu0} ${unit}`;
       const isRej   = decision === 'Reject Null';
       const interp  = isRej
