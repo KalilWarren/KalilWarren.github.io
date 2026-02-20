@@ -6,6 +6,7 @@
   <title>StatTeacher Toolkit | Kalil Warren</title>
   <link rel="stylesheet" href="css/style.css" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     /* ── Loading ── */
     .loading-bar {
@@ -781,6 +782,10 @@
         </div>
 
         <div id="pg-instructor-key" style="display:none; margin-top:1rem;"></div>
+
+        <div class="download-area" style="margin-top:1.25rem;">
+          <button class="btn-download" onclick="downloadProblemExcel()">&#x2B07; Download Problem + Key (Excel)</button>
+        </div>
       </div>
     </div>
 
@@ -865,6 +870,7 @@
     let lastResult       = null;
     let currentTest      = null;
     let lastZTestContext = null;   // { alpha, twoTailed } — captured at generation time
+    let lastProblemData  = null;   // structured data for Excel export
 
     function setLoadMsg(msg) {
       document.getElementById('loading-msg').textContent = msg;
@@ -1490,6 +1496,15 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
   </div>
 </div>`;
 
+      /* Store structured data for Excel export */
+      lastProblemData = {
+        variable, pop, unit, mu0, sigma, n, xbar, se,
+        zScore, zCrit, cohenD, decision, ciUp, ciLo,
+        alpha, twoTailed, tailLabel, pval, pCompare,
+        h0, h1, isRej,
+        interp: interp.replace(/\s+/g, ' ').trim()
+      };
+
       document.getElementById('pg-problem-text').innerHTML   = problemHTML;
       document.getElementById('pg-instructor-key').innerHTML = keyHTML;
       document.getElementById('pg-output').style.display     = 'block';
@@ -1503,6 +1518,72 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
     function toggleInstructorKey() {
       const show = document.getElementById('pg-show-key').checked;
       document.getElementById('pg-instructor-key').style.display = show ? 'block' : 'none';
+    }
+
+    function downloadProblemExcel() {
+      if (!lastProblemData) return;
+      const d = lastProblemData;
+
+      const narrative =
+        `A researcher is studying ${d.variable} in ${d.pop}. ` +
+        `Historically, the population mean is μ = ${d.mu0} ${d.unit}, ` +
+        `with a known population standard deviation of σ = ${d.sigma} ${d.unit}. ` +
+        `The researcher collects a random sample of n = ${d.n} participants ` +
+        `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}. ` +
+        `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
+        `differs from ${d.mu0} ${d.unit}.`;
+
+      const pvalStr   = d.pval.startsWith('<') ? d.pval : '= ' + d.pval;
+      const decStr    = d.isRej ? 'Reject H₀' : 'Fail to Reject H₀';
+      const cohenFml  = `(x̄ − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
+
+      const rows = [
+        /* ── Student problem ── */
+        ['STUDENT PROBLEM — One-Sample Z-Test'],
+        [],
+        ['Scenario'],
+        [narrative],
+        [],
+        ['Questions'],
+        ['1.', 'State the null and alternative hypotheses.'],
+        ['2.', 'Compute the z statistic.'],
+        ['3.', 'Determine the p-value and compute Cohen\'s d.'],
+        ['4.', 'State your decision.'],
+        ['5.', 'Interpret the result in context.'],
+        [],
+        [],
+        /* ── Instructor key ── */
+        ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+        [],
+        ['1. Hypotheses'],
+        ['H₀:', d.h0],
+        ['H₁:', d.h1],
+        [],
+        ['2. Z Statistic'],
+        ['Formula:',       'z = (x̄ − μ) / (σ / √n)'],
+        ['Substitution:',  `z = (${d.xbar} − ${d.mu0}) / (${d.sigma} / √${d.n})`],
+        ['Simplify:',      `z = (${d.xbar} − ${d.mu0}) / ${d.se}`],
+        ['Result:',        `z = ${d.zScore}`],
+        ['Critical value:', `z_crit = ±${d.zCrit}  (α = ${d.alpha}, ${d.tailLabel})`],
+        [],
+        ['3. p-value & Effect Size'],
+        ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
+        ["Cohen's d:", cohenFml],
+        [],
+        ['4. Decision'],
+        ['', decStr],
+        [],
+        ['5. Interpretation'],
+        [d.interp],
+        ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols'] = [{ wch: 18 }, { wch: 90 }];   // column widths
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Z-Test Problem');
+      XLSX.writeFile(wb, `statteacher_zproblem_${Date.now()}.xlsx`);
     }
 
   </script>
