@@ -1423,6 +1423,18 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       const pvalNum   = pval.startsWith('<') ? 0.0001 : parseFloat(pval);
       const pCompare  = pvalNum < alpha ? '< α' : '> α';
 
+      /* ── Direction phrase (computed early; needed in both problem text and key) ── */
+      const h1op          = twoTailed ? '≠' : (parseFloat(xbar) > parseFloat(mu0) ? '>' : '<');
+      const h0op          = twoTailed ? '=' : (h1op === '>' ? '≤' : '≥');
+      const testPhraseHTML  = twoTailed
+        ? `differs from ${mu0}&nbsp;${unit}`
+        : (h1op === '>' ? `is significantly greater than ${mu0}&nbsp;${unit}`
+                        : `is significantly less than ${mu0}&nbsp;${unit}`);
+      const testPhrasePlain = twoTailed
+        ? `differs from ${mu0} ${unit}`
+        : (h1op === '>' ? `is significantly greater than ${mu0} ${unit}`
+                        : `is significantly less than ${mu0} ${unit}`);
+
       /* ── Student problem text ── */
       const problemHTML = `
 <div class="problem-box">
@@ -1432,7 +1444,7 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
   <p>The researcher collects a random sample of <em>n</em>&nbsp;=&nbsp;${n} participants
   and obtains a sample mean of <em>x̄</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit}.</p>
   <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether the population mean
-  differs from ${mu0}&nbsp;${unit}.</p>
+  ${testPhraseHTML}.</p>
   <div class="problem-questions">
     <ol>
       <li>State the null and alternative hypotheses.</li>
@@ -1445,17 +1457,15 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
 </div>`;
 
       /* ── Instructor key ── */
-      const h1op    = twoTailed ? '≠' : (parseFloat(xbar) > parseFloat(mu0) ? '>' : '<');
-      const h0op    = twoTailed ? '=' : (h1op === '>' ? '≤' : '≥');
       const h0      = `H₀: μ ${h0op} ${mu0} ${unit}`;
       const h1      = `H₁: μ ${h1op} ${mu0} ${unit}`;
       const isRej   = decision === 'Reject Null';
       const interp  = isRej
         ? `There is sufficient evidence at α = ${alpha} to conclude that the mean ${variable}
-           in ${pop} differs from ${mu0} ${unit}
+           in ${pop} ${testPhrasePlain}
            (z = ${zScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`
         : `There is insufficient evidence at α = ${alpha} to conclude that the mean ${variable}
-           in ${pop} differs from ${mu0} ${unit}
+           in ${pop} ${testPhrasePlain}
            (z = ${zScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
 
       const keyHTML = `
@@ -1502,7 +1512,7 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
         variable, pop, unit, mu0, sigma, n, xbar, se,
         zScore, zCrit, cohenD, decision, ciUp, ciLo,
         alpha, twoTailed, tailLabel, pval, pCompare,
-        h0, h1, isRej,
+        h0, h1, isRej, testPhrasePlain,
         interp: interp.replace(/\s+/g, ' ').trim()
       };
 
@@ -1532,7 +1542,7 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
         `The researcher collects a random sample of n = ${d.n} participants ` +
         `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
-        `differs from ${d.mu0} ${d.unit}.`;
+        `${d.testPhrasePlain}.`;
 
       const pvalStr   = d.pval.startsWith('<') ? d.pval : '= ' + d.pval;
       const decStr    = d.isRej ? 'Reject H₀' : 'Fail to Reject H₀';
