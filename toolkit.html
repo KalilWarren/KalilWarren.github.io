@@ -1591,7 +1591,7 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       const pop      = document.getElementById('pg-population').value.trim() || 'the target population';
       const unit     = document.getElementById('pg-unit').value.trim()       || 'units';
 
-      const mu0      = stats['Population Mean'];
+      const mu0      = gv('t-pop-mean');    // engine doesn't echo μ₀ in results; read from form
       const sampleSD = stats['Sample SD'];
       const n        = stats['N'];
       const xbar     = stats['Sample Mean'];
