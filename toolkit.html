@@ -738,12 +738,12 @@
       </div>
     </div>
 
-    <!-- ===== PROBLEM GENERATOR CARD (z-test only, experimental) ===== -->
+    <!-- ===== PROBLEM GENERATOR CARD (z-test / t-test, experimental) ===== -->
     <div class="card" id="problem-gen-card" style="display:none;">
       <h2>
         Student Problem Generator
-        <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
-          Z-Test &middot; Experimental
+        <span id="pg-tag" class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
+          Experimental
         </span>
       </h2>
       <p>
@@ -769,7 +769,7 @@
         </div>
       </div>
 
-      <button class="btn-generate" style="margin-top:0.5rem;" onclick="generateZTestProblem()">
+      <button class="btn-generate" style="margin-top:0.5rem;" onclick="generateStudentProblem()">
         Generate Student Problem
       </button>
 
@@ -870,6 +870,7 @@
     let lastResult       = null;
     let currentTest      = null;
     let lastZTestContext = null;   // { alpha, twoTailed } — captured at generation time
+    let lastTTestContext = null;   // { alpha, twoTailed } — captured at generation time
     let lastProblemData  = null;   // structured data for Excel export
 
     function setLoadMsg(msg) {
@@ -1216,13 +1217,23 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       const el = document.getElementById('results-content');
       let html = '';
 
-      // Show problem generator only for z-tests; hide for all others
+      // Show problem generator for z-tests and one-sample t-tests
       const pgCard = document.getElementById('problem-gen-card');
       if (r.type === 'z_test') {
         lastZTestContext = {
           alpha:      parseFloat(gv('z-alpha')),
           twoTailed:  document.getElementById('z-tail').value === 'two'
         };
+        document.getElementById('pg-tag').textContent = 'Z-Test · Experimental';
+        document.getElementById('pg-output').style.display = 'none';
+        pgCard.style.display = 'block';
+      } else if (r.type === 't_test') {
+        lastTTestContext = {
+          alpha:      parseFloat(gv('t-alpha')),
+          twoTailed:  document.getElementById('t-tail').value === 'two'
+        };
+        document.getElementById('pg-tag').textContent = 'T-Test · Experimental';
+        document.getElementById('pg-output').style.display = 'none';
         pgCard.style.display = 'block';
       } else {
         pgCard.style.display = 'none';
@@ -1388,6 +1399,50 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       return p < 0.001 ? '< .001' : p.toFixed(3);
     }
 
+    /* t-distribution p-value via regularized incomplete beta function (Numerical Recipes) */
+    function _tPValue(t, df, twoTailed) {
+      function lgamma(z) {
+        const c = [76.18009172947146,-86.50532032941677,24.01409824083091,
+                   -1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+        let x = z, y = z, tmp = x + 5.5;
+        tmp -= (x + 0.5) * Math.log(tmp);
+        let ser = 1.000000000190015;
+        for (let j = 0; j < 6; j++) { y++; ser += c[j] / y; }
+        return -tmp + Math.log(2.5066282746310005 * ser / x);
+      }
+      function betaCF(x, a, b) {
+        const MAXIT = 100, EPS = 3e-7, FPMIN = 1e-30;
+        const qab = a+b, qap = a+1, qam = a-1;
+        let c = 1, d = 1 - qab*x/qap;
+        if (Math.abs(d) < FPMIN) d = FPMIN;
+        d = 1/d; let h = d;
+        for (let m = 1; m <= MAXIT; m++) {
+          const m2 = 2*m;
+          let aa = m*(b-m)*x / ((qam+m2)*(a+m2));
+          d = 1+aa*d; if (Math.abs(d)<FPMIN) d=FPMIN;
+          c = 1+aa/c; if (Math.abs(c)<FPMIN) c=FPMIN;
+          d = 1/d; h *= d*c;
+          aa = -(a+m)*(qab+m)*x / ((a+m2)*(qap+m2));
+          d = 1+aa*d; if (Math.abs(d)<FPMIN) d=FPMIN;
+          c = 1+aa/c; if (Math.abs(c)<FPMIN) c=FPMIN;
+          d = 1/d; const del = d*c; h *= del;
+          if (Math.abs(del-1) < EPS) break;
+        }
+        return h;
+      }
+      function ibeta(x, a, b) {
+        if (x <= 0) return 0; if (x >= 1) return 1;
+        const lbeta = lgamma(a) + lgamma(b) - lgamma(a+b);
+        const bt = Math.exp(a*Math.log(x) + b*Math.log(1-x) - lbeta);
+        return x < (a+1)/(a+b+2) ? bt*betaCF(x,a,b)/a : 1 - bt*betaCF(1-x,b,a)/b;
+      }
+      const absT = Math.abs(t);
+      const x = df / (df + absT*absT);
+      const p = ibeta(x, df/2, 0.5);          // two-tailed p-value
+      const result = twoTailed ? p : p/2;
+      return result < 0.001 ? '< .001' : result.toFixed(3);
+    }
+
     /* Converts the results records array [{ Statistic, Value }, …] to a plain dict */
     function _statsDict(records) {
       const d = {};
@@ -1509,6 +1564,7 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
 
       /* Store structured data for Excel export */
       lastProblemData = {
+        testType: 'z_test',
         variable, pop, unit, mu0, sigma, n, xbar, se,
         zScore, zCrit, cohenD, decision, ciUp, ciLo,
         alpha, twoTailed, tailLabel, pval, pCompare,
@@ -1526,6 +1582,150 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       document.getElementById('pg-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function generateTTestProblem() {
+      if (!lastResult || lastResult.type !== 't_test') return;
+
+      const stats = _statsDict(lastResult.results);
+
+      const variable = document.getElementById('pg-variable').value.trim()   || 'the variable of interest';
+      const pop      = document.getElementById('pg-population').value.trim() || 'the target population';
+      const unit     = document.getElementById('pg-unit').value.trim()       || 'units';
+
+      const mu0      = stats['Population Mean'];
+      const sampleSD = stats['Sample SD'];
+      const n        = stats['N'];
+      const xbar     = stats['Sample Mean'];
+      const se       = stats['Standard Error'];
+      const tScore   = stats['t Score'];
+      const tCrit    = stats['t_Critical'];
+      const cohenD   = stats["Cohen's d"];
+      const rSq      = stats['R-Squared'];
+      const decision = stats['Decision'];
+      const ciUp     = stats['95% CI Upper'];
+      const ciLo     = stats['95% CI Lower'];
+      const df       = n - 1;
+
+      const alpha     = lastTTestContext ? lastTTestContext.alpha     : 0.05;
+      const twoTailed = lastTTestContext ? lastTTestContext.twoTailed : true;
+      const tailLabel = twoTailed ? 'two-tailed' : 'one-tailed';
+      const pval      = _tPValue(parseFloat(tScore), df, twoTailed);
+      const pvalNum   = pval.startsWith('<') ? 0.0001 : parseFloat(pval);
+      const pCompare  = pvalNum < alpha ? '< α' : '> α';
+
+      /* ── Direction phrase ── */
+      const h1op          = twoTailed ? '≠' : (parseFloat(xbar) > parseFloat(mu0) ? '>' : '<');
+      const h0op          = twoTailed ? '=' : (h1op === '>' ? '≤' : '≥');
+      const testPhraseHTML  = twoTailed
+        ? `differs from ${mu0}&nbsp;${unit}`
+        : (h1op === '>' ? `is significantly greater than ${mu0}&nbsp;${unit}`
+                        : `is significantly less than ${mu0}&nbsp;${unit}`);
+      const testPhrasePlain = twoTailed
+        ? `differs from ${mu0} ${unit}`
+        : (h1op === '>' ? `is significantly greater than ${mu0} ${unit}`
+                        : `is significantly less than ${mu0} ${unit}`);
+
+      /* ── Student problem text ── */
+      const problemHTML = `
+<div class="problem-box">
+  <p>A researcher is studying <strong>${variable}</strong> in <strong>${pop}</strong>.
+  The null hypothesis posits a population mean of μ₀&nbsp;=&nbsp;${mu0}&nbsp;${unit}
+  (population SD is unknown).</p>
+  <p>The researcher collects a random sample of <em>n</em>&nbsp;=&nbsp;${n} participants
+  and obtains a sample mean of <em>x̄</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit},
+  with a sample standard deviation of <em>s</em>&nbsp;=&nbsp;${sampleSD}&nbsp;${unit}.</p>
+  <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether the population mean
+  ${testPhraseHTML}.</p>
+  <div class="problem-questions">
+    <ol>
+      <li>State the null and alternative hypotheses.</li>
+      <li>Compute the <em>t</em> statistic.</li>
+      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>State your decision.</li>
+      <li>Interpret the result in context.</li>
+    </ol>
+  </div>
+</div>`;
+
+      /* ── Instructor key ── */
+      const h0    = `H₀: μ ${h0op} ${mu0} ${unit}`;
+      const h1    = `H₁: μ ${h1op} ${mu0} ${unit}`;
+      const isRej = decision === 'Reject Null';
+      const rSqPct = (parseFloat(rSq) * 100).toFixed(1);
+      const interp = isRej
+        ? `There is sufficient evidence at α = ${alpha} to conclude that the mean ${variable}
+           in ${pop} ${testPhrasePlain}
+           (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`
+        : `There is insufficient evidence at α = ${alpha} to conclude that the mean ${variable}
+           in ${pop} ${testPhrasePlain}
+           (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+      const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Hypotheses</strong>
+    <p>${h0}</p>
+    <p>${h1}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>2. T Statistic</strong>
+    <div class="key-formula">
+      t = (x̄ &minus; μ₀) / (s / &radic;n)<br>
+      t = (${xbar} &minus; ${mu0}) / (${sampleSD} / &radic;${n})<br>
+      t = (${xbar} &minus; ${mu0}) / ${se}<br>
+      t = ${tScore}
+    </div>
+    <p>df = n &minus; 1 = ${n} &minus; 1 = ${df}</p>
+    <p>Critical value: t<sub>crit</sub> = &plusmn;${tCrit} &nbsp;(df&nbsp;=&nbsp;${df}, α&nbsp;=&nbsp;${alpha}, ${tailLabel})</p>
+  </div>
+
+  <div class="key-section">
+    <strong>3. p-value &amp; Effect Size</strong>
+    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+    <p>Cohen's d = (x̄ &minus; μ₀) / s = (${xbar} &minus; ${mu0}) / ${sampleSD} = ${cohenD}</p>
+    <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(rSq).toFixed(3)} (${rSqPct}% of variance explained)</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decision</strong>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Interpretation</strong>
+    <p>${interp}</p>
+    <p>95% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
+  </div>
+</div>`;
+
+      /* Store structured data for Excel export */
+      lastProblemData = {
+        testType: 't_test',
+        variable, pop, unit, mu0, sampleSD, n, xbar, se,
+        tScore, tCrit, df, cohenD, rSq, rSqPct, decision, ciUp, ciLo,
+        alpha, twoTailed, tailLabel, pval, pCompare,
+        h0, h1, isRej, testPhrasePlain,
+        interp: interp.replace(/\s+/g, ' ').trim()
+      };
+
+      document.getElementById('pg-problem-text').innerHTML   = problemHTML;
+      document.getElementById('pg-instructor-key').innerHTML = keyHTML;
+      document.getElementById('pg-output').style.display     = 'block';
+      /* Reset key toggle whenever problem is regenerated */
+      document.getElementById('pg-show-key').checked                   = false;
+      document.getElementById('pg-instructor-key').style.display       = 'none';
+
+      document.getElementById('pg-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function generateStudentProblem() {
+      if (!lastResult) return;
+      if (lastResult.type === 'z_test')  generateZTestProblem();
+      else if (lastResult.type === 't_test') generateTTestProblem();
+    }
+
     function toggleInstructorKey() {
       const show = document.getElementById('pg-show-key').checked;
       document.getElementById('pg-instructor-key').style.display = show ? 'block' : 'none';
@@ -1535,66 +1735,110 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       if (!lastProblemData) return;
       const d = lastProblemData;
 
-      const narrative =
-        `A researcher is studying ${d.variable} in ${d.pop}. ` +
-        `Historically, the population mean is μ = ${d.mu0} ${d.unit}, ` +
-        `with a known population standard deviation of σ = ${d.sigma} ${d.unit}. ` +
-        `The researcher collects a random sample of n = ${d.n} participants ` +
-        `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}. ` +
-        `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
-        `${d.testPhrasePlain}.`;
+      const pvalStr = d.pval.startsWith('<') ? d.pval : '= ' + d.pval;
+      const decStr  = d.isRej ? 'Reject H₀' : 'Fail to Reject H₀';
 
-      const pvalStr   = d.pval.startsWith('<') ? d.pval : '= ' + d.pval;
-      const decStr    = d.isRej ? 'Reject H₀' : 'Fail to Reject H₀';
-      const cohenFml  = `(x̄ − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
+      let rows, sheetName, fileName;
 
-      const rows = [
-        /* ── Student problem ── */
-        ['STUDENT PROBLEM — One-Sample Z-Test'],
-        [],
-        ['Scenario'],
-        [narrative],
-        [],
-        ['Questions'],
-        ['1.', 'State the null and alternative hypotheses.'],
-        ['2.', 'Compute the z statistic.'],
-        ['3.', 'Determine the p-value and compute Cohen\'s d.'],
-        ['4.', 'State your decision.'],
-        ['5.', 'Interpret the result in context.'],
-        [],
-        [],
-        /* ── Instructor key ── */
-        ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
-        [],
-        ['1. Hypotheses'],
-        ['H₀:', d.h0],
-        ['H₁:', d.h1],
-        [],
-        ['2. Z Statistic'],
-        ['Formula:',       'z = (x̄ − μ) / (σ / √n)'],
-        ['Substitution:',  `z = (${d.xbar} − ${d.mu0}) / (${d.sigma} / √${d.n})`],
-        ['Simplify:',      `z = (${d.xbar} − ${d.mu0}) / ${d.se}`],
-        ['Result:',        `z = ${d.zScore}`],
-        ['Critical value:', `z_crit = ±${d.zCrit}  (α = ${d.alpha}, ${d.tailLabel})`],
-        [],
-        ['3. p-value & Effect Size'],
-        ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
-        ["Cohen's d:", cohenFml],
-        [],
-        ['4. Decision'],
-        ['', decStr],
-        [],
-        ['5. Interpretation'],
-        [d.interp],
-        ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
-      ];
+      if (!d.testType || d.testType === 'z_test') {
+        const narrative =
+          `A researcher is studying ${d.variable} in ${d.pop}. ` +
+          `Historically, the population mean is μ = ${d.mu0} ${d.unit}, ` +
+          `with a known population standard deviation of σ = ${d.sigma} ${d.unit}. ` +
+          `The researcher collects a random sample of n = ${d.n} participants ` +
+          `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}. ` +
+          `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
+          `${d.testPhrasePlain}.`;
+        const cohenFml = `(x̄ − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
+        rows = [
+          ['STUDENT PROBLEM — One-Sample Z-Test'],
+          [],
+          ['Scenario'], [narrative], [],
+          ['Questions'],
+          ['1.', 'State the null and alternative hypotheses.'],
+          ['2.', 'Compute the z statistic.'],
+          ['3.', "Determine the p-value and compute Cohen's d."],
+          ['4.', 'State your decision.'],
+          ['5.', 'Interpret the result in context.'],
+          [], [],
+          ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+          [],
+          ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
+          [],
+          ['2. Z Statistic'],
+          ['Formula:',       'z = (x̄ − μ) / (σ / √n)'],
+          ['Substitution:',  `z = (${d.xbar} − ${d.mu0}) / (${d.sigma} / √${d.n})`],
+          ['Simplify:',      `z = (${d.xbar} − ${d.mu0}) / ${d.se}`],
+          ['Result:',        `z = ${d.zScore}`],
+          ['Critical value:', `z_crit = ±${d.zCrit}  (α = ${d.alpha}, ${d.tailLabel})`],
+          [],
+          ['3. p-value & Effect Size'],
+          ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
+          ["Cohen's d:", cohenFml],
+          [],
+          ['4. Decision'], ['', decStr],
+          [],
+          ['5. Interpretation'], [d.interp],
+          ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+        ];
+        sheetName = 'Z-Test Problem';
+        fileName  = `statteacher_zproblem_${Date.now()}.xlsx`;
+
+      } else {
+        // t_test
+        const narrative =
+          `A researcher is studying ${d.variable} in ${d.pop}. ` +
+          `The null hypothesis posits a population mean of μ₀ = ${d.mu0} ${d.unit} (population SD is unknown). ` +
+          `The researcher collects a random sample of n = ${d.n} participants ` +
+          `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}, ` +
+          `with a sample standard deviation of s = ${d.sampleSD} ${d.unit}. ` +
+          `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
+          `${d.testPhrasePlain}.`;
+        const cohenFml = `(x̄ − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
+        const rSqStr   = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(d.rSq).toFixed(3)} (${d.rSqPct}% variance explained)`;
+        rows = [
+          ['STUDENT PROBLEM — One-Sample T-Test'],
+          [],
+          ['Scenario'], [narrative], [],
+          ['Questions'],
+          ['1.', 'State the null and alternative hypotheses.'],
+          ['2.', 'Compute the t statistic.'],
+          ['3.', "Determine the p-value and compute Cohen's d."],
+          ['4.', 'State your decision.'],
+          ['5.', 'Interpret the result in context.'],
+          [], [],
+          ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+          [],
+          ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
+          [],
+          ['2. T Statistic'],
+          ['Formula:',       't = (x̄ − μ₀) / (s / √n)'],
+          ['Substitution:',  `t = (${d.xbar} − ${d.mu0}) / (${d.sampleSD} / √${d.n})`],
+          ['Simplify:',      `t = (${d.xbar} − ${d.mu0}) / ${d.se}`],
+          ['Result:',        `t = ${d.tScore}`],
+          ['df:',            `n − 1 = ${d.n} − 1 = ${d.df}`],
+          ['Critical value:', `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, ${d.tailLabel})`],
+          [],
+          ['3. p-value & Effect Size'],
+          ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
+          ["Cohen's d:", cohenFml],
+          ['r²:',        rSqStr],
+          [],
+          ['4. Decision'], ['', decStr],
+          [],
+          ['5. Interpretation'], [d.interp],
+          ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+        ];
+        sheetName = 'T-Test Problem';
+        fileName  = `statteacher_tproblem_${Date.now()}.xlsx`;
+      }
 
       const ws = XLSX.utils.aoa_to_sheet(rows);
-      ws['!cols'] = [{ wch: 18 }, { wch: 90 }];   // column widths
+      ws['!cols'] = [{ wch: 18 }, { wch: 90 }];
 
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Z-Test Problem');
-      XLSX.writeFile(wb, `statteacher_zproblem_${Date.now()}.xlsx`);
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      XLSX.writeFile(wb, fileName);
     }
 
   </script>
