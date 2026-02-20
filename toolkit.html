@@ -224,6 +224,56 @@
       font-size: 0.9rem;
     }
 
+    /* ── Problem Generator ── */
+    .problem-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.25rem 1.5rem;
+      line-height: 1.6;
+    }
+    .problem-box p { margin: 0.5rem 0; }
+    .problem-questions {
+      margin-top: 1rem;
+      background: var(--light-gold);
+      border-radius: 3px;
+      padding: 0.75rem 1.25rem 0.75rem 2.25rem;
+    }
+    .problem-questions ol { margin: 0; padding-left: 1.2rem; }
+    .problem-questions li { margin-bottom: 0.3rem; line-height: 1.5; }
+    .key-box {
+      background: #f2f7f2;
+      border: 1px solid #b8d4b8;
+      border-left: 4px solid #5a845a;
+      border-radius: 0 4px 4px 0;
+      padding: 1.25rem 1.5rem;
+    }
+    .key-box h4 { margin-top: 0; color: #3a5c3a; margin-bottom: 0.75rem; }
+    .key-section {
+      margin-bottom: 0.9rem;
+      padding-bottom: 0.9rem;
+      border-bottom: 1px solid #c8d8c8;
+    }
+    .key-section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .key-section p { margin: 0.35rem 0; }
+    .key-formula {
+      font-family: 'Courier New', monospace;
+      font-size: 0.88rem;
+      background: #e8f0e8;
+      border-radius: 3px;
+      padding: 0.5rem 0.75rem;
+      margin: 0.4rem 0;
+      line-height: 1.7;
+    }
+    .pg-key-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+    .pg-key-toggle input[type="checkbox"] { width: auto; accent-color: var(--navy); cursor: pointer; }
+    .pg-key-toggle label { font-weight: 700; font-size: 0.9rem; color: var(--navy); cursor: pointer; margin: 0; }
+
     /* ── Treatment effect toggle ── */
     .tx-toggle-row {
       display: flex;
@@ -687,6 +737,53 @@
       </div>
     </div>
 
+    <!-- ===== PROBLEM GENERATOR CARD (z-test only, experimental) ===== -->
+    <div class="card" id="problem-gen-card" style="display:none;">
+      <h2>
+        Student Problem Generator
+        <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
+          Z-Test &middot; Experimental
+        </span>
+      </h2>
+      <p>
+        Fill in the narrative context below to produce a student-facing hypothesis test problem
+        populated with the values from your generated dataset.
+      </p>
+
+      <div class="form-grid-3" style="margin-top:1rem;">
+        <div class="form-group">
+          <label>Variable Name</label>
+          <input type="text" id="pg-variable" placeholder="e.g., reaction time" />
+          <p class="hint">The dependent variable being measured</p>
+        </div>
+        <div class="form-group">
+          <label>Population</label>
+          <input type="text" id="pg-population" placeholder="e.g., college students" />
+          <p class="hint">Who the sample is drawn from</p>
+        </div>
+        <div class="form-group">
+          <label>Unit</label>
+          <input type="text" id="pg-unit" placeholder="e.g., ms, points, kg" />
+          <p class="hint">Measurement unit for the variable</p>
+        </div>
+      </div>
+
+      <button class="btn-generate" style="margin-top:0.5rem;" onclick="generateZTestProblem()">
+        Generate Student Problem
+      </button>
+
+      <div id="pg-output" style="display:none; margin-top:1.75rem;">
+        <div id="pg-problem-text"></div>
+
+        <div class="pg-key-toggle">
+          <input type="checkbox" id="pg-show-key" onchange="toggleInstructorKey()" />
+          <label for="pg-show-key">Show Instructor Key</label>
+        </div>
+
+        <div id="pg-instructor-key" style="display:none; margin-top:1rem;"></div>
+      </div>
+    </div>
+
     <!-- Supported Tests -->
     <div class="card">
       <h2>Supported Tests</h2>
@@ -764,9 +861,10 @@
     /* ════════════════════════════════════════════
        Pyodide initialisation
     ════════════════════════════════════════════ */
-    let pyodide   = null;
-    let lastResult = null;
-    let currentTest = null;
+    let pyodide          = null;
+    let lastResult       = null;
+    let currentTest      = null;
+    let lastZTestContext = null;   // { alpha, twoTailed } — captured at generation time
 
     function setLoadMsg(msg) {
       document.getElementById('loading-msg').textContent = msg;
@@ -834,6 +932,8 @@ def _to_json(obj):
         btn.textContent = 'Select a Test to Begin';
       }
       document.getElementById('results-card').style.display = 'none';
+      document.getElementById('problem-gen-card').style.display = 'none';
+      document.getElementById('pg-output').style.display = 'none';
     }
 
     function gv(id)   { return document.getElementById(id).value; }
@@ -1110,8 +1210,27 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       const el = document.getElementById('results-content');
       let html = '';
 
+      // Show problem generator only for z-tests; hide for all others
+      const pgCard = document.getElementById('problem-gen-card');
+      if (r.type === 'z_test') {
+        lastZTestContext = {
+          alpha:      parseFloat(gv('z-alpha')),
+          twoTailed:  document.getElementById('z-tail').value === 'two'
+        };
+        pgCard.style.display = 'block';
+      } else {
+        pgCard.style.display = 'none';
+        document.getElementById('pg-output').style.display = 'none';
+      }
+
       switch (r.type) {
         case 'z_test':
+          html = `<div class="results-grid">
+            ${arrayTable(r.dataset, 'Score', 'Dataset')}
+            ${recordsTable(r.results, 'Statistical Results')}
+          </div>`;
+          break;
+
         case 't_test':
           html = `<div class="results-grid">
             ${arrayTable(r.dataset, 'Score', 'Dataset')}
@@ -1239,6 +1358,153 @@ _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }
+
+    /* ════════════════════════════════════════════
+       Student Problem Generator  (Z-Test · V1)
+       Extensible: add generateTTestProblem(),
+       generateANOVAProblem(), etc. following
+       the same pattern.
+    ════════════════════════════════════════════ */
+
+    /* Normal CDF approximation (Abramowitz & Stegun 26.2.17) — used for p-value display only */
+    function _normalCDF(z) {
+      const x    = Math.abs(z);
+      const t    = 1 / (1 + 0.2315419 * x);
+      const pd   = 0.3989423 * Math.exp(-0.5 * x * x);
+      const poly = t * (0.3193815 + t * (-0.3565638 + t * (1.7814779 + t * (-1.8212560 + t * 1.3302744))));
+      const tail = pd * poly;
+      return z >= 0 ? 1 - tail : tail;
+    }
+
+    function _pValue(z, twoTailed) {
+      const oneTailP = _normalCDF(-Math.abs(z));
+      const p = twoTailed ? 2 * oneTailP : oneTailP;
+      return p < 0.001 ? '< .001' : p.toFixed(3);
+    }
+
+    /* Converts the results records array [{ Statistic, Value }, …] to a plain dict */
+    function _statsDict(records) {
+      const d = {};
+      records.forEach(row => { d[row.Statistic] = row.Value; });
+      return d;
+    }
+
+    function generateZTestProblem() {
+      if (!lastResult || lastResult.type !== 'z_test') return;
+
+      const stats = _statsDict(lastResult.results);
+
+      const variable = document.getElementById('pg-variable').value.trim()   || 'the variable of interest';
+      const pop      = document.getElementById('pg-population').value.trim() || 'the target population';
+      const unit     = document.getElementById('pg-unit').value.trim()       || 'units';
+
+      const mu0      = stats['Population Mean'];
+      const sigma    = stats['Population SD'];
+      const n        = stats['N'];
+      const xbar     = stats['Sample Mean'];
+      const se       = stats['Standard Error'];
+      const zScore   = stats['Z Score'];
+      const zCrit    = stats['Z_Critical'];
+      const cohenD   = stats["Cohen's d"];
+      const decision = stats['Decision'];
+      const ciUp     = stats['95% CI Upper'];
+      const ciLo     = stats['95% CI Lower'];
+
+      const alpha     = lastZTestContext ? lastZTestContext.alpha     : 0.05;
+      const twoTailed = lastZTestContext ? lastZTestContext.twoTailed : true;
+      const tailLabel = twoTailed ? 'two-tailed' : 'one-tailed';
+      const pval      = _pValue(parseFloat(zScore), twoTailed);
+      const pvalNum   = pval.startsWith('<') ? 0.0001 : parseFloat(pval);
+      const pCompare  = pvalNum < alpha ? '< α' : '> α';
+
+      /* ── Student problem text ── */
+      const problemHTML = `
+<div class="problem-box">
+  <p>A researcher is studying <strong>${variable}</strong> in <strong>${pop}</strong>.
+  Historically, the population mean is μ&nbsp;=&nbsp;${mu0}&nbsp;${unit},
+  with a known population standard deviation of σ&nbsp;=&nbsp;${sigma}&nbsp;${unit}.</p>
+  <p>The researcher collects a random sample of <em>n</em>&nbsp;=&nbsp;${n} participants
+  and obtains a sample mean of <em>x̄</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit}.</p>
+  <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether the population mean
+  differs from ${mu0}&nbsp;${unit}.</p>
+  <div class="problem-questions">
+    <ol>
+      <li>State the null and alternative hypotheses.</li>
+      <li>Compute the <em>z</em> statistic.</li>
+      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>State your decision.</li>
+      <li>Interpret the result in context.</li>
+    </ol>
+  </div>
+</div>`;
+
+      /* ── Instructor key ── */
+      const h0      = `H₀: μ = ${mu0} ${unit}`;
+      const h1op    = twoTailed ? '≠' : (parseFloat(xbar) > parseFloat(mu0) ? '>' : '<');
+      const h1      = `H₁: μ ${h1op} ${mu0} ${unit}`;
+      const isRej   = decision === 'Reject Null';
+      const interp  = isRej
+        ? `There is sufficient evidence at α = ${alpha} to conclude that the mean ${variable}
+           in ${pop} differs from ${mu0} ${unit}
+           (z = ${zScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`
+        : `There is insufficient evidence at α = ${alpha} to conclude that the mean ${variable}
+           in ${pop} differs from ${mu0} ${unit}
+           (z = ${zScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+      const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Hypotheses</strong>
+    <p>${h0}</p>
+    <p>${h1}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>2. Z Statistic</strong>
+    <div class="key-formula">
+      z = (x̄ &minus; μ) / (σ / &radic;n)<br>
+      z = (${xbar} &minus; ${mu0}) / (${sigma} / &radic;${n})<br>
+      z = (${xbar} &minus; ${mu0}) / ${se}<br>
+      z = ${zScore}
+    </div>
+    <p>Critical value: z<sub>crit</sub> = &plusmn;${zCrit} &nbsp;(α = ${alpha}, ${tailLabel})</p>
+  </div>
+
+  <div class="key-section">
+    <strong>3. p-value &amp; Effect Size</strong>
+    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+    <p>Cohen's d = (x̄ &minus; μ) / σ = (${xbar} &minus; ${mu0}) / ${sigma} = ${cohenD}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decision</strong>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Interpretation</strong>
+    <p>${interp}</p>
+    <p>95% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
+  </div>
+</div>`;
+
+      document.getElementById('pg-problem-text').innerHTML   = problemHTML;
+      document.getElementById('pg-instructor-key').innerHTML = keyHTML;
+      document.getElementById('pg-output').style.display     = 'block';
+      /* Reset key toggle whenever problem is regenerated */
+      document.getElementById('pg-show-key').checked                   = false;
+      document.getElementById('pg-instructor-key').style.display       = 'none';
+
+      document.getElementById('pg-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function toggleInstructorKey() {
+      const show = document.getElementById('pg-show-key').checked;
+      document.getElementById('pg-instructor-key').style.display = show ? 'block' : 'none';
+    }
+
   </script>
 </body>
 </html>
