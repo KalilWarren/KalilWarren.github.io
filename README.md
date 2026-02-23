@@ -10,17 +10,38 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 
 ```
 /
-├── index.html          — Homepage (bio, research interests, news)
-├── research.html       — Research statement, projects, publications
-├── cv.html             — Full curriculum vitae
-├── toolkit.html        — StatTeacher Toolkit web app
+├── index.html              — Homepage (bio, research interests, news)
+├── research.html           — Research statement, projects, publications
+├── cv.html                 — Full curriculum vitae
+├── toolkit.html            — StatTeacher Toolkit web app
 ├── css/
-│   └── style.css       — Site-wide styles
+│   └── style.css           — Site-wide styles
 ├── assets/
-│   ├── Picture1.jpg    — Headshot
-│   └── *.pdf           — CV PDF
-└── toolkit/
-    └── Engine_v1.0.0.py — StatTeacher statistical engine
+│   ├── Picture1.jpg        — Headshot
+│   └── *.pdf               — CV PDF
+├── public/
+│   └── toolkit/
+│       └── Engine_v1.0.0.py — StatTeacher statistical engine (served as-is)
+├── src/
+│   ├── year.ts             — Current-year display (used by all pages)
+│   └── toolkit/
+│       ├── index.ts        — Entry point; registers all event listeners
+│       ├── init.ts         — Pyodide initialization and py() helper
+│       ├── ui.ts           — Form helpers, test selector, formatting
+│       ├── types.ts        — TypeScript interfaces for all test results
+│       ├── state.ts        — Shared mutable app state singleton
+│       ├── runners.ts      — One function per statistical test (calls Python)
+│       ├── rendering.ts    — HTML table builders and results renderer
+│       ├── csv.ts          — CSV conversion and dataset download
+│       ├── stats.ts        — Browser-side p-value math
+│       ├── problems.ts     — Student problem generator and Excel export
+│       └── globals.d.ts    — Ambient type declarations for Pyodide and SheetJS
+├── package.json            — npm scripts and dev dependencies
+├── tsconfig.json           — TypeScript compiler configuration
+├── vite.config.ts          — Vite multi-page build configuration
+└── .github/
+    └── workflows/
+        └── deploy.yml      — GitHub Actions CI/CD pipeline
 ```
 
 ---
@@ -40,7 +61,7 @@ The app loads `toolkit/Engine_v1.0.0.py` at runtime into a Pyodide Python enviro
 **Technology stack:**
 - Python 3 (via [Pyodide v0.26.4](https://pyodide.org))
 - NumPy, SciPy, Pandas
-- Vanilla JavaScript (no frameworks)
+- TypeScript (compiled to ES modules by [Vite 6](https://vitejs.dev))
 - HTML/CSS with the site's warm academic theme
 
 ---
@@ -229,14 +250,28 @@ Every generated problem includes a **Download Dataset (CSV)** button. The export
 
 ## Deployment
 
-The site is deployed on **GitHub Pages** from the `main` branch of this repository. Any push to `main` triggers an automatic rebuild (typically within 30 seconds).
+The site is built with **Vite** and deployed to **GitHub Pages** via GitHub Actions. Every push to `main` triggers the CI/CD pipeline:
 
-To update the site locally:
+1. `npm ci` — installs dependencies
+2. `tsc --noEmit` — type-checks all TypeScript source files
+3. `vite build` — compiles TypeScript and outputs static files to `dist/`
+4. The `dist/` directory is deployed to GitHub Pages
+
+### Local development
 
 ```bash
-git add -A
+npm install        # install dev dependencies (first time only)
+npm run dev        # start local dev server at http://localhost:5173
+npm run build      # type-check + production build → dist/
+npm run preview    # preview the production build locally
+```
+
+### Publishing changes
+
+```bash
+git add <files>
 git commit -m "Your update message"
-git push
+git push           # GitHub Actions handles the build and deploy automatically
 ```
 
 ---
