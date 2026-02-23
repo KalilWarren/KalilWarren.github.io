@@ -7,12 +7,14 @@ export const state: {
   currentTest: TestType | null;
   lastZTestContext: TestContext | null;
   lastTTestContext: TestContext | null;
+  lastIndTTestContext: TestContext | null;
   lastProblemData: ProblemData | null;
 } = {
-  pyodide:          null,
-  lastResult:       null,
-  currentTest:      null,
-  lastZTestContext: null,
-  lastTTestContext: null,
-  lastProblemData:  null,
+  pyodide:             null,
+  lastResult:          null,
+  currentTest:         null,
+  lastZTestContext:    null,
+  lastTTestContext:    null,
+  lastIndTTestContext: null,
+  lastProblemData:     null,
 };

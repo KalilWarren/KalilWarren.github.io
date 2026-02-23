@@ -85,22 +85,39 @@ export function renderResults(r: TestResult): void {
   const pgTag   = document.getElementById('pg-tag') as HTMLElement;
   const pgOutput = document.getElementById('pg-output') as HTMLElement;
 
+  const popRow   = document.getElementById('pg-pop-row')   as HTMLElement;
+  const groupRow = document.getElementById('pg-group-row') as HTMLElement;
+
   if (r.type === 'z_test') {
     state.lastZTestContext = {
-      alpha:      parseFloat(gv('z-alpha')),
-      twoTailed:  (document.getElementById('z-tail') as HTMLSelectElement).value === 'two',
+      alpha:     parseFloat(gv('z-alpha')),
+      twoTailed: (document.getElementById('z-tail') as HTMLSelectElement).value === 'two',
     };
     pgTag.textContent = 'Z-Test · Experimental';
     pgOutput.style.display = 'none';
     pgCard.style.display = 'block';
+    popRow.style.display   = '';
+    groupRow.style.display = 'none';
   } else if (r.type === 't_test') {
     state.lastTTestContext = {
-      alpha:      parseFloat(gv('t-alpha')),
-      twoTailed:  (document.getElementById('t-tail') as HTMLSelectElement).value === 'two',
+      alpha:     parseFloat(gv('t-alpha')),
+      twoTailed: (document.getElementById('t-tail') as HTMLSelectElement).value === 'two',
     };
     pgTag.textContent = 'T-Test · Experimental';
     pgOutput.style.display = 'none';
     pgCard.style.display = 'block';
+    popRow.style.display   = '';
+    groupRow.style.display = 'none';
+  } else if (r.type === 'independent_t_test') {
+    state.lastIndTTestContext = {
+      alpha:     parseFloat(gv('ind-alpha')),
+      twoTailed: (document.getElementById('ind-tail') as HTMLSelectElement).value === 'two',
+    };
+    pgTag.textContent = 'Ind. t-Test · Experimental';
+    pgOutput.style.display = 'none';
+    pgCard.style.display = 'block';
+    popRow.style.display   = 'none';
+    groupRow.style.display = '';
   } else {
     pgCard.style.display = 'none';
     pgOutput.style.display = 'none';
