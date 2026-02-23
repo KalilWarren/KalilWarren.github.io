@@ -8,6 +8,7 @@ export const state: {
   lastZTestContext: TestContext | null;
   lastTTestContext: TestContext | null;
   lastIndTTestContext: TestContext | null;
+  lastRmTTestContext: TestContext | null;
   lastProblemData: ProblemData | null;
 } = {
   pyodide:             null,
@@ -16,5 +17,6 @@ export const state: {
   lastZTestContext:    null,
   lastTTestContext:    null,
   lastIndTTestContext: null,
+  lastRmTTestContext:  null,
   lastProblemData:     null,
 };
