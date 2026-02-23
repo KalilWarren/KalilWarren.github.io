@@ -322,7 +322,7 @@
 
   <!-- ===== MAIN ===== -->
   <main class="page-container">
-    <h1 class="page-title">StatTeacher Toolkit</h1>
+    <h1 class="page-title">StatTeacher Toolkit v1.0.0</h1>
 
     <!-- About -->
     <div class="card">
@@ -751,16 +751,11 @@
         populated with the values from your generated dataset.
       </p>
 
-      <div class="form-grid-3" style="margin-top:1rem;">
+      <div class="form-grid-2" style="margin-top:1rem;">
         <div class="form-group">
           <label>Variable Name</label>
           <input type="text" id="pg-variable" placeholder="e.g., reaction time" />
           <p class="hint">The dependent variable being measured</p>
-        </div>
-        <div class="form-group">
-          <label>Population</label>
-          <input type="text" id="pg-population" placeholder="e.g., college students" />
-          <p class="hint">Who the sample is drawn from</p>
         </div>
         <div class="form-group">
           <label>Unit</label>
@@ -769,7 +764,30 @@
         </div>
       </div>
 
-      <button class="btn-generate" id="generate-student-btn" style="margin-top:0.5rem;">
+      <!-- Shown for one-sample tests (z / t) -->
+      <div id="pg-pop-row" style="margin-top:0.75rem;">
+        <div class="form-group" style="max-width:22rem;">
+          <label>Population</label>
+          <input type="text" id="pg-population" placeholder="e.g., college students" />
+          <p class="hint">Who the sample is drawn from</p>
+        </div>
+      </div>
+
+      <!-- Shown for independent-samples t-test -->
+      <div id="pg-group-row" class="form-grid-2" style="display:none; margin-top:0.75rem;">
+        <div class="form-group">
+          <label>Group 1 Label</label>
+          <input type="text" id="pg-group1" placeholder="e.g., Control" />
+          <p class="hint">Label for the first group</p>
+        </div>
+        <div class="form-group">
+          <label>Group 2 Label</label>
+          <input type="text" id="pg-group2" placeholder="e.g., Treatment" />
+          <p class="hint">Label for the second group</p>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="generate-student-btn" style="margin-top:0.75rem;">
         Generate Student Problem
       </button>
 

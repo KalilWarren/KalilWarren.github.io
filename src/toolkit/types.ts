@@ -151,4 +151,43 @@ export interface TProblemData {
   interp: string;
 }
 
-export type ProblemData = ZProblemData | TProblemData;
+export interface IndTProblemData {
+  testType: 'independent_t_test';
+  variable: string;
+  group1: string;
+  group2: string;
+  unit: string;
+  n1: string | number;
+  m1: string | number;
+  sd1: string | number;
+  ss1: string | number;
+  df1: string | number;
+  n2: string | number;
+  m2: string | number;
+  sd2: string | number;
+  ss2: string | number;
+  df2: string | number;
+  df: number;
+  pooledVar: string | number;
+  se: string | number;
+  tScore: string | number;
+  tCrit: string | number;
+  cohenD: string | number;
+  rSq: string | number;
+  rSqPct: string;
+  decision: string | number | null;
+  ciUp: string | number;
+  ciLo: string | number;
+  alpha: number;
+  twoTailed: boolean;
+  tailLabel: string;
+  pval: string;
+  pCompare: string;
+  h0: string;
+  h1: string;
+  isRej: boolean;
+  testPhrasePlain: string;
+  interp: string;
+}
+
+export type ProblemData = ZProblemData | TProblemData | IndTProblemData;

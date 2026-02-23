@@ -281,12 +281,169 @@ export function generateTTestProblem(): void {
   (document.getElementById('pg-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+/* ── Independent-Samples T-Test Problem Generator ── */
+
+export function generateIndTTestProblem(): void {
+  if (!state.lastResult || state.lastResult.type !== 'independent_t_test') return;
+
+  const stats = statsDict(state.lastResult.results);
+
+  const variable = (document.getElementById('pg-variable') as HTMLInputElement).value.trim() || 'the variable of interest';
+  const group1   = (document.getElementById('pg-group1')   as HTMLInputElement).value.trim() || 'Group 1';
+  const group2   = (document.getElementById('pg-group2')   as HTMLInputElement).value.trim() || 'Group 2';
+  const unit     = (document.getElementById('pg-unit')     as HTMLInputElement).value.trim() || 'units';
+
+  const n1       = stats['N1'];
+  const m1       = stats['Sample Mean1'];
+  const sd1      = stats['Sample SD1'];
+  const ss1      = stats['Sum of Squares1'];
+  const df1      = stats['df1'];
+  const n2       = stats['N2'];
+  const m2       = stats['Sample Mean2'];
+  const sd2      = stats['Sample SD2'];
+  const ss2      = stats['Sum of Squares2'];
+  const df2      = stats['df2'];
+  const pooledVar = stats['Sum Of Product'];
+  const se       = stats['Standard Error'];
+  const tScore   = stats['t Score'];
+  const tCrit    = stats['t_Critical'];
+  const cohenD   = stats["Cohen's d"];
+  const rSq      = stats['R-Squared'];
+  const decision = stats['Decision'];
+  const ciUp     = stats['95% CI Upper'];
+  const ciLo     = stats['95% CI Lower'];
+  const df       = Number(df1) + Number(df2);
+
+  const alpha     = state.lastIndTTestContext?.alpha     ?? 0.05;
+  const twoTailed = state.lastIndTTestContext?.twoTailed ?? true;
+  const tailLabel = twoTailed ? 'two-tailed' : 'one-tailed';
+  const pval      = tPValue(parseFloat(String(tScore)), df, twoTailed);
+  const pvalNum   = pval.startsWith('<') ? 0.0001 : parseFloat(pval);
+  const pCompare  = pvalNum < alpha ? '< α' : '> α';
+  const rSqPct    = (parseFloat(String(rSq)) * 100).toFixed(1);
+
+  /* Direction for hypotheses */
+  const h1op = twoTailed ? '≠' : (parseFloat(String(m1)) >= parseFloat(String(m2)) ? '>' : '<');
+  const h0op = twoTailed ? '=' : (h1op === '>' ? '≤' : '≥');
+
+  /* Natural-language test phrase */
+  const testPhraseHTML = twoTailed
+    ? `differ in mean ${variable}`
+    : (h1op === '>'
+        ? `the mean ${variable} in <strong>${group1}</strong> is significantly greater than in <strong>${group2}</strong>`
+        : `the mean ${variable} in <strong>${group1}</strong> is significantly less than in <strong>${group2}</strong>`);
+  const testPhrasePlain = twoTailed
+    ? `differ in mean ${variable}`
+    : (h1op === '>'
+        ? `the mean ${variable} in ${group1} is significantly greater than in ${group2}`
+        : `the mean ${variable} in ${group1} is significantly less than in ${group2}`);
+
+  /* Student problem text */
+  const problemHTML = `
+<div class="problem-box">
+  <p>A researcher is studying <strong>${variable}</strong> in two groups:
+  <strong>${group1}</strong> and <strong>${group2}</strong>.</p>
+  <p>The sample statistics are:</p>
+  <ul>
+    <li><strong>${group1}:</strong> <em>n</em>&nbsp;=&nbsp;${n1}, <em>M</em>&nbsp;=&nbsp;${m1}&nbsp;${unit}, <em>SD</em>&nbsp;=&nbsp;${sd1}&nbsp;${unit}</li>
+    <li><strong>${group2}:</strong> <em>n</em>&nbsp;=&nbsp;${n2}, <em>M</em>&nbsp;=&nbsp;${m2}&nbsp;${unit}, <em>SD</em>&nbsp;=&nbsp;${sd2}&nbsp;${unit}</li>
+  </ul>
+  <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether ${group1} and ${group2}
+  ${testPhraseHTML}.</p>
+  <div class="problem-questions">
+    <ol>
+      <li>State the null and alternative hypotheses.</li>
+      <li>Compute the <em>t</em> statistic.</li>
+      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>State your decision.</li>
+      <li>Interpret the result in context.</li>
+    </ol>
+  </div>
+</div>`;
+
+  /* Instructor key */
+  const h0    = `H₀: μ₁ ${h0op} μ₂`;
+  const h1    = `H₁: μ₁ ${h1op} μ₂`;
+  const isRej = decision === 'Reject Null';
+  const interp = isRej
+    ? `There is sufficient evidence at α = ${alpha} to conclude that ${group1} and ${group2}
+       ${testPhrasePlain}
+       (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`
+    : `There is insufficient evidence at α = ${alpha} to conclude that ${group1} and ${group2}
+       ${testPhrasePlain}
+       (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+  const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Hypotheses</strong>
+    <p>${h0}</p>
+    <p>${h1}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>2. T Statistic</strong>
+    <div class="key-formula">
+      Pooled variance: s²<sub>p</sub> = (SS₁ + SS₂) / df = (${ss1} + ${ss2}) / ${df} = ${pooledVar}<br>
+      SE = &radic;(s²<sub>p</sub> &times; (1/n₁ + 1/n₂)) = ${se}<br>
+      t = (M₁ &minus; M₂) / SE = (${m1} &minus; ${m2}) / ${se} = ${tScore}
+    </div>
+    <p>df = (n₁ &minus; 1) + (n₂ &minus; 1) = ${df1} + ${df2} = ${df}</p>
+    <p>Critical value: t<sub>crit</sub> = &plusmn;${tCrit} &nbsp;(df&nbsp;=&nbsp;${df}, α&nbsp;=&nbsp;${alpha}, ${tailLabel})</p>
+  </div>
+
+  <div class="key-section">
+    <strong>3. p-value &amp; Effect Size</strong>
+    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+    <p>Cohen's d = (M₁ &minus; M₂) / s<sub>p</sub> = ${cohenD}</p>
+    <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decision</strong>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Interpretation</strong>
+    <p>${interp}</p>
+    <p>95% CI for (μ₁ − μ₂): [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
+  </div>
+</div>`;
+
+  state.lastProblemData = {
+    testType: 'independent_t_test',
+    variable, group1, group2, unit,
+    n1: n1 ?? '', m1: m1 ?? '', sd1: sd1 ?? '', ss1: ss1 ?? '', df1: df1 ?? '',
+    n2: n2 ?? '', m2: m2 ?? '', sd2: sd2 ?? '', ss2: ss2 ?? '', df2: df2 ?? '',
+    df, pooledVar: pooledVar ?? '', se: se ?? '',
+    tScore: tScore ?? '', tCrit: tCrit ?? '', cohenD: cohenD ?? '',
+    rSq: rSq ?? '', rSqPct, decision: decision ?? null, ciUp: ciUp ?? '', ciLo: ciLo ?? '',
+    alpha, twoTailed, tailLabel, pval, pCompare,
+    h0, h1, isRej, testPhrasePlain,
+    interp: interp.replace(/\s+/g, ' ').trim(),
+  };
+
+  (document.getElementById('pg-problem-text') as HTMLElement).innerHTML   = problemHTML;
+  (document.getElementById('pg-instructor-key') as HTMLElement).innerHTML = keyHTML;
+  (document.getElementById('pg-output') as HTMLElement).style.display     = 'block';
+
+  /* Reset key toggle whenever problem is regenerated */
+  (document.getElementById('pg-show-key') as HTMLInputElement).checked              = false;
+  (document.getElementById('pg-instructor-key') as HTMLElement).style.display       = 'none';
+
+  (document.getElementById('pg-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 /* ── Dispatcher ── */
 
 export function generateStudentProblem(): void {
   if (!state.lastResult) return;
-  if (state.lastResult.type === 'z_test')      generateZTestProblem();
-  else if (state.lastResult.type === 't_test') generateTTestProblem();
+  if (state.lastResult.type === 'z_test')               generateZTestProblem();
+  else if (state.lastResult.type === 't_test')          generateTTestProblem();
+  else if (state.lastResult.type === 'independent_t_test') generateIndTTestProblem();
 }
 
 /* ── Key toggle ── */
@@ -353,8 +510,7 @@ export function downloadProblemExcel(): void {
     sheetName = 'Z-Test Problem';
     fileName  = `statteacher_zproblem_${Date.now()}.xlsx`;
 
-  } else {
-    // t_test
+  } else if (d.testType === 't_test') {
     const narrative =
       `A researcher is studying ${d.variable} in ${d.pop}. ` +
       `The null hypothesis posits a population mean of μ₀ = ${d.mu0} ${d.unit} (population SD is unknown). ` +
@@ -400,6 +556,52 @@ export function downloadProblemExcel(): void {
     ];
     sheetName = 'T-Test Problem';
     fileName  = `statteacher_tproblem_${Date.now()}.xlsx`;
+
+  } else {
+    // independent_t_test
+    const narrative =
+      `A researcher is studying ${d.variable} in two groups: ${d.group1} and ${d.group2}. ` +
+      `The sample statistics are: ` +
+      `${d.group1}: n = ${d.n1}, M = ${d.m1} ${d.unit}, SD = ${d.sd1} ${d.unit}; ` +
+      `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, SD = ${d.sd2} ${d.unit}. ` +
+      `Using α = ${d.alpha} (${d.tailLabel}), test whether ${d.group1} and ${d.group2} ` +
+      `${d.testPhrasePlain}.`;
+    const rSqStr = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
+    rows = [
+      ['STUDENT PROBLEM — Independent-Samples T-Test'],
+      [],
+      ['Scenario'], [narrative], [],
+      ['Questions'],
+      ['1.', 'State the null and alternative hypotheses.'],
+      ['2.', 'Compute the test statistic.'],
+      ['3.', "Determine the p-value and compute Cohen's d."],
+      ['4.', 'State your decision.'],
+      ['5.', 'Interpret the result in context.'],
+      [], [],
+      ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+      [],
+      ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
+      [],
+      ['2. T Statistic'],
+      ['Pooled variance:', `s²p = (SS₁ + SS₂) / df = (${d.ss1} + ${d.ss2}) / ${d.df} = ${d.pooledVar}`],
+      ['SE:',             `√(s²p × (1/n₁ + 1/n₂)) = ${d.se}`],
+      ['Formula:',        't = (M₁ − M₂) / SE'],
+      ['Result:',         `t = (${d.m1} − ${d.m2}) / ${d.se} = ${d.tScore}`],
+      ['df:',             `(n₁ − 1) + (n₂ − 1) = ${d.df1} + ${d.df2} = ${d.df}`],
+      ['Critical value:',  `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, ${d.tailLabel})`],
+      [],
+      ['3. p-value & Effect Size'],
+      ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
+      ["Cohen's d:", `${d.cohenD}`],
+      ['r²:',        rSqStr],
+      [],
+      ['4. Decision'], ['', decStr],
+      [],
+      ['5. Interpretation'], [d.interp],
+      ['95% CI for (μ₁ − μ₂):', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+    ];
+    sheetName = 'Ind T-Test Problem';
+    fileName  = `statteacher_ind_tproblem_${Date.now()}.xlsx`;
   }
 
   const ws = XLSX.utils.aoa_to_sheet(rows);
