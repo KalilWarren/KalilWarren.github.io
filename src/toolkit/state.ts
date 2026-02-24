@@ -1,4 +1,4 @@
-import type { TestResult, TestContext, ProblemData, TestType } from './types.ts';
+import type { TestResult, TestContext, ProblemData, AnovaPracticeData, TestType } from './types.ts';
 
 /* Mutable application state — mutate properties directly; do not reassign the object */
 export const state: {
@@ -10,13 +10,15 @@ export const state: {
   lastIndTTestContext: TestContext | null;
   lastRmTTestContext: TestContext | null;
   lastProblemData: ProblemData | null;
+  lastAnovaPracticeData: AnovaPracticeData | null;
 } = {
-  pyodide:             null,
-  lastResult:          null,
-  currentTest:         null,
-  lastZTestContext:    null,
-  lastTTestContext:    null,
-  lastIndTTestContext: null,
-  lastRmTTestContext:  null,
-  lastProblemData:     null,
+  pyodide:                null,
+  lastResult:             null,
+  currentTest:            null,
+  lastZTestContext:       null,
+  lastTTestContext:       null,
+  lastIndTTestContext:    null,
+  lastRmTTestContext:     null,
+  lastProblemData:        null,
+  lastAnovaPracticeData:  null,
 };
