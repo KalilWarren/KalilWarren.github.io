@@ -259,3 +259,40 @@ export interface AnovaPracticeData {
   studentPrompt: string;
   decisionStatement: string;
 }
+
+/* ── Two-Way ANOVA Table Practice Problem ── */
+
+export interface TwoWayAnovaFullTable {
+  factorNameA: string;
+  factorNameB: string;
+  kA: number;      /* levels of A = dfA + 1 */
+  kB: number;      /* levels of B = dfB + 1 */
+  N: number;       /* dfTotal + 1 */
+  /* Factor A */
+  ssA: number;  dfA: number;  msA: number;  fA: number;  pA: number;
+  /* Factor B */
+  ssB: number;  dfB: number;  msB: number;  fB: number;  pB: number;
+  /* Interaction A×B */
+  ssAB: number; dfAB: number; msAB: number; fAB: number; pAB: number;
+  /* Error (Within) */
+  ssE: number;  dfE: number;  msE: number;
+  /* Total */
+  ssTotal: number; dfTotal: number;
+  alpha: number;
+}
+
+export interface TwoWayAnovaMissingCell {
+  row: 'A' | 'B' | 'AxB' | 'error' | 'total';
+  col: 'SS' | 'df' | 'MS' | 'F';
+  value: number;
+  formula: string;
+}
+
+export interface TwoWayAnovaPracticeData {
+  full: TwoWayAnovaFullTable;
+  difficulty: AnovaDifficulty;
+  variable: string;
+  missingCells: TwoWayAnovaMissingCell[];
+  studentPrompt: string;
+  decisionStatements: string[];   /* one entry per effect: A, B, A×B */
+}

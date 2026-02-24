@@ -1,7 +1,12 @@
 import { state } from './state.ts';
 import { gv } from './ui.ts';
 import { pValue, tPValue, statsDict } from './stats.ts';
-import type { AnovaDifficulty, AnovaFullTable, AnovaMissingCell, TableRow } from './types.ts';
+import type {
+  AnovaDifficulty,
+  AnovaFullTable, AnovaMissingCell,
+  TwoWayAnovaFullTable, TwoWayAnovaMissingCell,
+  TableRow,
+} from './types.ts';
 
 /* ── Z-Test Problem Generator ── */
 
@@ -1136,4 +1141,404 @@ export function downloadAnovaPracticeExcel(): void {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'ANOVA Practice');
   XLSX.writeFile(wb, `statteacher_anova_practice_${Date.now()}.xlsx`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   TWO-WAY ANOVA TABLE PRACTICE PROBLEM
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Build a typed full-table object from the engine's two-way TableRow array ── */
+
+function buildFullANOVATableTwoWay(table: TableRow[], alpha: number): TwoWayAnovaFullTable | null {
+  /* Factor rows = rows that are not Between / Interaction / Within / Total */
+  const factorRows = table.filter(
+    r => r['Source'] !== 'Between' && r['Source'] !== 'Interaction' &&
+         r['Source'] !== 'Within'  && r['Source'] !== 'Total'
+  );
+  const intRow    = table.find(r => r['Source'] === 'Interaction');
+  const withinRow = table.find(r => r['Source'] === 'Within');
+  const totalRow  = table.find(r => r['Source'] === 'Total');
+
+  if (factorRows.length !== 2 || !intRow || !withinRow || !totalRow) return null;
+
+  const [rowA, rowB] = factorRows;
+
+  const ssA  = Number(rowA['SS']);
+  const dfA  = Number(rowA['df']);
+  const msA  = Number(rowA['MS']);
+  const fA   = Number(rowA['F']);
+  const pA   = Number(rowA['p-value']);
+
+  const ssB  = Number(rowB['SS']);
+  const dfB  = Number(rowB['df']);
+  const msB  = Number(rowB['MS']);
+  const fB   = Number(rowB['F']);
+  const pB   = Number(rowB['p-value']);
+
+  const ssAB = Number(intRow['SS']);
+  const dfAB = Number(intRow['df']);
+  const msAB = Number(intRow['MS']);
+  const fAB  = Number(intRow['F']);
+  const pAB  = Number(intRow['p-value']);
+
+  const ssE  = Number(withinRow['SS']);
+  const dfE  = Number(withinRow['df']);
+  const msE  = withinRow['MS'] != null ? Number(withinRow['MS']) : ssE / dfE;
+
+  const ssTotal  = Number(totalRow['SS']);
+  const dfTotal  = Number(totalRow['df']);
+
+  return {
+    factorNameA: String(rowA['Source']),
+    factorNameB: String(rowB['Source']),
+    kA: dfA + 1,
+    kB: dfB + 1,
+    N: dfTotal + 1,
+    ssA, dfA, msA, fA, pA,
+    ssB, dfB, msB, fB, pB,
+    ssAB, dfAB, msAB, fAB, pAB,
+    ssE, dfE, msE,
+    ssTotal, dfTotal,
+    alpha,
+  };
+}
+
+/* ── Two-way masking logic ── */
+
+function maskANOVATableTwoWay(
+  full: TwoWayAnovaFullTable,
+  difficulty: AnovaDifficulty,
+): { missing: TwoWayAnovaMissingCell[]; masked: Set<string> } {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const { ssA, dfA, msA, fA, ssB, dfB, msB, fB, ssAB, dfAB, msAB, fAB,
+          ssE, dfE, msE, ssTotal, dfTotal, kA, kB, N } = full;
+
+  let missing: TwoWayAnovaMissingCell[] = [];
+
+  if (difficulty === 'easy') {
+    /* Show: all SS and df; Hide: all MS and all F */
+    missing = [
+      { row: 'A',     col: 'MS', value: r2(msA),  formula: `MS_A = SS_A / df_A = ${r2(ssA)} / ${dfA} = ${r2(msA)}` },
+      { row: 'B',     col: 'MS', value: r2(msB),  formula: `MS_B = SS_B / df_B = ${r2(ssB)} / ${dfB} = ${r2(msB)}` },
+      { row: 'AxB',   col: 'MS', value: r2(msAB), formula: `MS_A×B = SS_A×B / df_A×B = ${r2(ssAB)} / ${dfAB} = ${r2(msAB)}` },
+      { row: 'error', col: 'MS', value: r2(msE),  formula: `MS_error = SS_error / df_error = ${r2(ssE)} / ${dfE} = ${r2(msE)}` },
+      { row: 'A',     col: 'F',  value: r2(fA),   formula: `F_A = MS_A / MS_error = ${r2(msA)} / ${r2(msE)} = ${r2(fA)}` },
+      { row: 'B',     col: 'F',  value: r2(fB),   formula: `F_B = MS_B / MS_error = ${r2(msB)} / ${r2(msE)} = ${r2(fB)}` },
+      { row: 'AxB',   col: 'F',  value: r2(fAB),  formula: `F_A×B = MS_A×B / MS_error = ${r2(msAB)} / ${r2(msE)} = ${r2(fAB)}` },
+    ];
+  } else if (difficulty === 'moderate') {
+    /* Show: SS_A, SS_B, SS_AB, SS_T, df_T, MS_E (kA and kB given in prompt for df derivation)
+       Hide: df_A, df_B, df_AB, df_E, SS_E, MS_A, MS_B, MS_AB, F_A, F_B, F_AB */
+    missing = [
+      { row: 'A',     col: 'df', value: dfA,        formula: `df_A = k_A − 1 = ${kA} − 1 = ${dfA}` },
+      { row: 'B',     col: 'df', value: dfB,         formula: `df_B = k_B − 1 = ${kB} − 1 = ${dfB}` },
+      { row: 'AxB',   col: 'df', value: dfAB,        formula: `df_A×B = df_A × df_B = ${dfA} × ${dfB} = ${dfAB}` },
+      { row: 'error', col: 'df', value: dfE,          formula: `df_error = df_T − df_A − df_B − df_A×B = ${dfTotal} − ${dfA} − ${dfB} − ${dfAB} = ${dfE}` },
+      { row: 'error', col: 'SS', value: r2(ssE),     formula: `SS_error = SS_T − SS_A − SS_B − SS_A×B = ${r2(ssTotal)} − ${r2(ssA)} − ${r2(ssB)} − ${r2(ssAB)} = ${r2(ssE)}` },
+      { row: 'A',     col: 'MS', value: r2(msA),     formula: `MS_A = SS_A / df_A = ${r2(ssA)} / ${dfA} = ${r2(msA)}` },
+      { row: 'B',     col: 'MS', value: r2(msB),     formula: `MS_B = SS_B / df_B = ${r2(ssB)} / ${dfB} = ${r2(msB)}` },
+      { row: 'AxB',   col: 'MS', value: r2(msAB),    formula: `MS_A×B = SS_A×B / df_A×B = ${r2(ssAB)} / ${dfAB} = ${r2(msAB)}` },
+      { row: 'A',     col: 'F',  value: r2(fA),      formula: `F_A = MS_A / MS_error = ${r2(msA)} / ${r2(msE)} = ${r2(fA)}` },
+      { row: 'B',     col: 'F',  value: r2(fB),      formula: `F_B = MS_B / MS_error = ${r2(msB)} / ${r2(msE)} = ${r2(fB)}` },
+      { row: 'AxB',   col: 'F',  value: r2(fAB),     formula: `F_A×B = MS_A×B / MS_error = ${r2(msAB)} / ${r2(msE)} = ${r2(fAB)}` },
+    ];
+  } else {
+    /* difficulty === 'hard'
+       Show: df_A, df_B, df_AB, df_E, MS_A, MS_B, MS_AB, F_A, F_B, F_AB
+       Hide: MS_E, SS_A, SS_B, SS_AB, SS_E, SS_T, df_T
+       Students back-solve: MS_E = MS_A/F_A, then SS from MS×df, df_T and SS_T by addition */
+    missing = [
+      { row: 'error', col: 'MS',  value: r2(msE),    formula: `MS_error = MS_A / F_A = ${r2(msA)} / ${r2(fA)} = ${r2(msE)}` },
+      { row: 'A',     col: 'SS',  value: r2(ssA),    formula: `SS_A = MS_A × df_A = ${r2(msA)} × ${dfA} = ${r2(ssA)}` },
+      { row: 'B',     col: 'SS',  value: r2(ssB),    formula: `SS_B = MS_B × df_B = ${r2(msB)} × ${dfB} = ${r2(ssB)}` },
+      { row: 'AxB',   col: 'SS',  value: r2(ssAB),   formula: `SS_A×B = MS_A×B × df_A×B = ${r2(msAB)} × ${dfAB} = ${r2(ssAB)}` },
+      { row: 'error', col: 'SS',  value: r2(ssE),    formula: `SS_error = MS_error × df_error = ${r2(msE)} × ${dfE} = ${r2(ssE)}` },
+      { row: 'total', col: 'SS',  value: r2(ssTotal),formula: `SS_T = SS_A + SS_B + SS_A×B + SS_error = ${r2(ssA)} + ${r2(ssB)} + ${r2(ssAB)} + ${r2(ssE)} = ${r2(ssTotal)}` },
+      { row: 'total', col: 'df',  value: dfTotal,     formula: `df_T = df_A + df_B + df_A×B + df_error = ${dfA} + ${dfB} + ${dfAB} + ${dfE} = ${dfTotal}` },
+    ];
+  }
+
+  const masked = new Set(missing.map(c => `${c.row}:${c.col}`));
+  return { missing, masked };
+}
+
+/* ── Render the student-facing two-way ANOVA table ── */
+
+function renderTwoWayAnovaStudentTable(full: TwoWayAnovaFullTable, masked: Set<string>): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const BLANK = `<td style="text-align:center;color:var(--muted);">—</td>`;
+
+  function cell(row: string, col: string, value: number | null): string {
+    if (masked.has(`${row}:${col}`)) return `<td style="text-align:center;font-weight:700;font-size:1.1rem;">?</td>`;
+    if (value === null)               return BLANK;
+    return `<td>${r2(value)}</td>`;
+  }
+
+  return `
+<div class="tbl-wrap" style="margin-top:1rem;">
+  <table class="stat-table">
+    <thead>
+      <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${full.factorNameA}</td>
+        ${cell('A','SS',full.ssA)} ${cell('A','df',full.dfA)}
+        ${cell('A','MS',full.msA)} ${cell('A','F',full.fA)}
+      </tr>
+      <tr>
+        <td>${full.factorNameB}</td>
+        ${cell('B','SS',full.ssB)} ${cell('B','df',full.dfB)}
+        ${cell('B','MS',full.msB)} ${cell('B','F',full.fB)}
+      </tr>
+      <tr>
+        <td>${full.factorNameA} × ${full.factorNameB}</td>
+        ${cell('AxB','SS',full.ssAB)} ${cell('AxB','df',full.dfAB)}
+        ${cell('AxB','MS',full.msAB)} ${cell('AxB','F',full.fAB)}
+      </tr>
+      <tr>
+        <td>Error</td>
+        ${cell('error','SS',full.ssE)} ${cell('error','df',full.dfE)}
+        ${cell('error','MS',full.msE)}
+        ${BLANK}
+      </tr>
+      <tr>
+        <td>Total</td>
+        ${cell('total','SS',full.ssTotal)} ${cell('total','df',full.dfTotal)}
+        ${BLANK}${BLANK}
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+/* ── Render the completed two-way table (instructor key) ── */
+
+function renderTwoWayAnovaFullTable(full: TwoWayAnovaFullTable): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const BLANK = `<td style="text-align:center;color:var(--muted);">—</td>`;
+  return `
+<div class="tbl-wrap" style="margin-top:0.5rem;">
+  <table class="stat-table">
+    <thead>
+      <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${full.factorNameA}</td>
+        <td>${r2(full.ssA)}</td><td>${full.dfA}</td>
+        <td>${r2(full.msA)}</td><td>${r2(full.fA)}</td>
+      </tr>
+      <tr>
+        <td>${full.factorNameB}</td>
+        <td>${r2(full.ssB)}</td><td>${full.dfB}</td>
+        <td>${r2(full.msB)}</td><td>${r2(full.fB)}</td>
+      </tr>
+      <tr>
+        <td>${full.factorNameA} × ${full.factorNameB}</td>
+        <td>${r2(full.ssAB)}</td><td>${full.dfAB}</td>
+        <td>${r2(full.msAB)}</td><td>${r2(full.fAB)}</td>
+      </tr>
+      <tr>
+        <td>Error</td>
+        <td>${r2(full.ssE)}</td><td>${full.dfE}</td>
+        <td>${r2(full.msE)}</td>${BLANK}
+      </tr>
+      <tr>
+        <td>Total</td>
+        <td>${r2(full.ssTotal)}</td><td>${full.dfTotal}</td>
+        ${BLANK}${BLANK}
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+/* ── Main two-way ANOVA practice problem generator ── */
+
+export function generateTwoWayANOVAProblem(): void {
+  if (!state.lastResult || state.lastResult.type !== 'anova') return;
+  /* Two-way guard */
+  if (state.lastResult.table.length === 0 || state.lastResult.table[0]['Source'] !== 'Between') return;
+  const factorRows = state.lastResult.table.filter(
+    r => r['Source'] !== 'Between' && r['Source'] !== 'Interaction' &&
+         r['Source'] !== 'Within'  && r['Source'] !== 'Total'
+  );
+  if (factorRows.length !== 2) return;
+
+  const variable   = (document.getElementById('ap2-variable')   as HTMLInputElement).value.trim()  || 'the outcome variable';
+  const difficulty = (document.getElementById('ap2-difficulty') as HTMLSelectElement).value as AnovaDifficulty;
+  const alpha      = parseFloat(gv('anova-alpha'));
+
+  const full = buildFullANOVATableTwoWay(state.lastResult.table, alpha);
+  if (!full) return;
+
+  const { missing, masked } = maskANOVATableTwoWay(full, difficulty);
+
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
+  /* Student prompt — include factor level counts for moderate (needed to derive df) */
+  const levelClause = difficulty === 'moderate'
+    ? `Factor ${full.factorNameA} (${full.kA} levels), Factor ${full.factorNameB} (${full.kB} levels),`
+    : `Factor ${full.factorNameA}, Factor ${full.factorNameB},`;
+
+  const studentPrompt =
+    `A researcher conducted a two-way ANOVA to test whether mean ${variable} differs as a function of ` +
+    `${levelClause} and their interaction (N = ${full.N}). ` +
+    `The partially completed ANOVA summary table is shown below. ` +
+    `Fill in the missing values (marked "?") and determine which effects are significant at α = ${alpha}.`;
+
+  /* Per-effect decision statements */
+  const effectDecision = (
+    label: string, df1: number, df2: number, fVal: number, pVal: number
+  ): string => {
+    const pStr = fmtP(pVal);
+    return pVal < alpha
+      ? `Reject H₀ for ${label}: F(${df1}, ${df2}) = ${r2(fVal)}, p ${pStr} — significant at α = ${alpha}.`
+      : `Fail to reject H₀ for ${label}: F(${df1}, ${df2}) = ${r2(fVal)}, p ${pStr} — not significant at α = ${alpha}.`;
+  };
+
+  const decisionStatements = [
+    effectDecision(`Factor ${full.factorNameA}`, full.dfA, full.dfE, full.fA, full.pA),
+    effectDecision(`Factor ${full.factorNameB}`, full.dfB, full.dfE, full.fB, full.pB),
+    effectDecision(`${full.factorNameA} × ${full.factorNameB} interaction`, full.dfAB, full.dfE, full.fAB, full.pAB),
+  ];
+
+  /* Student table HTML */
+  const studentTableHTML = renderTwoWayAnovaStudentTable(full, masked);
+
+  const problemHTML = `
+<div class="problem-box">
+  <p>${studentPrompt}</p>
+  ${studentTableHTML}
+  <div class="problem-questions" style="margin-top:1rem;">
+    <ol>
+      <li>Fill in all missing values (marked "?") in the ANOVA table above.</li>
+      <li>State the null and alternative hypotheses for each effect (Factor ${full.factorNameA}, Factor ${full.factorNameB}, and the interaction).</li>
+      <li>For each effect, determine whether the result is statistically significant at α = ${alpha}.</li>
+      <li>Write a one-sentence interpretation for each significant effect.</li>
+    </ol>
+  </div>
+</div>`;
+
+  /* Instructor key */
+  const missingListHTML = missing.map(c =>
+    `<li style="margin-bottom:0.3rem;"><code>${c.formula}</code></li>`
+  ).join('');
+
+  const decisionsHTML = decisionStatements.map(d =>
+    `<p><span class="${d.startsWith('Reject') ? 'val-reject' : 'val-fail'}">${d}</span></p>`
+  ).join('');
+
+  const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Completed ANOVA Table</strong>
+    ${renderTwoWayAnovaFullTable(full)}
+  </div>
+
+  <div class="key-section">
+    <strong>2. Missing Values (step-by-step)</strong>
+    <ol style="margin:0.5rem 0 0 1.2rem;padding:0;">
+      ${missingListHTML}
+    </ol>
+  </div>
+
+  <div class="key-section">
+    <strong>3. Hypotheses (for each effect)</strong>
+    <p>H₀ (A): Mean ${variable} is the same across all levels of ${full.factorNameA}.</p>
+    <p>H₁ (A): Mean ${variable} differs across at least two levels of ${full.factorNameA}.</p>
+    <p>H₀ (B): Mean ${variable} is the same across all levels of ${full.factorNameB}.</p>
+    <p>H₁ (B): Mean ${variable} differs across at least two levels of ${full.factorNameB}.</p>
+    <p>H₀ (A×B): There is no interaction between ${full.factorNameA} and ${full.factorNameB}.</p>
+    <p>H₁ (A×B): There is an interaction between ${full.factorNameA} and ${full.factorNameB}.</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decisions (α = ${alpha})</strong>
+    ${decisionsHTML}
+  </div>
+</div>`;
+
+  state.lastTwoWayAnovaPracticeData = {
+    full, difficulty, variable, missingCells: missing,
+    studentPrompt, decisionStatements,
+  };
+
+  (document.getElementById('ap2-problem-text')   as HTMLElement).innerHTML = problemHTML;
+  (document.getElementById('ap2-instructor-key') as HTMLElement).innerHTML = keyHTML;
+  (document.getElementById('ap2-output')         as HTMLElement).style.display = 'block';
+
+  /* Reset key toggle */
+  (document.getElementById('ap2-show-key')       as HTMLInputElement).checked = false;
+  (document.getElementById('ap2-instructor-key') as HTMLElement).style.display = 'none';
+
+  (document.getElementById('ap2-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── Two-way ANOVA instructor key toggle ── */
+
+export function toggleTwoWayAnovaKey(): void {
+  const show = (document.getElementById('ap2-show-key') as HTMLInputElement).checked;
+  (document.getElementById('ap2-instructor-key') as HTMLElement).style.display = show ? 'block' : 'none';
+}
+
+/* ── Two-way ANOVA practice Excel export ── */
+
+export function downloadTwoWayAnovaPracticeExcel(): void {
+  const d = state.lastTwoWayAnovaPracticeData;
+  if (!d) return;
+
+  const { full, missingCells, studentPrompt, decisionStatements } = d;
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
+  const masked = new Set(missingCells.map(c => `${c.row}:${c.col}`));
+  const mc = (row: string, col: string, val: number | null): string | number =>
+    masked.has(`${row}:${col}`) ? '?' : val !== null ? r2(val) : '—';
+
+  const intLabel = `${full.factorNameA} × ${full.factorNameB}`;
+
+  const rows: (string | number | null)[][] = [
+    ['STUDENT PROBLEM — Two-Way ANOVA Table Practice'],
+    [],
+    ['Scenario'], [studentPrompt], [],
+    ['Questions'],
+    ['1.', 'Fill in all missing values (marked "?") in the ANOVA table below.'],
+    ['2.', `State null and alternative hypotheses for Factor ${full.factorNameA}, Factor ${full.factorNameB}, and the interaction.`],
+    ['3.', `Determine which effects are statistically significant at α = ${full.alpha}.`],
+    ['4.', 'Write a one-sentence interpretation for each significant effect.'],
+    [],
+    ['ANOVA Table (Student Version)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    [full.factorNameA,  mc('A','SS',full.ssA),   mc('A','df',full.dfA),   mc('A','MS',full.msA),   mc('A','F',full.fA)],
+    [full.factorNameB,  mc('B','SS',full.ssB),   mc('B','df',full.dfB),   mc('B','MS',full.msB),   mc('B','F',full.fB)],
+    [intLabel,          mc('AxB','SS',full.ssAB), mc('AxB','df',full.dfAB),mc('AxB','MS',full.msAB),mc('AxB','F',full.fAB)],
+    ['Error',           mc('error','SS',full.ssE),mc('error','df',full.dfE),mc('error','MS',full.msE),'—'],
+    ['Total',           mc('total','SS',full.ssTotal),mc('total','df',full.dfTotal),'—','—'],
+    [],
+    [],
+    ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+    [],
+    ['ANOVA Table (Completed)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    [full.factorNameA,  r2(full.ssA),    full.dfA,  r2(full.msA),  r2(full.fA)],
+    [full.factorNameB,  r2(full.ssB),    full.dfB,  r2(full.msB),  r2(full.fB)],
+    [intLabel,          r2(full.ssAB),   full.dfAB, r2(full.msAB), r2(full.fAB)],
+    ['Error',           r2(full.ssE),    full.dfE,  r2(full.msE),  '—'],
+    ['Total',           r2(full.ssTotal),full.dfTotal,'—','—'],
+    [],
+    ['Missing Values (step-by-step)'],
+    ...missingCells.map((c, i) => [`${i + 1}.`, c.formula]),
+    [],
+    ['Decisions (α = ' + full.alpha + ')'],
+    ...decisionStatements.map(s => [s]),
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 20 }, { wch: 85 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Two-Way ANOVA Practice');
+  XLSX.writeFile(wb, `statteacher_anova2way_practice_${Date.now()}.xlsx`);
 }
