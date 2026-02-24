@@ -90,6 +90,7 @@ export function renderResults(r: TestResult): void {
   const rmRow            = document.getElementById('pg-rm-row')          as HTMLElement;
   const anovaPracticeCard      = document.getElementById('anova-practice-card')      as HTMLElement;
   const anova2WayPracticeCard  = document.getElementById('anova-2way-practice-card') as HTMLElement;
+  const pearsonProblemCard     = document.getElementById('pearson-problem-card')     as HTMLElement;
 
   if (r.type === 'z_test') {
     state.lastZTestContext = {
@@ -104,6 +105,7 @@ export function renderResults(r: TestResult): void {
     rmRow.style.display              = 'none';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
   } else if (r.type === 't_test') {
     state.lastTTestContext = {
       alpha:     parseFloat(gv('t-alpha')),
@@ -117,6 +119,7 @@ export function renderResults(r: TestResult): void {
     rmRow.style.display              = 'none';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
   } else if (r.type === 'independent_t_test') {
     state.lastIndTTestContext = {
       alpha:     parseFloat(gv('ind-alpha')),
@@ -130,6 +133,7 @@ export function renderResults(r: TestResult): void {
     rmRow.style.display              = 'none';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
   } else if (r.type === 'repeated_t_test') {
     state.lastRmTTestContext = {
       alpha:     parseFloat(gv('rep-alpha')),
@@ -143,9 +147,11 @@ export function renderResults(r: TestResult): void {
     rmRow.style.display              = '';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
   } else if (r.type === 'anova') {
     pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
+    pearsonProblemCard.style.display = 'none';
 
     /* One-way: first row Source ≠ "Between" */
     const isOneWay = r.table.length > 0 && r.table[0]['Source'] !== 'Between';
@@ -165,11 +171,24 @@ export function renderResults(r: TestResult): void {
     const ap2Out = document.getElementById('ap2-output') as HTMLElement;
     if (apOut)  apOut.style.display  = 'none';
     if (ap2Out) ap2Out.style.display = 'none';
+  } else if (r.type === 'pearson') {
+    state.lastPearsonContext = {
+      alpha:     parseFloat(gv('pear-alpha')),
+      twoTailed: (document.getElementById('pear-tail') as HTMLSelectElement).value === 'two',
+    };
+    pgCard.style.display             = 'none';
+    pgOutput.style.display           = 'none';
+    anovaPracticeCard.style.display      = 'none';
+    anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'block';
+    const pearsonOut = document.getElementById('pear-pg-output') as HTMLElement;
+    if (pearsonOut) pearsonOut.style.display = 'none';
   } else {
     pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
   }
 
   switch (r.type) {

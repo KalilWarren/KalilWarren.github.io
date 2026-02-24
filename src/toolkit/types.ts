@@ -221,6 +221,34 @@ export interface RmTProblemData {
   interp: string;
 }
 
+export interface PearsonProblemData {
+  testType: 'pearson';
+  variableX: string;
+  variableY: string;
+  population: string;
+  n: string | number;
+  df: number;
+  r: string | number;
+  rSq: string | number;
+  rSqPct: string;
+  se: string | number;
+  tScore: string | number;
+  tCrit: string | number;
+  ssX: string | number;
+  ssY: string | number;
+  spXY: string | number;
+  decision: string | number | null;
+  alpha: number;
+  twoTailed: boolean;
+  tailLabel: string;
+  pval: string;
+  pCompare: string;
+  h0: string;
+  h1: string;
+  isRej: boolean;
+  interp: string;
+}
+
 export type ProblemData = ZProblemData | TProblemData | IndTProblemData | RmTProblemData;
 
 /* ── ANOVA Table Practice Problem ── */

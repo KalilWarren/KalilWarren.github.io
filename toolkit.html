@@ -919,6 +919,58 @@
       </div>
     </div>
 
+    <!-- ===== PEARSON CORRELATION STUDENT PROBLEM CARD ===== -->
+    <div class="card" id="pearson-problem-card" style="display:none;">
+      <h2>
+        Student Problem Generator
+        <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
+          Experimental
+        </span>
+      </h2>
+      <p>
+        Fill in the variable names below to produce a student-facing Pearson correlation
+        hypothesis test problem populated with values from your generated dataset.
+      </p>
+
+      <div class="form-grid-2" style="margin-top:1rem;">
+        <div class="form-group">
+          <label>X Variable Name</label>
+          <input type="text" id="pear-pg-varx" placeholder="e.g., study hours" />
+          <p class="hint">Predictor / X variable being measured</p>
+        </div>
+        <div class="form-group">
+          <label>Y Variable Name</label>
+          <input type="text" id="pear-pg-vary" placeholder="e.g., exam score" />
+          <p class="hint">Outcome / Y variable being measured</p>
+        </div>
+      </div>
+
+      <div class="form-group" style="max-width:22rem; margin-top:0.75rem;">
+        <label>Population</label>
+        <input type="text" id="pear-pg-population" placeholder="e.g., college students" />
+        <p class="hint">Who the sample is drawn from</p>
+      </div>
+
+      <button class="btn-generate" id="generate-pearson-problem-btn" style="margin-top:0.75rem;">
+        Generate Student Problem
+      </button>
+
+      <div id="pear-pg-output" style="display:none; margin-top:1.75rem;">
+        <div id="pear-pg-problem-text"></div>
+
+        <div class="pg-key-toggle">
+          <input type="checkbox" id="pear-pg-show-key" />
+          <label for="pear-pg-show-key">Show Instructor Key</label>
+        </div>
+
+        <div id="pear-pg-instructor-key" style="display:none; margin-top:1rem;"></div>
+
+        <div class="download-area" style="margin-top:1.25rem;">
+          <button class="btn-download" id="download-pearson-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Supported Tests -->
     <div class="card">
       <h2>Supported Tests</h2>

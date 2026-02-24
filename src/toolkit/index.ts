@@ -22,6 +22,9 @@ import {
   generateTwoWayANOVAProblem,
   toggleTwoWayAnovaKey,
   downloadTwoWayAnovaPracticeExcel,
+  generatePearsonProblem,
+  togglePearsonKey,
+  downloadPearsonExcel,
 } from './problems.ts';
 
 /* ── Set current year ── */
@@ -116,4 +119,12 @@ window.addEventListener('DOMContentLoaded', () => {
     ?.addEventListener('change', toggleTwoWayAnovaKey);
   document.getElementById('download-anova-2way-excel-btn')
     ?.addEventListener('click', downloadTwoWayAnovaPracticeExcel);
+
+  /* Pearson Correlation Student Problem Generator */
+  document.getElementById('generate-pearson-problem-btn')
+    ?.addEventListener('click', generatePearsonProblem);
+  document.getElementById('pear-pg-show-key')
+    ?.addEventListener('change', togglePearsonKey);
+  document.getElementById('download-pearson-excel-btn')
+    ?.addEventListener('click', downloadPearsonExcel);
 });
