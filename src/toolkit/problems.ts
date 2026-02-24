@@ -437,13 +437,155 @@ export function generateIndTTestProblem(): void {
   (document.getElementById('pg-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+/* ── Repeated-Measures T-Test Problem Generator ── */
+
+export function generateRmTTestProblem(): void {
+  if (!state.lastResult || state.lastResult.type !== 'repeated_t_test') return;
+
+  const stats = statsDict(state.lastResult.results);
+
+  const variable = (document.getElementById('pg-variable') as HTMLInputElement).value.trim() || 'the variable of interest';
+  const pre      = (document.getElementById('pg-pre')      as HTMLInputElement).value.trim() || 'Pre-Test';
+  const post     = (document.getElementById('pg-post')     as HTMLInputElement).value.trim() || 'Post-Test';
+  const unit     = (document.getElementById('pg-unit')     as HTMLInputElement).value.trim() || 'units';
+
+  const n        = stats['N'];
+  const sdDiff   = stats['Differences SD'];
+  const meanDiff = stats['Differences Mean'];
+  const se       = stats['Standard Error'];
+  const tScore   = stats['t Score'];
+  const tCrit    = stats['t_Critical'];
+  const cohenD   = stats["Cohen's d"];
+  const rSq      = stats['R-Squared'];
+  const decision = stats['Decision'];
+  const ciUp     = stats['95% CI Upper'];
+  const ciLo     = stats['95% CI Lower'];
+  const df       = Number(n) - 1;
+
+  const alpha     = state.lastRmTTestContext?.alpha     ?? 0.05;
+  const twoTailed = state.lastRmTTestContext?.twoTailed ?? true;
+  const tailLabel = twoTailed ? 'two-tailed' : 'one-tailed';
+  const pval      = tPValue(parseFloat(String(tScore)), df, twoTailed);
+  const pvalNum   = pval.startsWith('<') ? 0.0001 : parseFloat(pval);
+  const pCompare  = pvalNum < alpha ? '< α' : '> α';
+  const rSqPct    = (parseFloat(String(rSq)) * 100).toFixed(1);
+
+  /* Direction — differences = pre − post, so positive meanDiff means pre > post */
+  const h1op = twoTailed ? '≠' : (parseFloat(String(meanDiff)) >= 0 ? '>' : '<');
+  const h0op = twoTailed ? '=' : (h1op === '>' ? '≤' : '≥');
+
+  const testPhraseHTML = twoTailed
+    ? `a significant mean difference between the <strong>${pre}</strong> and <strong>${post}</strong> conditions`
+    : (h1op === '>'
+        ? `<strong>${variable}</strong> scores were significantly higher at <strong>${pre}</strong> than at <strong>${post}</strong>`
+        : `<strong>${variable}</strong> scores significantly increased from <strong>${pre}</strong> to <strong>${post}</strong>`);
+  const testPhrasePlain = twoTailed
+    ? `a significant mean difference between the ${pre} and ${post} conditions`
+    : (h1op === '>'
+        ? `${variable} scores were significantly higher at ${pre} than at ${post}`
+        : `${variable} scores significantly increased from ${pre} to ${post}`);
+
+  /* Student problem text */
+  const problemHTML = `
+<div class="problem-box">
+  <p>A researcher measures <strong>${variable}</strong> in <em>n</em>&nbsp;=&nbsp;${n} participants
+  at <strong>${pre}</strong> and again at <strong>${post}</strong>.</p>
+  <p>The difference scores (<em>${pre} &minus; ${post}</em>) have a mean of
+  <em>M</em><sub>D</sub>&nbsp;=&nbsp;${meanDiff}&nbsp;${unit}
+  and a standard deviation of <em>SD</em><sub>D</sub>&nbsp;=&nbsp;${sdDiff}&nbsp;${unit}.</p>
+  <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether there is ${testPhraseHTML}.</p>
+  <div class="problem-questions">
+    <ol>
+      <li>State the null and alternative hypotheses.</li>
+      <li>Compute the <em>t</em> statistic.</li>
+      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>State your decision.</li>
+      <li>Interpret the result in context.</li>
+    </ol>
+  </div>
+</div>`;
+
+  /* Instructor key */
+  const h0    = `H₀: μ_D ${h0op} 0`;
+  const h1    = `H₁: μ_D ${h1op} 0`;
+  const isRej = decision === 'Reject Null';
+  const interp = isRej
+    ? `There is sufficient evidence at α = ${alpha} to conclude that there is ${testPhrasePlain}
+       (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`
+    : `There is insufficient evidence at α = ${alpha} to conclude that there is ${testPhrasePlain}
+       (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+  const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Hypotheses</strong>
+    <p>${h0}</p>
+    <p>${h1}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>2. T Statistic</strong>
+    <div class="key-formula">
+      t = M<sub>D</sub> / (SD<sub>D</sub> / &radic;n)<br>
+      t = ${meanDiff} / (${sdDiff} / &radic;${n})<br>
+      t = ${meanDiff} / ${se}<br>
+      t = ${tScore}
+    </div>
+    <p>df = n &minus; 1 = ${n} &minus; 1 = ${df}</p>
+    <p>Critical value: t<sub>crit</sub> = &plusmn;${tCrit} &nbsp;(df&nbsp;=&nbsp;${df}, α&nbsp;=&nbsp;${alpha}, ${tailLabel})</p>
+  </div>
+
+  <div class="key-section">
+    <strong>3. p-value &amp; Effect Size</strong>
+    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+    <p>Cohen's d = M<sub>D</sub> / SD<sub>D</sub> = ${meanDiff} / ${sdDiff} = ${cohenD}</p>
+    <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decision</strong>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Interpretation</strong>
+    <p>${interp}</p>
+    <p>95% CI for μ<sub>D</sub>: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
+  </div>
+</div>`;
+
+  state.lastProblemData = {
+    testType: 'repeated_t_test',
+    variable, pre, post, unit,
+    n: n ?? '', sdDiff: sdDiff ?? '', meanDiff: meanDiff ?? '', se: se ?? '',
+    tScore: tScore ?? '', tCrit: tCrit ?? '', df, cohenD: cohenD ?? '',
+    rSq: rSq ?? '', rSqPct, decision: decision ?? null, ciUp: ciUp ?? '', ciLo: ciLo ?? '',
+    alpha, twoTailed, tailLabel, pval, pCompare,
+    h0, h1, isRej, testPhrasePlain,
+    interp: interp.replace(/\s+/g, ' ').trim(),
+  };
+
+  (document.getElementById('pg-problem-text') as HTMLElement).innerHTML   = problemHTML;
+  (document.getElementById('pg-instructor-key') as HTMLElement).innerHTML = keyHTML;
+  (document.getElementById('pg-output') as HTMLElement).style.display     = 'block';
+
+  /* Reset key toggle whenever problem is regenerated */
+  (document.getElementById('pg-show-key') as HTMLInputElement).checked              = false;
+  (document.getElementById('pg-instructor-key') as HTMLElement).style.display       = 'none';
+
+  (document.getElementById('pg-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 /* ── Dispatcher ── */
 
 export function generateStudentProblem(): void {
   if (!state.lastResult) return;
-  if (state.lastResult.type === 'z_test')               generateZTestProblem();
-  else if (state.lastResult.type === 't_test')          generateTTestProblem();
+  if (state.lastResult.type === 'z_test')                  generateZTestProblem();
+  else if (state.lastResult.type === 't_test')             generateTTestProblem();
   else if (state.lastResult.type === 'independent_t_test') generateIndTTestProblem();
+  else if (state.lastResult.type === 'repeated_t_test')    generateRmTTestProblem();
 }
 
 /* ── Key toggle ── */
@@ -557,8 +699,7 @@ export function downloadProblemExcel(): void {
     sheetName = 'T-Test Problem';
     fileName  = `statteacher_tproblem_${Date.now()}.xlsx`;
 
-  } else {
-    // independent_t_test
+  } else if (d.testType === 'independent_t_test') {
     const narrative =
       `A researcher is studying ${d.variable} in two groups: ${d.group1} and ${d.group2}. ` +
       `The sample statistics are: ` +
@@ -602,6 +743,50 @@ export function downloadProblemExcel(): void {
     ];
     sheetName = 'Ind T-Test Problem';
     fileName  = `statteacher_ind_tproblem_${Date.now()}.xlsx`;
+
+  } else {
+    // repeated_t_test
+    const narrative =
+      `A researcher measures ${d.variable} in n = ${d.n} participants at ${d.pre} and again at ${d.post}. ` +
+      `The difference scores (${d.pre} − ${d.post}) have a mean of M_D = ${d.meanDiff} ${d.unit} ` +
+      `and a standard deviation of SD_D = ${d.sdDiff} ${d.unit}. ` +
+      `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${d.testPhrasePlain}.`;
+    const rSqStr = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
+    rows = [
+      ['STUDENT PROBLEM — Repeated-Measures T-Test'],
+      [],
+      ['Scenario'], [narrative], [],
+      ['Questions'],
+      ['1.', 'State the null and alternative hypotheses.'],
+      ['2.', 'Compute the t statistic.'],
+      ['3.', "Determine the p-value and compute Cohen's d."],
+      ['4.', 'State your decision.'],
+      ['5.', 'Interpret the result in context.'],
+      [], [],
+      ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+      [],
+      ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
+      [],
+      ['2. T Statistic'],
+      ['Formula:',       't = M_D / (SD_D / √n)'],
+      ['Substitution:',  `t = ${d.meanDiff} / (${d.sdDiff} / √${d.n})`],
+      ['Simplify:',      `t = ${d.meanDiff} / ${d.se}`],
+      ['Result:',        `t = ${d.tScore}`],
+      ['df:',            `n − 1 = ${d.n} − 1 = ${d.df}`],
+      ['Critical value:', `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, ${d.tailLabel})`],
+      [],
+      ['3. p-value & Effect Size'],
+      ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
+      ["Cohen's d:", `M_D / SD_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`],
+      ['r²:',        rSqStr],
+      [],
+      ['4. Decision'], ['', decStr],
+      [],
+      ['5. Interpretation'], [d.interp],
+      ['95% CI for μ_D:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+    ];
+    sheetName = 'RM T-Test Problem';
+    fileName  = `statteacher_rm_tproblem_${Date.now()}.xlsx`;
   }
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

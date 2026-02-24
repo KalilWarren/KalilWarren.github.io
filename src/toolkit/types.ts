@@ -190,4 +190,35 @@ export interface IndTProblemData {
   interp: string;
 }
 
-export type ProblemData = ZProblemData | TProblemData | IndTProblemData;
+export interface RmTProblemData {
+  testType: 'repeated_t_test';
+  variable: string;
+  pre: string;
+  post: string;
+  unit: string;
+  n: string | number;
+  sdDiff: string | number;
+  meanDiff: string | number;
+  se: string | number;
+  tScore: string | number;
+  tCrit: string | number;
+  df: number;
+  cohenD: string | number;
+  rSq: string | number;
+  rSqPct: string;
+  decision: string | number | null;
+  ciUp: string | number;
+  ciLo: string | number;
+  alpha: number;
+  twoTailed: boolean;
+  tailLabel: string;
+  pval: string;
+  pCompare: string;
+  h0: string;
+  h1: string;
+  isRej: boolean;
+  testPhrasePlain: string;
+  interp: string;
+}
+
+export type ProblemData = ZProblemData | TProblemData | IndTProblemData | RmTProblemData;
