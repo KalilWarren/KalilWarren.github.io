@@ -85,9 +85,10 @@ export function renderResults(r: TestResult): void {
   const pgTag   = document.getElementById('pg-tag') as HTMLElement;
   const pgOutput = document.getElementById('pg-output') as HTMLElement;
 
-  const popRow   = document.getElementById('pg-pop-row')   as HTMLElement;
-  const groupRow = document.getElementById('pg-group-row') as HTMLElement;
-  const rmRow    = document.getElementById('pg-rm-row')    as HTMLElement;
+  const popRow           = document.getElementById('pg-pop-row')         as HTMLElement;
+  const groupRow         = document.getElementById('pg-group-row')       as HTMLElement;
+  const rmRow            = document.getElementById('pg-rm-row')          as HTMLElement;
+  const anovaPracticeCard = document.getElementById('anova-practice-card') as HTMLElement;
 
   if (r.type === 'z_test') {
     state.lastZTestContext = {
@@ -95,47 +96,61 @@ export function renderResults(r: TestResult): void {
       twoTailed: (document.getElementById('z-tail') as HTMLSelectElement).value === 'two',
     };
     pgTag.textContent = 'Z-Test · Experimental';
-    pgOutput.style.display = 'none';
-    pgCard.style.display = 'block';
-    popRow.style.display   = '';
-    groupRow.style.display = 'none';
-    rmRow.style.display    = 'none';
+    pgOutput.style.display      = 'none';
+    pgCard.style.display        = 'block';
+    popRow.style.display        = '';
+    groupRow.style.display      = 'none';
+    rmRow.style.display         = 'none';
+    anovaPracticeCard.style.display = 'none';
   } else if (r.type === 't_test') {
     state.lastTTestContext = {
       alpha:     parseFloat(gv('t-alpha')),
       twoTailed: (document.getElementById('t-tail') as HTMLSelectElement).value === 'two',
     };
     pgTag.textContent = 'T-Test · Experimental';
-    pgOutput.style.display = 'none';
-    pgCard.style.display = 'block';
-    popRow.style.display   = '';
-    groupRow.style.display = 'none';
-    rmRow.style.display    = 'none';
+    pgOutput.style.display      = 'none';
+    pgCard.style.display        = 'block';
+    popRow.style.display        = '';
+    groupRow.style.display      = 'none';
+    rmRow.style.display         = 'none';
+    anovaPracticeCard.style.display = 'none';
   } else if (r.type === 'independent_t_test') {
     state.lastIndTTestContext = {
       alpha:     parseFloat(gv('ind-alpha')),
       twoTailed: (document.getElementById('ind-tail') as HTMLSelectElement).value === 'two',
     };
     pgTag.textContent = 'Ind. t-Test · Experimental';
-    pgOutput.style.display = 'none';
-    pgCard.style.display = 'block';
-    popRow.style.display   = 'none';
-    groupRow.style.display = '';
-    rmRow.style.display    = 'none';
+    pgOutput.style.display      = 'none';
+    pgCard.style.display        = 'block';
+    popRow.style.display        = 'none';
+    groupRow.style.display      = '';
+    rmRow.style.display         = 'none';
+    anovaPracticeCard.style.display = 'none';
   } else if (r.type === 'repeated_t_test') {
     state.lastRmTTestContext = {
       alpha:     parseFloat(gv('rep-alpha')),
       twoTailed: (document.getElementById('rep-tail') as HTMLSelectElement).value === 'two',
     };
     pgTag.textContent = 'RM t-Test · Experimental';
+    pgOutput.style.display      = 'none';
+    pgCard.style.display        = 'block';
+    popRow.style.display        = 'none';
+    groupRow.style.display      = 'none';
+    rmRow.style.display         = '';
+    anovaPracticeCard.style.display = 'none';
+  } else if (r.type === 'anova') {
+    pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
-    pgCard.style.display = 'block';
-    popRow.style.display   = 'none';
-    groupRow.style.display = 'none';
-    rmRow.style.display    = '';
+    /* Show practice card only for one-way designs (first row Source ≠ "Between") */
+    const isOneWay = r.table.length > 0 && r.table[0]['Source'] !== 'Between';
+    anovaPracticeCard.style.display = isOneWay ? 'block' : 'none';
+    /* Reset any previous output */
+    const apOut = document.getElementById('ap-output') as HTMLElement;
+    if (apOut) apOut.style.display = 'none';
   } else {
-    pgCard.style.display = 'none';
+    pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
+    anovaPracticeCard.style.display = 'none';
   }
 
   switch (r.type) {

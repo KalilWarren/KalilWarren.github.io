@@ -821,6 +821,55 @@
       </div>
     </div>
 
+    <!-- ===== ANOVA TABLE PRACTICE PROBLEM CARD ===== -->
+    <div class="card" id="anova-practice-card" style="display:none;">
+      <h2>
+        ANOVA Table Practice Problem
+        <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
+          Experimental
+        </span>
+      </h2>
+      <p>
+        Fill in the details below to generate a student-facing ANOVA table problem
+        with blanked-out cells based on the selected difficulty.
+      </p>
+
+      <div class="form-grid-2" style="margin-top:1rem;">
+        <div class="form-group">
+          <label>Outcome Variable</label>
+          <input type="text" id="ap-variable" placeholder="e.g., test scores" />
+          <p class="hint">Dependent variable being measured</p>
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="ap-difficulty">
+            <option value="easy">Easy — compute MS and F</option>
+            <option value="moderate" selected>Moderate — derive SS, df, MS, F</option>
+            <option value="hard">Hard — back-solve from F and MS</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="generate-anova-problem-btn" style="margin-top:0.75rem;">
+        Generate ANOVA Table Problem
+      </button>
+
+      <div id="ap-output" style="display:none; margin-top:1.75rem;">
+        <div id="ap-problem-text"></div>
+
+        <div class="pg-key-toggle">
+          <input type="checkbox" id="ap-show-key" />
+          <label for="ap-show-key">Show Instructor Key</label>
+        </div>
+
+        <div id="ap-instructor-key" style="display:none; margin-top:1rem;"></div>
+
+        <div class="download-area" style="margin-top:1.25rem;">
+          <button class="btn-download" id="download-anova-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Supported Tests -->
     <div class="card">
       <h2>Supported Tests</h2>

@@ -1,6 +1,7 @@
 import { state } from './state.ts';
 import { gv } from './ui.ts';
 import { pValue, tPValue, statsDict } from './stats.ts';
+import type { AnovaDifficulty, AnovaFullTable, AnovaMissingCell, TableRow } from './types.ts';
 
 /* ── Z-Test Problem Generator ── */
 
@@ -794,4 +795,345 @@ export function downloadProblemExcel(): void {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
   XLSX.writeFile(wb, fileName);
+}
+
+/* ════════════════════════════════════════════════════════════
+   ANOVA TABLE PRACTICE PROBLEM
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Build a typed full-table object from the engine's TableRow array ── */
+
+function buildFullANOVATable(table: TableRow[], alpha: number): AnovaFullTable | null {
+  const factorRow = table.find(r => r['Source'] !== 'Within' && r['Source'] !== 'Total' && r['Source'] !== 'Between');
+  const withinRow = table.find(r => r['Source'] === 'Within');
+  const totalRow  = table.find(r => r['Source'] === 'Total');
+  if (!factorRow || !withinRow || !totalRow) return null;
+
+  const ssBetween = Number(factorRow['SS']);
+  const dfBetween = Number(factorRow['df']);
+  const msBetween = Number(factorRow['MS']);
+  const fStat     = Number(factorRow['F']);
+  const pValue    = Number(factorRow['p-value']);
+
+  const ssWithin  = Number(withinRow['SS']);
+  const dfWithin  = Number(withinRow['df']);
+  /* MS_within is provided by engine; fall back to SS/df if null */
+  const msWithin  = withinRow['MS'] != null ? Number(withinRow['MS']) : ssWithin / dfWithin;
+
+  const ssTotal   = Number(totalRow['SS']);
+  const dfTotal   = Number(totalRow['df']);
+
+  return {
+    factorName: String(factorRow['Source']),
+    ssBetween, dfBetween, msBetween, fStat, pValue,
+    ssWithin, dfWithin, msWithin,
+    ssTotal, dfTotal,
+    k: dfBetween + 1,
+    N: dfTotal + 1,
+    alpha,
+  };
+}
+
+/* ── Masking logic — returns answer-key list and a Set of "row:col" keys ── */
+
+function maskANOVATable(
+  full: AnovaFullTable,
+  difficulty: AnovaDifficulty,
+): { missing: AnovaMissingCell[]; masked: Set<string> } {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const { ssBetween, dfBetween, msBetween, fStat, ssWithin, dfWithin, msWithin, ssTotal, dfTotal, k, N } = full;
+
+  let missing: AnovaMissingCell[] = [];
+
+  if (difficulty === 'easy') {
+    /* Show: SS_between, SS_within, df_between, df_within, SS_total, df_total
+       Hide: MS_between, MS_within, F */
+    missing = [
+      { row: 'between', col: 'MS', value: r2(msBetween), formula: `MS_between = SS_between / df_between = ${r2(ssBetween)} / ${dfBetween} = ${r2(msBetween)}` },
+      { row: 'within',  col: 'MS', value: r2(msWithin),  formula: `MS_within  = SS_within / df_within = ${r2(ssWithin)} / ${dfWithin} = ${r2(msWithin)}` },
+      { row: 'between', col: 'F',  value: r2(fStat),     formula: `F = MS_between / MS_within = ${r2(msBetween)} / ${r2(msWithin)} = ${r2(fStat)}` },
+    ];
+  } else if (difficulty === 'moderate') {
+    /* Show: SS_between, SS_total, df_total, MS_within
+       Hide: df_between, df_within, SS_within, MS_between, F */
+    missing = [
+      { row: 'between', col: 'df', value: dfBetween,    formula: `df_between = k − 1 = ${k} − 1 = ${dfBetween}` },
+      { row: 'within',  col: 'df', value: dfWithin,     formula: `df_within  = N − k = ${N} − ${k} = ${dfWithin}` },
+      { row: 'within',  col: 'SS', value: r2(ssWithin), formula: `SS_within  = SS_total − SS_between = ${r2(ssTotal)} − ${r2(ssBetween)} = ${r2(ssWithin)}` },
+      { row: 'between', col: 'MS', value: r2(msBetween),formula: `MS_between = SS_between / df_between = ${r2(ssBetween)} / ${dfBetween} = ${r2(msBetween)}` },
+      { row: 'between', col: 'F',  value: r2(fStat),    formula: `F = MS_between / MS_within = ${r2(msBetween)} / ${r2(msWithin)} = ${r2(fStat)}` },
+    ];
+  } else {
+    /* difficulty === 'hard'
+       Show: df_between, df_within, MS_between, F
+       Hide: MS_within, SS_between, SS_within, SS_total, df_total */
+    missing = [
+      { row: 'within',  col: 'MS',  value: r2(msWithin),  formula: `MS_within  = MS_between / F = ${r2(msBetween)} / ${r2(fStat)} = ${r2(msWithin)}` },
+      { row: 'between', col: 'SS',  value: r2(ssBetween), formula: `SS_between = MS_between × df_between = ${r2(msBetween)} × ${dfBetween} = ${r2(ssBetween)}` },
+      { row: 'within',  col: 'SS',  value: r2(ssWithin),  formula: `SS_within  = MS_within × df_within = ${r2(msWithin)} × ${dfWithin} = ${r2(ssWithin)}` },
+      { row: 'total',   col: 'SS',  value: r2(ssTotal),   formula: `SS_total   = SS_between + SS_within = ${r2(ssBetween)} + ${r2(ssWithin)} = ${r2(ssTotal)}` },
+      { row: 'total',   col: 'df',  value: dfTotal,        formula: `df_total   = df_between + df_within = ${dfBetween} + ${dfWithin} = ${dfTotal}` },
+    ];
+  }
+
+  const masked = new Set(missing.map(c => `${c.row}:${c.col}`));
+  return { missing, masked };
+}
+
+/* ── Render the student-facing ANOVA table with blanked cells ── */
+
+function renderAnovaStudentTable(full: AnovaFullTable, masked: Set<string>): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
+  function cell(row: string, col: string, value: number | null): string {
+    if (masked.has(`${row}:${col}`)) return `<td style="text-align:center;font-weight:700;font-size:1.1rem;">?</td>`;
+    if (value === null)               return `<td style="text-align:center;color:var(--muted);">—</td>`;
+    return `<td>${r2(value)}</td>`;
+  }
+
+  return `
+<div class="tbl-wrap" style="margin-top:1rem;">
+  <table class="stat-table">
+    <thead>
+      <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Between</td>
+        ${cell('between','SS', full.ssBetween)}
+        ${cell('between','df', full.dfBetween)}
+        ${cell('between','MS', full.msBetween)}
+        ${cell('between','F',  full.fStat)}
+      </tr>
+      <tr>
+        <td>Within</td>
+        ${cell('within','SS', full.ssWithin)}
+        ${cell('within','df', full.dfWithin)}
+        ${cell('within','MS', full.msWithin)}
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+      <tr>
+        <td>Total</td>
+        ${cell('total','SS', full.ssTotal)}
+        ${cell('total','df', full.dfTotal)}
+        <td style="text-align:center;color:var(--muted);">—</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+/* ── Render the full (completed) ANOVA table for the instructor key ── */
+
+function renderAnovaFullTable(full: AnovaFullTable): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  return `
+<div class="tbl-wrap" style="margin-top:0.5rem;">
+  <table class="stat-table">
+    <thead>
+      <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Between</td>
+        <td>${r2(full.ssBetween)}</td><td>${full.dfBetween}</td>
+        <td>${r2(full.msBetween)}</td><td>${r2(full.fStat)}</td>
+      </tr>
+      <tr>
+        <td>Within</td>
+        <td>${r2(full.ssWithin)}</td><td>${full.dfWithin}</td>
+        <td>${r2(full.msWithin)}</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+      <tr>
+        <td>Total</td>
+        <td>${r2(full.ssTotal)}</td><td>${full.dfTotal}</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+/* ── Format p-value for display ── */
+
+function fmtP(p: number): string {
+  if (p < 0.001) return '< .001';
+  return '= ' + p.toFixed(3).replace(/^0\./, '.');
+}
+
+/* ── Main ANOVA Practice Problem Generator ── */
+
+export function generateANOVAProblem(): void {
+  if (!state.lastResult || state.lastResult.type !== 'anova') return;
+  /* One-way guard */
+  if (state.lastResult.table.length === 0 || state.lastResult.table[0]['Source'] === 'Between') return;
+
+  const variable   = (document.getElementById('ap-variable')   as HTMLInputElement).value.trim() || 'the outcome variable';
+  const difficulty = (document.getElementById('ap-difficulty') as HTMLSelectElement).value as AnovaDifficulty;
+  const alpha      = parseFloat(gv('anova-alpha'));
+
+  const full = buildFullANOVATable(state.lastResult.table, alpha);
+  if (!full) return;
+
+  const { missing, masked } = maskANOVATable(full, difficulty);
+
+  /* Student prompt */
+  const studentPrompt =
+    `A researcher conducted a one-way ANOVA to test whether mean ${variable} differs across ` +
+    `${full.k} independent groups (N = ${full.N}). ` +
+    `The partially completed ANOVA summary table is shown below. ` +
+    `Fill in the missing values (marked "?") and determine whether the result is significant at α = ${alpha}.`;
+
+  /* p-value string */
+  const pStr = fmtP(full.pValue);
+  const r2   = (n: number) => Math.round(n * 100) / 100;
+
+  /* Decision */
+  const isRej = full.pValue < alpha;
+  const decisionStatement = isRej
+    ? `Reject H₀: there is sufficient evidence that mean ${variable} differs across the ${full.k} groups ` +
+      `(F(${full.dfBetween}, ${full.dfWithin}) = ${r2(full.fStat)}, p ${pStr}).`
+    : `Fail to reject H₀: there is insufficient evidence that mean ${variable} differs across the ${full.k} groups ` +
+      `(F(${full.dfBetween}, ${full.dfWithin}) = ${r2(full.fStat)}, p ${pStr}).`;
+
+  /* Student table HTML */
+  const studentTableHTML = renderAnovaStudentTable(full, masked);
+
+  /* Problem box */
+  const problemHTML = `
+<div class="problem-box">
+  <p>${studentPrompt}</p>
+  ${studentTableHTML}
+  <div class="problem-questions" style="margin-top:1rem;">
+    <ol>
+      <li>Fill in all missing values (marked "?") in the ANOVA table above.</li>
+      <li>State the null and alternative hypotheses.</li>
+      <li>Determine whether the result is statistically significant at α = ${alpha}.</li>
+      <li>Write a one-sentence interpretation of the finding.</li>
+    </ol>
+  </div>
+</div>`;
+
+  /* Instructor key */
+  const missingListHTML = missing.map((c, i) =>
+    `<li style="margin-bottom:0.3rem;"><code>${c.formula}</code></li>`
+  ).join('');
+
+  const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Completed ANOVA Table</strong>
+    ${renderAnovaFullTable(full)}
+  </div>
+
+  <div class="key-section">
+    <strong>2. Missing Values (step-by-step)</strong>
+    <ol style="margin:0.5rem 0 0 1.2rem;padding:0;">
+      ${missingListHTML}
+    </ol>
+  </div>
+
+  <div class="key-section">
+    <strong>3. Hypotheses</strong>
+    <p>H₀: μ₁ = μ₂ = … = μ<sub>${full.k}</sub> (all group means are equal)</p>
+    <p>H₁: At least one group mean differs from the others</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decision (α = ${alpha})</strong>
+    <p>F(${full.dfBetween}, ${full.dfWithin}) = ${r2(full.fStat)}, p ${pStr}</p>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Interpretation</strong>
+    <p>${decisionStatement}</p>
+  </div>
+</div>`;
+
+  state.lastAnovaPracticeData = {
+    full, difficulty, variable, missingCells: missing,
+    studentPrompt, decisionStatement,
+  };
+
+  (document.getElementById('ap-problem-text') as HTMLElement).innerHTML   = problemHTML;
+  (document.getElementById('ap-instructor-key') as HTMLElement).innerHTML = keyHTML;
+  (document.getElementById('ap-output') as HTMLElement).style.display     = 'block';
+
+  /* Reset key toggle */
+  (document.getElementById('ap-show-key') as HTMLInputElement).checked            = false;
+  (document.getElementById('ap-instructor-key') as HTMLElement).style.display     = 'none';
+
+  (document.getElementById('ap-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── ANOVA instructor key toggle ── */
+
+export function toggleAnovaKey(): void {
+  const show = (document.getElementById('ap-show-key') as HTMLInputElement).checked;
+  (document.getElementById('ap-instructor-key') as HTMLElement).style.display = show ? 'block' : 'none';
+}
+
+/* ── ANOVA Practice Excel export ── */
+
+export function downloadAnovaPracticeExcel(): void {
+  const d = state.lastAnovaPracticeData;
+  if (!d) return;
+
+  const { full, missingCells, studentPrompt, decisionStatement, difficulty, variable } = d;
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const pStr = fmtP(full.pValue);
+
+  /* Build masked table values for the student sheet */
+  const masked = new Set(missingCells.map(c => `${c.row}:${c.col}`));
+  const mc = (row: string, col: string, val: number | null) =>
+    masked.has(`${row}:${col}`) ? '?' : val !== null ? r2(val) : '—';
+
+  const rows: (string | number | null)[][] = [
+    ['STUDENT PROBLEM — One-Way ANOVA Table Practice'],
+    [],
+    ['Scenario'], [studentPrompt], [],
+    ['Questions'],
+    ['1.', 'Fill in all missing values (marked "?") in the ANOVA table below.'],
+    ['2.', 'State the null and alternative hypotheses.'],
+    ['3.', `Determine whether the result is statistically significant at α = ${full.alpha}.`],
+    ['4.', 'Write a one-sentence interpretation of the finding.'],
+    [],
+    ['ANOVA Table (Student Version)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Between', mc('between','SS',full.ssBetween), mc('between','df',full.dfBetween), mc('between','MS',full.msBetween), mc('between','F',full.fStat)],
+    ['Within',  mc('within','SS',full.ssWithin),   mc('within','df',full.dfWithin),   mc('within','MS',full.msWithin),   '—'],
+    ['Total',   mc('total','SS',full.ssTotal),      mc('total','df',full.dfTotal),     '—', '—'],
+    [],
+    [],
+    ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+    [],
+    ['ANOVA Table (Completed)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Between', r2(full.ssBetween), full.dfBetween, r2(full.msBetween), r2(full.fStat)],
+    ['Within',  r2(full.ssWithin),  full.dfWithin,  r2(full.msWithin),  '—'],
+    ['Total',   r2(full.ssTotal),   full.dfTotal,   '—', '—'],
+    [],
+    ['Missing Values (step-by-step)'],
+    ...missingCells.map((c, i) => [`${i + 1}.`, c.formula]),
+    [],
+    ['Hypotheses'],
+    ['H₀:', `μ₁ = μ₂ = … = μ${full.k}  (all group means are equal)`],
+    ['H₁:', 'At least one group mean differs from the others'],
+    [],
+    ['Decision'],
+    [`F(${full.dfBetween}, ${full.dfWithin}) = ${r2(full.fStat)}, p ${pStr}`],
+    [decisionStatement],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 14 }, { wch: 85 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ANOVA Practice');
+  XLSX.writeFile(wb, `statteacher_anova_practice_${Date.now()}.xlsx`);
 }

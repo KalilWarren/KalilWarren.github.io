@@ -222,3 +222,40 @@ export interface RmTProblemData {
 }
 
 export type ProblemData = ZProblemData | TProblemData | IndTProblemData | RmTProblemData;
+
+/* ── ANOVA Table Practice Problem ── */
+
+export type AnovaDifficulty = 'easy' | 'moderate' | 'hard';
+
+export interface AnovaFullTable {
+  factorName: string;
+  ssBetween: number;
+  dfBetween: number;
+  msBetween: number;
+  fStat: number;
+  pValue: number;
+  ssWithin: number;
+  dfWithin: number;
+  msWithin: number;
+  ssTotal: number;
+  dfTotal: number;
+  k: number;   /* dfBetween + 1 */
+  N: number;   /* dfTotal + 1 */
+  alpha: number;
+}
+
+export interface AnovaMissingCell {
+  row: 'between' | 'within' | 'total';
+  col: 'SS' | 'df' | 'MS' | 'F';
+  value: number;
+  formula: string;
+}
+
+export interface AnovaPracticeData {
+  full: AnovaFullTable;
+  difficulty: AnovaDifficulty;
+  variable: string;
+  missingCells: AnovaMissingCell[];
+  studentPrompt: string;
+  decisionStatement: string;
+}

@@ -16,6 +16,9 @@ import {
   generateStudentProblem,
   toggleInstructorKey,
   downloadProblemExcel,
+  generateANOVAProblem,
+  toggleAnovaKey,
+  downloadAnovaPracticeExcel,
 } from './problems.ts';
 
 /* ── Set current year ── */
@@ -94,4 +97,12 @@ window.addEventListener('DOMContentLoaded', () => {
   /* Download Excel */
   document.getElementById('download-excel-btn')
     ?.addEventListener('click', downloadProblemExcel);
+
+  /* ANOVA Table Practice Problem */
+  document.getElementById('generate-anova-problem-btn')
+    ?.addEventListener('click', generateANOVAProblem);
+  document.getElementById('ap-show-key')
+    ?.addEventListener('change', toggleAnovaKey);
+  document.getElementById('download-anova-excel-btn')
+    ?.addEventListener('click', downloadAnovaPracticeExcel);
 });
