@@ -82,6 +82,13 @@ export function tPValue(t: number, df: number, twoTailed: boolean): string {
   return result < 0.001 ? '< .001' : result.toFixed(3);
 }
 
+/** Compute an F-distribution p-value string (one-tailed upper tail, for ANOVA/regression). */
+export function fPValue(f: number, df1: number, df2: number): string {
+  const x = df2 / (df2 + df1 * f);
+  const p = ibeta(x, df2 / 2, df1 / 2);
+  return p < 0.001 ? '< .001' : p.toFixed(3);
+}
+
 /* ── Utility ── */
 
 /** Convert a records array [{ Statistic, Value }, …] to a plain key→value dict. */

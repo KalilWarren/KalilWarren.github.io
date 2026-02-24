@@ -91,6 +91,7 @@ export function renderResults(r: TestResult): void {
   const anovaPracticeCard      = document.getElementById('anova-practice-card')      as HTMLElement;
   const anova2WayPracticeCard  = document.getElementById('anova-2way-practice-card') as HTMLElement;
   const pearsonProblemCard     = document.getElementById('pearson-problem-card')     as HTMLElement;
+  const regPracticeCard        = document.getElementById('reg-practice-card')        as HTMLElement;
 
   if (r.type === 'z_test') {
     state.lastZTestContext = {
@@ -106,6 +107,7 @@ export function renderResults(r: TestResult): void {
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'none';
   } else if (r.type === 't_test') {
     state.lastTTestContext = {
       alpha:     parseFloat(gv('t-alpha')),
@@ -120,6 +122,7 @@ export function renderResults(r: TestResult): void {
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'none';
   } else if (r.type === 'independent_t_test') {
     state.lastIndTTestContext = {
       alpha:     parseFloat(gv('ind-alpha')),
@@ -134,6 +137,7 @@ export function renderResults(r: TestResult): void {
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'none';
   } else if (r.type === 'repeated_t_test') {
     state.lastRmTTestContext = {
       alpha:     parseFloat(gv('rep-alpha')),
@@ -148,6 +152,7 @@ export function renderResults(r: TestResult): void {
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'none';
   } else if (r.type === 'anova') {
     pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
@@ -166,6 +171,8 @@ export function renderResults(r: TestResult): void {
     anovaPracticeCard.style.display     = isOneWay ? 'block' : 'none';
     anova2WayPracticeCard.style.display = isTwoWay ? 'block' : 'none';
 
+    regPracticeCard.style.display = 'none';
+
     /* Reset any previous outputs */
     const apOut  = document.getElementById('ap-output')  as HTMLElement;
     const ap2Out = document.getElementById('ap2-output') as HTMLElement;
@@ -181,14 +188,25 @@ export function renderResults(r: TestResult): void {
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'block';
+    regPracticeCard.style.display        = 'none';
     const pearsonOut = document.getElementById('pear-pg-output') as HTMLElement;
     if (pearsonOut) pearsonOut.style.display = 'none';
+  } else if (r.type === 'regression') {
+    pgCard.style.display   = 'none';
+    pgOutput.style.display = 'none';
+    anovaPracticeCard.style.display      = 'none';
+    anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'block';
+    const regOut = document.getElementById('reg-pg-output') as HTMLElement;
+    if (regOut) regOut.style.display = 'none';
   } else {
     pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'none';
   }
 
   switch (r.type) {

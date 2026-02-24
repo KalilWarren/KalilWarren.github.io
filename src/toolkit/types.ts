@@ -251,6 +251,40 @@ export interface PearsonProblemData {
 
 export type ProblemData = ZProblemData | TProblemData | IndTProblemData | RmTProblemData;
 
+/* ── Regression Table Practice Problem ── */
+
+export interface RegFullTable {
+  variableX: string;
+  variableY: string;
+  population: string;
+  n: number;
+  b0: number;           /* intercept */
+  b1: number;           /* slope */
+  rSquared: number;
+  ssRegression: number; dfRegression: number; msRegression: number; fStat: number;
+  ssResidual: number;   dfResidual: number;   msResidual: number;
+  ssTotal: number;      dfTotal: number;
+  alpha: number;
+  equation: string;
+}
+
+export interface RegMissingCell {
+  row: 'regression' | 'residual' | 'total';
+  col: 'SS' | 'df' | 'MS' | 'F';
+  value: number;
+  formula: string;
+}
+
+export interface RegPracticeData {
+  full: RegFullTable;
+  difficulty: AnovaDifficulty;
+  missingCells: RegMissingCell[];
+  studentPrompt: string;
+  decisionStatement: string;
+  slopeInterp: string;
+  rSqInterp: string;
+}
+
 /* ── ANOVA Table Practice Problem ── */
 
 export type AnovaDifficulty = 'easy' | 'moderate' | 'hard';

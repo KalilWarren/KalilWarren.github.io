@@ -1,11 +1,12 @@
 import { state } from './state.ts';
 import { gv } from './ui.ts';
-import { pValue, tPValue, statsDict } from './stats.ts';
+import { pValue, tPValue, fPValue, statsDict } from './stats.ts';
 import type {
   AnovaDifficulty,
   AnovaFullTable, AnovaMissingCell,
   TwoWayAnovaFullTable, TwoWayAnovaMissingCell,
   PearsonProblemData,
+  RegFullTable, RegMissingCell, RegPracticeData,
   TableRow,
 } from './types.ts';
 
@@ -1783,4 +1784,402 @@ export function downloadPearsonExcel(): void {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Pearson Problem');
   XLSX.writeFile(wb, `statteacher_pearson_problem_${Date.now()}.xlsx`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   REGRESSION TABLE PRACTICE PROBLEM
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Build a typed full-table object from the engine's regression TableRow array ── */
+
+function buildFullRegressionTable(
+  table: TableRow[],
+  equation: string,
+  variableX: string,
+  variableY: string,
+  population: string,
+  alpha: number,
+): RegFullTable | null {
+  const regRow   = table.find(r => r['Source'] === 'Regression');
+  const residRow = table.find(r => r['Source'] === 'Residual');
+  const totalRow = table.find(r => r['Source'] === 'Total');
+  if (!regRow || !residRow || !totalRow) return null;
+
+  const ssRegression = Number(regRow['SS']);
+  const dfRegression = Number(regRow['df']);   // always 1
+  const msRegression = Number(regRow['MS']);
+  const fStat        = Number(regRow['F']);
+  const ssResidual   = Number(residRow['SS']);
+  const dfResidual   = Number(residRow['df']); // n - 2
+  const msResidual   = Number(residRow['MS']);
+  const ssTotal      = Number(totalRow['SS']);
+  const dfTotal      = Number(totalRow['df']); // n - 1
+  const n            = dfTotal + 1;
+  const rSquared     = ssTotal > 0 ? ssRegression / ssTotal : 0;
+
+  /* Parse b1 (slope) and b0 (intercept) from equation "Y={b1}X+{b0}" */
+  const eqMatch = equation.match(/Y=(-?[\d.]+)X\+?(-?[\d.]+)/);
+  const b1 = eqMatch ? parseFloat(eqMatch[1]) : NaN;
+  const b0 = eqMatch ? parseFloat(eqMatch[2]) : NaN;
+
+  return {
+    variableX, variableY, population, n,
+    b0, b1, rSquared,
+    ssRegression, dfRegression, msRegression, fStat,
+    ssResidual, dfResidual, msResidual,
+    ssTotal, dfTotal,
+    alpha, equation,
+  };
+}
+
+/* ── Masking logic — returns answer-key list and a Set of "row:col" keys ── */
+
+function maskRegressionTable(
+  full: RegFullTable,
+  difficulty: AnovaDifficulty,
+): { missing: RegMissingCell[]; masked: Set<string> } {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const { ssRegression, dfRegression, msRegression, fStat, ssResidual, dfResidual, msResidual, ssTotal, dfTotal } = full;
+
+  let missing: RegMissingCell[];
+
+  if (difficulty === 'easy') {
+    /* Reveal: all SS, all df.  Hide: MS_regression, MS_residual, F */
+    missing = [
+      { row: 'regression', col: 'MS', value: r2(msRegression), formula: `MS_regression = SS_regression / df_regression = ${r2(ssRegression)} / ${dfRegression} = ${r2(msRegression)}` },
+      { row: 'residual',   col: 'MS', value: r2(msResidual),   formula: `MS_residual = SS_residual / df_residual = ${r2(ssResidual)} / ${dfResidual} = ${r2(msResidual)}` },
+      { row: 'regression', col: 'F',  value: r2(fStat),        formula: `F = MS_regression / MS_residual = ${r2(msRegression)} / ${r2(msResidual)} = ${r2(fStat)}` },
+    ];
+  } else if (difficulty === 'moderate') {
+    /* Reveal: SS_regression, df_regression (=1), df_residual, SS_total, df_total.
+       Hide: SS_residual, MS_regression, MS_residual, F */
+    missing = [
+      { row: 'residual',   col: 'SS', value: r2(ssResidual),   formula: `SS_residual = SS_total − SS_regression = ${r2(ssTotal)} − ${r2(ssRegression)} = ${r2(ssResidual)}` },
+      { row: 'regression', col: 'MS', value: r2(msRegression), formula: `MS_regression = SS_regression / df_regression = ${r2(ssRegression)} / ${dfRegression} = ${r2(msRegression)}` },
+      { row: 'residual',   col: 'MS', value: r2(msResidual),   formula: `MS_residual = SS_residual / df_residual = ${r2(ssResidual)} / ${dfResidual} = ${r2(msResidual)}` },
+      { row: 'regression', col: 'F',  value: r2(fStat),        formula: `F = MS_regression / MS_residual = ${r2(msRegression)} / ${r2(msResidual)} = ${r2(fStat)}` },
+    ];
+  } else {
+    /* difficulty === 'hard'
+       Reveal: df_regression (=1), MS_regression, F, df_residual.
+       Hide: SS_regression, SS_residual, MS_residual, SS_total, df_total */
+    missing = [
+      { row: 'residual',   col: 'MS', value: r2(msResidual),   formula: `MS_residual = MS_regression / F = ${r2(msRegression)} / ${r2(fStat)} = ${r2(msResidual)}` },
+      { row: 'regression', col: 'SS', value: r2(ssRegression), formula: `SS_regression = MS_regression × df_regression = ${r2(msRegression)} × ${dfRegression} = ${r2(ssRegression)}` },
+      { row: 'residual',   col: 'SS', value: r2(ssResidual),   formula: `SS_residual = MS_residual × df_residual = ${r2(msResidual)} × ${dfResidual} = ${r2(ssResidual)}` },
+      { row: 'total',      col: 'SS', value: r2(ssTotal),      formula: `SS_total = SS_regression + SS_residual = ${r2(ssRegression)} + ${r2(ssResidual)} = ${r2(ssTotal)}` },
+      { row: 'total',      col: 'df', value: dfTotal,           formula: `df_total = df_regression + df_residual = ${dfRegression} + ${dfResidual} = ${dfTotal}` },
+    ];
+  }
+
+  const masked = new Set(missing.map(c => `${c.row}:${c.col}`));
+  return { missing, masked };
+}
+
+/* ── Render the student-facing regression table with blanked cells ── */
+
+function renderRegressionStudentTable(full: RegFullTable, masked: Set<string>): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
+  function cell(row: string, col: string, value: number | null): string {
+    if (masked.has(`${row}:${col}`)) return `<td style="text-align:center;font-weight:700;font-size:1.1rem;">?</td>`;
+    if (value === null)               return `<td style="text-align:center;color:var(--muted);">—</td>`;
+    return `<td>${r2(value)}</td>`;
+  }
+
+  return `
+<div class="tbl-wrap" style="margin-top:1rem;">
+  <table class="stat-table">
+    <thead>
+      <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Regression</td>
+        ${cell('regression','SS', full.ssRegression)}
+        ${cell('regression','df', full.dfRegression)}
+        ${cell('regression','MS', full.msRegression)}
+        ${cell('regression','F',  full.fStat)}
+      </tr>
+      <tr>
+        <td>Residual</td>
+        ${cell('residual','SS', full.ssResidual)}
+        ${cell('residual','df', full.dfResidual)}
+        ${cell('residual','MS', full.msResidual)}
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+      <tr>
+        <td>Total</td>
+        ${cell('total','SS', full.ssTotal)}
+        ${cell('total','df', full.dfTotal)}
+        <td style="text-align:center;color:var(--muted);">—</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+/* ── Render the full (completed) regression table for the instructor key ── */
+
+function renderRegressionFullTable(full: RegFullTable): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  return `
+<div class="tbl-wrap" style="margin-top:0.5rem;">
+  <table class="stat-table">
+    <thead>
+      <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Regression</td>
+        <td>${r2(full.ssRegression)}</td><td>${full.dfRegression}</td>
+        <td>${r2(full.msRegression)}</td><td>${r2(full.fStat)}</td>
+      </tr>
+      <tr>
+        <td>Residual</td>
+        <td>${r2(full.ssResidual)}</td><td>${full.dfResidual}</td>
+        <td>${r2(full.msResidual)}</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+      <tr>
+        <td>Total</td>
+        <td>${r2(full.ssTotal)}</td><td>${full.dfTotal}</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+        <td style="text-align:center;color:var(--muted);">—</td>
+      </tr>
+    </tbody>
+  </table>
+</div>`;
+}
+
+/* ── Main Regression Practice Problem Generator ── */
+
+export function generateRegressionTableProblem(): void {
+  if (!state.lastResult || state.lastResult.type !== 'regression') return;
+
+  const variableX  = (document.getElementById('reg-pg-varx')       as HTMLInputElement).value.trim()  || 'X';
+  const variableY  = (document.getElementById('reg-pg-vary')       as HTMLInputElement).value.trim()  || 'Y';
+  const population = (document.getElementById('reg-pg-population') as HTMLInputElement).value.trim()  || 'a sample of participants';
+  const difficulty = (document.getElementById('reg-pg-difficulty') as HTMLSelectElement).value as AnovaDifficulty;
+  const alpha      = parseFloat(gv('reg-alpha'));
+
+  const full = buildFullRegressionTable(
+    state.lastResult.table,
+    state.lastResult.equation,
+    variableX, variableY, population, alpha,
+  );
+  if (!full) return;
+
+  const { missing, masked } = maskRegressionTable(full, difficulty);
+
+  const r2    = (n: number) => Math.round(n * 100) / 100;
+  const pStr  = fPValue(full.fStat, full.dfRegression, full.dfResidual);
+  const pNum  = pStr.startsWith('<') ? 0.0001 : parseFloat(pStr);
+  const pFmt  = pStr.startsWith('<') ? pStr : '= ' + pStr;
+  const isRej = pNum < alpha;
+
+  /* Student prompt */
+  const studentPrompt =
+    `A researcher is investigating whether ${variableX} predicts ${variableY} in ${population}. ` +
+    `A random sample of n = ${full.n} participants was obtained. ` +
+    `The partially completed regression ANOVA table is shown below. ` +
+    `Fill in the missing values in the table and answer the questions that follow.`;
+
+  /* Student table HTML */
+  const studentTableHTML = renderRegressionStudentTable(full, masked);
+
+  /* Equation display — parse nicely if possible */
+  const b1Str = isNaN(full.b1) ? '?' : r2(full.b1).toString();
+  const b0Str = isNaN(full.b0) ? '?' : r2(full.b0).toString();
+  const eqDisplay = isNaN(full.b1) ? full.equation : `Ŷ = ${b1Str}(${variableX}) + ${b0Str}`;
+
+  /* Problem box */
+  const problemHTML = `
+<div class="problem-box">
+  <p>${studentPrompt}</p>
+  ${studentTableHTML}
+  <div class="problem-questions" style="margin-top:1rem;">
+    <ol>
+      <li>Complete the regression table (fill in all "?" cells).</li>
+      <li>Write the regression equation.</li>
+      <li>Determine whether the slope is statistically significant at α = ${alpha}.</li>
+      <li>Interpret the slope in context.</li>
+      <li>Interpret R² in context.</li>
+    </ol>
+  </div>
+</div>`;
+
+  /* Slope and R² interpretations */
+  const slopeDir    = full.b1 >= 0 ? 'increases' : 'decreases';
+  const slopeInterp = isNaN(full.b1)
+    ? `For each one-unit increase in ${variableX}, ${variableY} changes by the slope value.`
+    : `For each one-unit increase in ${variableX}, ${variableY} ${slopeDir} by ${Math.abs(r2(full.b1))}.`;
+  const rSqPct  = (full.rSquared * 100).toFixed(1);
+  const rSqInterp = `Approximately ${rSqPct}% of the variance in ${variableY} is explained by ${variableX}.`;
+
+  /* Decision statement */
+  const decisionStatement = isRej
+    ? `Reject H₀: there is sufficient evidence that ${variableX} significantly predicts ${variableY} ` +
+      `(F(${full.dfRegression}, ${full.dfResidual}) = ${r2(full.fStat)}, p ${pFmt}).`
+    : `Fail to reject H₀: there is insufficient evidence that ${variableX} significantly predicts ${variableY} ` +
+      `(F(${full.dfRegression}, ${full.dfResidual}) = ${r2(full.fStat)}, p ${pFmt}).`;
+
+  /* Instructor key */
+  const missingListHTML = missing.map(c =>
+    `<li style="margin-bottom:0.3rem;"><code>${c.formula}</code></li>`
+  ).join('');
+
+  const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Completed Regression Table</strong>
+    ${renderRegressionFullTable(full)}
+  </div>
+
+  <div class="key-section">
+    <strong>2. Missing Values (step-by-step)</strong>
+    <ol style="margin:0.5rem 0 0 1.2rem;padding:0;">
+      ${missingListHTML}
+    </ol>
+  </div>
+
+  <div class="key-section">
+    <strong>3. Regression Equation</strong>
+    <p>${eqDisplay}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Hypotheses &amp; Decision (α = ${alpha})</strong>
+    <p>H₀: β₁ = 0 (${variableX} does not predict ${variableY})</p>
+    <p>H₁: β₁ ≠ 0 (${variableX} significantly predicts ${variableY})</p>
+    <p>F(${full.dfRegression}, ${full.dfResidual}) = ${r2(full.fStat)}, p ${pFmt}</p>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Slope Interpretation</strong>
+    <p>${slopeInterp}</p>
+  </div>
+
+  <div class="key-section">
+    <strong>6. R² Interpretation</strong>
+    <p>R² = ${r2(full.ssRegression)} / ${r2(full.ssTotal)} = ${(full.rSquared).toFixed(3)}</p>
+    <p>${rSqInterp}</p>
+  </div>
+</div>`;
+
+  /* Store state */
+  state.lastRegPracticeData = {
+    full, difficulty, missingCells: missing,
+    studentPrompt, decisionStatement, slopeInterp, rSqInterp,
+  };
+
+  (document.getElementById('reg-pg-problem-text')   as HTMLElement).innerHTML = problemHTML;
+  (document.getElementById('reg-pg-instructor-key') as HTMLElement).innerHTML = keyHTML;
+  (document.getElementById('reg-pg-output')         as HTMLElement).style.display = 'block';
+
+  /* Reset key toggle */
+  (document.getElementById('reg-pg-show-key')       as HTMLInputElement).checked = false;
+  (document.getElementById('reg-pg-instructor-key') as HTMLElement).style.display = 'none';
+
+  (document.getElementById('reg-pg-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── Regression instructor key toggle ── */
+
+export function toggleRegressionKey(): void {
+  const show = (document.getElementById('reg-pg-show-key') as HTMLInputElement).checked;
+  (document.getElementById('reg-pg-instructor-key') as HTMLElement).style.display = show ? 'block' : 'none';
+}
+
+/* ── Regression Practice Excel export ── */
+
+export function downloadRegressionPracticeExcel(): void {
+  const d = state.lastRegPracticeData;
+  if (!d) return;
+
+  const { full, missingCells, studentPrompt, decisionStatement, slopeInterp, rSqInterp, difficulty } = d;
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const pStr = fPValue(full.fStat, full.dfRegression, full.dfResidual);
+  const pFmt = pStr.startsWith('<') ? pStr : '= ' + pStr;
+
+  const b1Str = isNaN(full.b1) ? '?' : r2(full.b1).toString();
+  const b0Str = isNaN(full.b0) ? '?' : r2(full.b0).toString();
+  const eqDisplay = isNaN(full.b1) ? full.equation : `Ŷ = ${b1Str}(${full.variableX}) + ${b0Str}`;
+
+  /* Build masked table values for student sheet */
+  const masked = new Set(missingCells.map(c => `${c.row}:${c.col}`));
+  const mc = (row: string, col: string, val: number | null) =>
+    masked.has(`${row}:${col}`) ? '?' : val !== null ? r2(val) : '—';
+
+  const rows: (string | number | null)[][] = [
+    ['STUDENT PROBLEM — Regression Table Practice'],
+    [],
+    ['Difficulty:', difficulty.charAt(0).toUpperCase() + difficulty.slice(1)],
+    [],
+    ['Scenario'], [studentPrompt], [],
+    ['Questions'],
+    ['1.', 'Complete the regression table (fill in all "?" cells).'],
+    ['2.', 'Write the regression equation.'],
+    ['3.', `Determine whether the slope is statistically significant at α = ${full.alpha}.`],
+    ['4.', 'Interpret the slope in context.'],
+    ['5.', 'Interpret R² in context.'],
+    [],
+    ['Regression Table (Student Version)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Regression', mc('regression','SS',full.ssRegression), mc('regression','df',full.dfRegression), mc('regression','MS',full.msRegression), mc('regression','F',full.fStat)],
+    ['Residual',   mc('residual','SS',full.ssResidual),     mc('residual','df',full.dfResidual),     mc('residual','MS',full.msResidual),     '—'],
+    ['Total',      mc('total','SS',full.ssTotal),           mc('total','df',full.dfTotal),           '—', '—'],
+    [],
+    [],
+    ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+    [],
+    ['Regression Table (Completed)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Regression', r2(full.ssRegression), full.dfRegression, r2(full.msRegression), r2(full.fStat)],
+    ['Residual',   r2(full.ssResidual),   full.dfResidual,   r2(full.msResidual),   '—'],
+    ['Total',      r2(full.ssTotal),      full.dfTotal,      '—', '—'],
+    [],
+    ['Missing Values (step-by-step)'],
+    ...missingCells.map((c, i) => [`${i + 1}.`, c.formula]),
+    [],
+    ['Regression Equation'],
+    [eqDisplay],
+    [],
+    ['Hypotheses'],
+    ['H₀:', `β₁ = 0 (${full.variableX} does not predict ${full.variableY})`],
+    ['H₁:', `β₁ ≠ 0 (${full.variableX} significantly predicts ${full.variableY})`],
+    [],
+    ['Decision'],
+    [`F(${full.dfRegression}, ${full.dfResidual}) = ${r2(full.fStat)}, p ${pFmt}`],
+    [decisionStatement],
+    [],
+    ['Slope Interpretation'],
+    [slopeInterp],
+    [],
+    ['R² Interpretation'],
+    [`R² = ${(full.rSquared).toFixed(3)} (${(full.rSquared * 100).toFixed(1)}%)`],
+    [rSqInterp],
+    [],
+    ['Additional Statistics'],
+    ['n:', full.n], ['alpha:', full.alpha],
+    ['SS_regression:', r2(full.ssRegression)], ['SS_residual:', r2(full.ssResidual)], ['SS_total:', r2(full.ssTotal)],
+    ['df_regression:', full.dfRegression], ['df_residual:', full.dfResidual], ['df_total:', full.dfTotal],
+    ['MS_regression:', r2(full.msRegression)], ['MS_residual:', r2(full.msResidual)],
+    ['F:', r2(full.fStat)], ['p:', pStr],
+    ['R²:', (full.rSquared).toFixed(3)],
+    ['b1 (slope):', isNaN(full.b1) ? '?' : r2(full.b1)],
+    ['b0 (intercept):', isNaN(full.b0) ? '?' : r2(full.b0)],
+    ['Variable X:', full.variableX], ['Variable Y:', full.variableY],
+    ['Population:', full.population],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 18 }, { wch: 85 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Regression Practice');
+  XLSX.writeFile(wb, `statteacher_regression_practice_${Date.now()}.xlsx`);
 }

@@ -25,6 +25,9 @@ import {
   generatePearsonProblem,
   togglePearsonKey,
   downloadPearsonExcel,
+  generateRegressionTableProblem,
+  toggleRegressionKey,
+  downloadRegressionPracticeExcel,
 } from './problems.ts';
 
 /* ── Set current year ── */
@@ -127,4 +130,12 @@ window.addEventListener('DOMContentLoaded', () => {
     ?.addEventListener('change', togglePearsonKey);
   document.getElementById('download-pearson-excel-btn')
     ?.addEventListener('click', downloadPearsonExcel);
+
+  /* Regression Table Practice Problem */
+  document.getElementById('generate-reg-problem-btn')
+    ?.addEventListener('click', generateRegressionTableProblem);
+  document.getElementById('reg-pg-show-key')
+    ?.addEventListener('change', toggleRegressionKey);
+  document.getElementById('download-reg-excel-btn')
+    ?.addEventListener('click', downloadRegressionPracticeExcel);
 });
