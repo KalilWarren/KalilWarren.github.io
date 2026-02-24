@@ -1566,35 +1566,43 @@ export function generatePearsonProblem(): void {
   const tCrit    = stats['t_critical'];
   const decision = stats['Decision'];
 
-  /* Always two-tailed for Pearson (H₀: ρ = 0 vs. H₁: ρ ≠ 0) */
-  const alpha     = state.lastPearsonContext?.alpha ?? 0.05;
-  const twoTailed = true;
-  const tailLabel = 'two-tailed';
+  const alpha     = state.lastPearsonContext?.alpha     ?? 0.05;
+  const twoTailed = state.lastPearsonContext?.twoTailed ?? true;
+  const tailLabel = twoTailed ? 'two-tailed' : 'one-tailed';
 
   /* r² — round to 2dp for display, derive percentage */
   const rSqNum = parseFloat(String(rSqRaw));
   const rSq    = rSqNum.toFixed(2);
   const rSqPct = (rSqNum * 100).toFixed(1);
 
-  /* p-value from t-distribution (df = n-2, two-tailed) */
+  /* p-value from t-distribution (df = n-2) */
   const pval    = tPValue(parseFloat(String(tScore)), df, twoTailed);
   const pvalNum = pval.startsWith('<') ? 0.0001 : parseFloat(pval);
   const pCompare = pvalNum < alpha ? '< α' : '> α';
 
-  /* Hypotheses (always two-tailed for correlation test) */
-  const h0 = 'H₀: ρ = 0';
-  const h1 = 'H₁: ρ ≠ 0';
+  /* r value as a number for sign-based direction */
+  const rNum = parseFloat(String(r));
+
+  /* Hypotheses — direction depends on tail setting and sign of r */
+  const h0 = twoTailed
+    ? 'H₀: ρ = 0'
+    : (rNum >= 0 ? 'H₀: ρ ≤ 0' : 'H₀: ρ ≥ 0');
+  const h1 = twoTailed
+    ? 'H₁: ρ ≠ 0'
+    : (rNum >= 0 ? 'H₁: ρ > 0' : 'H₁: ρ < 0');
+
+  /* Direction phrase for student prompt and interpretation */
+  const directionPhrase = twoTailed
+    ? 'a linear relationship'
+    : (rNum >= 0 ? 'a positive linear relationship' : 'a negative linear relationship');
 
   const isRej = decision === 'Reject Null';
 
-  /* r value as a number for sign check */
-  const rNum = parseFloat(String(r));
-
   /* Interpretation */
   const interp = isRej
-    ? `There is a statistically significant linear relationship between ${variableX} and ${variableY} ` +
+    ? `There is a statistically significant ${directionPhrase} between ${variableX} and ${variableY} ` +
       `in ${population} (r(${df}) = ${r}, p ${pval.startsWith('<') ? pval : '= ' + pval}).`
-    : `There is insufficient evidence of a linear relationship between ${variableX} and ${variableY} ` +
+    : `There is insufficient evidence of ${directionPhrase} between ${variableX} and ${variableY} ` +
       `in ${population} (r(${df}) = ${r}, p ${pval.startsWith('<') ? pval : '= ' + pval}).`;
 
   /* ── Student problem HTML ── */
@@ -1604,7 +1612,7 @@ export function generatePearsonProblem(): void {
   and <strong>${variableY}</strong> in <strong>${population}</strong>.</p>
   <p>A random sample of <em>n</em>&nbsp;=&nbsp;${n} participants was obtained.
   The sample correlation was <em>r</em>&nbsp;=&nbsp;${r}.</p>
-  <p>Using α&nbsp;=&nbsp;${alpha}, test whether there is a linear relationship
+  <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether there is ${directionPhrase}
   between ${variableX} and ${variableY}.</p>
   <div class="problem-questions">
     <ol>
@@ -1620,9 +1628,11 @@ export function generatePearsonProblem(): void {
 
   /* ── Instructor key HTML ── */
   /* Show substituted t formula: t = r√(n-2) / √(1 − r²) */
-  const rSqFmt  = parseFloat(String(r)) ** 2;
+  const rSqFmt      = parseFloat(String(r)) ** 2;
   const oneMinusRsq = (1 - rSqFmt).toFixed(4);
-  const sqrtDf  = Math.sqrt(df).toFixed(4);
+  const critNote    = twoTailed
+    ? `&plusmn;${tCrit} &nbsp;(df&nbsp;=&nbsp;${df}, α&nbsp;=&nbsp;${alpha}, two-tailed)`
+    : `${tCrit} &nbsp;(df&nbsp;=&nbsp;${df}, α&nbsp;=&nbsp;${alpha}, one-tailed)`;
 
   const keyHTML = `
 <div class="key-box">
@@ -1643,7 +1653,7 @@ export function generatePearsonProblem(): void {
       t = ${tScore}
     </div>
     <p>df = n &minus; 2 = ${n} &minus; 2 = ${df}</p>
-    <p>Critical value: t<sub>crit</sub> = &plusmn;${tCrit} &nbsp;(df&nbsp;=&nbsp;${df}, α&nbsp;=&nbsp;${alpha}, two-tailed)</p>
+    <p>Critical value: t<sub>crit</sub> = ${critNote}</p>
   </div>
 
   <div class="key-section">
@@ -1710,12 +1720,20 @@ export function downloadPearsonExcel(): void {
   const decStr  = d.isRej ? 'Reject H₀' : 'Fail to Reject H₀';
   const rSqStr  = `${d.r}² = ${d.rSq} — Approximately ${d.rSqPct}% of the variance in ${d.variableY} is explained by ${d.variableX}.`;
 
+  const rNum2      = parseFloat(String(d.r));
+  const dirPhrase  = d.twoTailed
+    ? 'a linear relationship'
+    : (rNum2 >= 0 ? 'a positive linear relationship' : 'a negative linear relationship');
+  const critLine   = d.twoTailed
+    ? `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, two-tailed)`
+    : `t_crit = ${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, one-tailed)`;
+
   const narrative =
     `A researcher is investigating the relationship between ${d.variableX} and ${d.variableY} ` +
     `in ${d.population}. ` +
     `A random sample of n = ${d.n} participants was obtained. ` +
     `The sample correlation was r = ${d.r}. ` +
-    `Using α = ${d.alpha}, test whether there is a linear relationship ` +
+    `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${dirPhrase} ` +
     `between ${d.variableX} and ${d.variableY}.`;
 
   const rows: (string | number | null)[][] = [
@@ -1739,7 +1757,7 @@ export function downloadPearsonExcel(): void {
     ['Substitution:',  `t = ${d.r} × √(${d.n} − 2) / √(1 − ${d.r}²)`],
     ['Result:',        `t = ${d.tScore}`],
     ['df:',            `n − 2 = ${d.n} − 2 = ${d.df}`],
-    ['Critical value:', `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, two-tailed)`],
+    ['Critical value:', critLine],
     [],
     ['3. p-value'],
     ['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`],
