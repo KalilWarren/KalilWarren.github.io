@@ -19,6 +19,9 @@ import {
   generateANOVAProblem,
   toggleAnovaKey,
   downloadAnovaPracticeExcel,
+  generateTwoWayANOVAProblem,
+  toggleTwoWayAnovaKey,
+  downloadTwoWayAnovaPracticeExcel,
 } from './problems.ts';
 
 /* ── Set current year ── */
@@ -98,11 +101,19 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('download-excel-btn')
     ?.addEventListener('click', downloadProblemExcel);
 
-  /* ANOVA Table Practice Problem */
+  /* One-Way ANOVA Table Practice Problem */
   document.getElementById('generate-anova-problem-btn')
     ?.addEventListener('click', generateANOVAProblem);
   document.getElementById('ap-show-key')
     ?.addEventListener('change', toggleAnovaKey);
   document.getElementById('download-anova-excel-btn')
     ?.addEventListener('click', downloadAnovaPracticeExcel);
+
+  /* Two-Way ANOVA Table Practice Problem */
+  document.getElementById('generate-anova-2way-problem-btn')
+    ?.addEventListener('click', generateTwoWayANOVAProblem);
+  document.getElementById('ap2-show-key')
+    ?.addEventListener('change', toggleTwoWayAnovaKey);
+  document.getElementById('download-anova-2way-excel-btn')
+    ?.addEventListener('click', downloadTwoWayAnovaPracticeExcel);
 });
