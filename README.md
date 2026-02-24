@@ -54,6 +54,8 @@ The **StatTeacher Toolkit** is a fully browser-based interactive statistics prob
 
 Configure population parameters, click **Generate Problem**, and instantly receive a synthetic dataset along with a complete statistical results table, including test statistics, critical values, effect sizes, confidence intervals, and a hypothesis testing decision. Results can be downloaded as a CSV file.
 
+After generating a problem, the toolkit automatically surfaces a **Student Problem Generator** card (marked Experimental). This lets instructors export a ready-to-use student worksheet and a matching instructor answer key as an Excel file, with no additional setup required.
+
 ### How It Works
 
 The app loads `toolkit/Engine_v1.0.0.py` at runtime into a Pyodide Python environment running in the browser. NumPy, SciPy, and Pandas are loaded via Pyodide's package system. All computation happens locally in the user's browser tab.
@@ -245,6 +247,38 @@ Single-predictor OLS regression. Computes the slope (b) and intercept (a) via le
 ### CSV Export
 
 Every generated problem includes a **Download Dataset (CSV)** button. The export includes the raw dataset(s) and the full results/ANOVA table, formatted for direct use in Excel, R, SPSS, or other analysis software.
+
+---
+
+### Student Problem Generators *(Experimental)*
+
+After running any statistical test, a context-sensitive **Student Problem Generator** card appears below the results. Each generator produces an instructor-ready worksheet and answer key exportable as an Excel file (`.xlsx`).
+
+There are two generator formats:
+
+**Narrative Hypothesis-Test Problems** — for tests that yield a single test statistic and decision. The generator produces a plain-English scenario, a data table, and a step-by-step question set (state hypotheses, compute test statistic, compare to critical value, make a decision, interpret effect size / CI). The instructor key includes all computed values and a written interpretation.
+
+| Test | Generator Type |
+|---|---|
+| Z-Test (one-sample) | Narrative hypothesis-test problem |
+| One-Sample t-Test | Narrative hypothesis-test problem |
+| Independent-Samples t-Test | Narrative hypothesis-test problem |
+| Repeated-Measures t-Test | Narrative hypothesis-test problem |
+| Pearson Correlation | Narrative hypothesis-test problem |
+
+**ANOVA Table Completion Problems** — for designs that produce a summary table. The generator presents a partially blanked ANOVA or regression table; students must fill in the missing cells. Difficulty controls *only* which cells are hidden — the underlying data are identical across levels.
+
+| Test | Difficulty Levels | Cells visible at each level |
+|---|---|---|
+| One-Way ANOVA | Easy | All SS and df shown; MS and F hidden |
+| | Moderate | SS_between, SS_total, df_total shown; SS_within, all MS, F hidden |
+| | Hard | df values and F shown; all SS and MS hidden |
+| Two-Way ANOVA | Easy | All SS and df shown; MS and F values hidden |
+| | Moderate | Main SS terms, df_total shown; interaction/error SS, all MS, F hidden |
+| | Hard | df values and F shown; all SS and MS hidden |
+| Simple Linear Regression | Easy | All SS and df shown; MS_regression, MS_residual, F hidden |
+| | Moderate | SS_regression, df_regression, df_residual, SS_total, df_total shown; SS_residual, all MS, F hidden |
+| | Hard | df_regression, MS_regression, F, df_residual shown; all SS (except via F/MS), MS_residual, df_total hidden |
 
 ---
 
