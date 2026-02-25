@@ -35,6 +35,7 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 │       ├── csv.ts          — CSV conversion and dataset download
 │       ├── stats.ts        — Browser-side p-value math
 │       ├── problems.ts     — Student problem generator and Excel export
+│       ├── batch.ts        — Batch dataset and problem generation with parameter sweep
 │       └── globals.d.ts    — Ambient type declarations for Pyodide and SheetJS
 ├── package.json            — npm scripts and dev dependencies
 ├── tsconfig.json           — TypeScript compiler configuration
@@ -55,6 +56,8 @@ The **StatTeacher Toolkit** is a fully browser-based interactive statistics prob
 Configure population parameters, click **Generate Problem**, and instantly receive a synthetic dataset along with a complete statistical results table, including test statistics, critical values, effect sizes, confidence intervals, and a hypothesis testing decision. Results can be downloaded as a CSV file.
 
 After generating a problem, the toolkit automatically surfaces a **Student Problem Generator** card (marked Experimental). This lets instructors export a ready-to-use student worksheet and a matching instructor answer key as an Excel file, with no additional setup required.
+
+Each parameter section also includes a **Batch Generator** for producing multiple datasets or student problems in one click, with optional **Parameter Sweep** support to systematically vary any numeric parameter across the batch.
 
 ### How It Works
 
@@ -279,6 +282,37 @@ There are two generator formats:
 | Simple Linear Regression | Easy | All SS and df shown; MS_regression, MS_residual, F hidden |
 | | Moderate | SS_regression, df_regression, df_residual, SS_total, df_total shown; SS_residual, all MS, F hidden |
 | | Hard | df_regression, MS_regression, F, df_residual shown; all SS (except via F/MS), MS_residual, df_total hidden |
+
+---
+
+### Batch Generation *(Experimental)*
+
+Every parameter section and every Student Problem Generator card includes a **Batch Generator** panel. Batch generation runs the statistical engine repeatedly and exports all results as a single multi-sheet Excel workbook (`.xlsx`).
+
+There are two batch modes:
+
+**Dataset Batch** — generates N independent datasets using the current parameter settings. Each dataset is written to its own sheet. A `Metadata` sheet records the test type, alpha, parameters used, and timestamp for each run.
+
+**Student Problem Batch** — generates N complete student problems with instructor keys. Each problem is written to its own sheet (raw dataset + optional summary table + full problem text + key). An `Instructor_Key` sheet summarizes the decision, effect size, and interpretation for every problem.
+
+Both modes support up to 20 problems per batch (no sweep) or up to 50 when a parameter sweep is active.
+
+#### Parameter Sweep
+
+Inside each batch panel, an optional **Parameter Sweep** section lets instructors systematically vary any numeric parameter across the batch instead of drawing N random samples at the same settings.
+
+Each sweep row specifies:
+- **Parameter** — any numeric input for that test (e.g., n, σ, α, treatment effect)
+- **Mode** — *List* (comma-separated values) or *Range* (start / end / step)
+
+Multiple swept parameters are **zipped**: problem i gets the i-th value from each swept parameter. If lists differ in length, the shorter list repeats its last value. The batch count equals the length of the longest list or range.
+
+| Batch section | Max count (no sweep) | Max count (sweep) |
+|---|---|---|
+| Dataset Batch | 20 | 50 |
+| Student Problem Batch | 20 | 50 |
+
+**Example:** Sweeping n with values `10, 20, 30` and σ with values `5, 10, 15` produces three problems: (n=10, σ=5), (n=20, σ=10), (n=30, σ=15). Original parameter values are restored after the batch completes.
 
 ---
 
