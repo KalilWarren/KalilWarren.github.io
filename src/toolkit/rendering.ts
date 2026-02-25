@@ -81,6 +81,15 @@ export function renderResults(r: TestResult): void {
   const el = document.getElementById('results-content') as HTMLElement;
   let html = '';
 
+  /* Reset student-problem batch UI when a new single result is generated */
+  state.lastBatch = null;
+  ['pg', 'ap', 'ap2', 'pear-pg', 'reg-pg'].forEach(pfx => {
+    const dlBtn = document.getElementById(`${pfx}-batch-dl-btn`);
+    if (dlBtn) dlBtn.style.display = 'none';
+    const status = document.getElementById(`${pfx}-batch-status`);
+    if (status) { status.style.display = 'none'; status.textContent = ''; }
+  });
+
   const pgCard  = document.getElementById('problem-gen-card') as HTMLElement;
   const pgTag   = document.getElementById('pg-tag') as HTMLElement;
   const pgOutput = document.getElementById('pg-output') as HTMLElement;

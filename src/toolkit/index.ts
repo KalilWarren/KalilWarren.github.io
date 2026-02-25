@@ -13,6 +13,12 @@ import {
 import { renderResults } from './rendering.ts';
 import { downloadCSV } from './csv.ts';
 import {
+  generateDatasetBatch,
+  generateBatch,
+  downloadDatasetBatchWorkbook,
+  downloadBatchWorkbook,
+} from './batch.ts';
+import {
   generateStudentProblem,
   toggleInstructorKey,
   downloadProblemExcel,
@@ -138,4 +144,67 @@ window.addEventListener('DOMContentLoaded', () => {
     ?.addEventListener('change', toggleRegressionKey);
   document.getElementById('download-reg-excel-btn')
     ?.addEventListener('click', downloadRegressionPracticeExcel);
+
+  /* ── Dataset Batch (one per param section) ── */
+  const datasetBatchEntries: [string, import('./types.ts').TestType][] = [
+    ['z',    'z_test'],
+    ['t',    't_test'],
+    ['ind',  'independent_t_test'],
+    ['rep',  'repeated_t_test'],
+    ['anova','anova'],
+    ['pear', 'pearson'],
+    ['reg',  'regression'],
+  ];
+  datasetBatchEntries.forEach(([pfx, testType]) => {
+    document.getElementById(`${pfx}-batch-gen-btn`)
+      ?.addEventListener('click', () =>
+        generateDatasetBatch(testType, `${pfx}-batch-count`,
+                             `${pfx}-batch-status`, `${pfx}-batch-dl-btn`));
+    document.getElementById(`${pfx}-batch-dl-btn`)
+      ?.addEventListener('click', downloadDatasetBatchWorkbook);
+  });
+
+  /* ── Student Problem Batch (one per problem-gen card) ── */
+
+  /* Narrative (z / t / ind-t / rep-t) — testType determined at click time */
+  document.getElementById('pg-batch-gen-btn')
+    ?.addEventListener('click', () => {
+      if (!state.lastResult) return;
+      generateBatch(
+        state.lastResult.type as import('./types.ts').TestType,
+        'pg-batch-count', 'pg-batch-status', 'pg-batch-dl-btn'
+      );
+    });
+  document.getElementById('pg-batch-dl-btn')
+    ?.addEventListener('click', downloadBatchWorkbook);
+
+  /* One-Way ANOVA */
+  document.getElementById('ap-batch-gen-btn')
+    ?.addEventListener('click', () =>
+      generateBatch('anova', 'ap-batch-count', 'ap-batch-status', 'ap-batch-dl-btn'));
+  document.getElementById('ap-batch-dl-btn')
+    ?.addEventListener('click', downloadBatchWorkbook);
+
+  /* Two-Way ANOVA */
+  document.getElementById('ap2-batch-gen-btn')
+    ?.addEventListener('click', () =>
+      generateBatch('anova', 'ap2-batch-count', 'ap2-batch-status', 'ap2-batch-dl-btn'));
+  document.getElementById('ap2-batch-dl-btn')
+    ?.addEventListener('click', downloadBatchWorkbook);
+
+  /* Pearson */
+  document.getElementById('pear-pg-batch-gen-btn')
+    ?.addEventListener('click', () =>
+      generateBatch('pearson', 'pear-pg-batch-count',
+                    'pear-pg-batch-status', 'pear-pg-batch-dl-btn'));
+  document.getElementById('pear-pg-batch-dl-btn')
+    ?.addEventListener('click', downloadBatchWorkbook);
+
+  /* Regression */
+  document.getElementById('reg-pg-batch-gen-btn')
+    ?.addEventListener('click', () =>
+      generateBatch('regression', 'reg-pg-batch-count',
+                    'reg-pg-batch-status', 'reg-pg-batch-dl-btn'));
+  document.getElementById('reg-pg-batch-dl-btn')
+    ?.addEventListener('click', downloadBatchWorkbook);
 });

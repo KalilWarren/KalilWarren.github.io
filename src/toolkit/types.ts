@@ -358,3 +358,27 @@ export interface TwoWayAnovaPracticeData {
   studentPrompt: string;
   decisionStatements: string[];   /* one entry per effect: A, B, A×B */
 }
+
+/* ── Batch Generation ── */
+
+export interface DatasetBatchItem {
+  problemID:      number;
+  testType:       TestType;
+  datasetRows:    (string | number)[][];  /* header + data rows (AOA-ready) */
+  alpha:          number;
+  parametersUsed: string;
+  timestamp:      number;
+}
+
+export interface BatchItem {
+  problemID:      number;
+  testType:       TestType;
+  datasetRows:    (string | number)[][];
+  studentPrompt:  string;   /* plain-text scenario */
+  instructorKey:  string;   /* plain-text key + formulas */
+  decision:       string;   /* "Reject H₀" | "Fail to reject H₀" */
+  effectSize:     string;   /* Cohen's d, r², or "—" */
+  alpha:          number;
+  parametersUsed: string;
+  timestamp:      number;
+}
