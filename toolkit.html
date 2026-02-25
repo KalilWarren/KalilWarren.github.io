@@ -432,6 +432,35 @@
             <input type="number" id="z-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="z-batch-count">Number of datasets</label>
+              <input type="number" id="z-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="z-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="z-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="z-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="z-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="z-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="z-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- ── ONE-SAMPLE t-TEST ── -->
@@ -479,6 +508,35 @@
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="t-seed" placeholder="Leave blank for random" step="1" />
           </div>
+        </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="t-batch-count">Number of datasets</label>
+              <input type="number" id="t-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="t-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="t-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="t-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="t-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="t-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="t-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -538,6 +596,35 @@
             </select>
           </div>
         </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="ind-batch-count">Number of datasets</label>
+              <input type="number" id="ind-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="ind-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="ind-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="ind-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="ind-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="ind-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="ind-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- ── REPEATED t-TEST ── -->
@@ -580,6 +667,35 @@
             <input type="number" id="rep-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="rep-batch-count">Number of datasets</label>
+              <input type="number" id="rep-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="rep-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="rep-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="rep-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="rep-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="rep-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="rep-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- ── ANOVA ── -->
@@ -615,6 +731,35 @@
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="anova-seed" placeholder="Leave blank for random" step="1" />
           </div>
+        </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="anova-batch-count">Number of datasets</label>
+              <input type="number" id="anova-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="anova-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="anova-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="anova-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="anova-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="anova-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="anova-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -676,6 +821,35 @@
             <input type="number" id="pear-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="pear-batch-count">Number of datasets</label>
+              <input type="number" id="pear-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="pear-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="pear-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="pear-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="pear-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="pear-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="pear-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
 
       <!-- ── SIMPLE REGRESSION ── -->
@@ -724,6 +898,35 @@
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="reg-seed" placeholder="Leave blank for random" step="1" />
           </div>
+        </div>
+        <!-- ── Dataset Batch ── -->
+        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
+          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
+          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+            <div class="form-group" style="margin:0; min-width:150px;">
+              <label for="reg-batch-count">Number of datasets</label>
+              <input type="number" id="reg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+            </div>
+            <button class="btn-generate" id="reg-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
+            <button class="btn-download" id="reg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
+          </div>
+          <p id="reg-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
+          <!-- ── Parameter Sweep ── -->
+          <details id="reg-sweep-panel" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            </summary>
+            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+              <div id="reg-sweep-rows" style="margin-bottom:0.5rem;"></div>
+              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                <button type="button" id="reg-sweep-add-btn"
+                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                  + Add Parameter
+                </button>
+                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -827,6 +1030,35 @@
           <button class="btn-download" id="download-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
         </div>
       </div>
+      <!-- ── Batch Problem Generation ── -->
+      <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; min-width:160px;">
+            <label for="pg-batch-count">Number of problems</label>
+            <input type="number" id="pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+          </div>
+          <button class="btn-generate" id="pg-batch-gen-btn" style="margin:0;">Generate Batch</button>
+          <button class="btn-download" id="pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+        </div>
+        <p id="pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
+        <!-- ── Parameter Sweep ── -->
+        <details id="pg-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="pg-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+      </div>
     </div>
 
     <!-- ===== ANOVA TABLE PRACTICE PROBLEM CARD ===== -->
@@ -876,6 +1108,35 @@
           <button class="btn-download" id="download-anova-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
         </div>
       </div>
+      <!-- ── Batch Problem Generation ── -->
+      <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; min-width:160px;">
+            <label for="ap-batch-count">Number of problems</label>
+            <input type="number" id="ap-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+          </div>
+          <button class="btn-generate" id="ap-batch-gen-btn" style="margin:0;">Generate Batch</button>
+          <button class="btn-download" id="ap-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+        </div>
+        <p id="ap-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
+        <!-- ── Parameter Sweep ── -->
+        <details id="ap-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="ap-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="ap-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+      </div>
     </div>
 
     <!-- ===== TWO-WAY ANOVA TABLE PRACTICE PROBLEM CARD ===== -->
@@ -924,6 +1185,35 @@
         <div class="download-area" style="margin-top:1.25rem;">
           <button class="btn-download" id="download-anova-2way-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
         </div>
+      </div>
+      <!-- ── Batch Problem Generation ── -->
+      <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; min-width:160px;">
+            <label for="ap2-batch-count">Number of problems</label>
+            <input type="number" id="ap2-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+          </div>
+          <button class="btn-generate" id="ap2-batch-gen-btn" style="margin:0;">Generate Batch</button>
+          <button class="btn-download" id="ap2-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+        </div>
+        <p id="ap2-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
+        <!-- ── Parameter Sweep ── -->
+        <details id="ap2-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="ap2-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="ap2-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -976,6 +1266,35 @@
         <div class="download-area" style="margin-top:1.25rem;">
           <button class="btn-download" id="download-pearson-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
         </div>
+      </div>
+      <!-- ── Batch Problem Generation ── -->
+      <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; min-width:160px;">
+            <label for="pear-pg-batch-count">Number of problems</label>
+            <input type="number" id="pear-pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+          </div>
+          <button class="btn-generate" id="pear-pg-batch-gen-btn" style="margin:0;">Generate Batch</button>
+          <button class="btn-download" id="pear-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+        </div>
+        <p id="pear-pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
+        <!-- ── Parameter Sweep ── -->
+        <details id="pear-pg-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="pear-pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="pear-pg-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
 
@@ -1038,6 +1357,35 @@
         <div class="download-area" style="margin-top:1.25rem;">
           <button class="btn-download" id="download-reg-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
         </div>
+      </div>
+      <!-- ── Batch Problem Generation ── -->
+      <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; min-width:160px;">
+            <label for="reg-pg-batch-count">Number of problems</label>
+            <input type="number" id="reg-pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+          </div>
+          <button class="btn-generate" id="reg-pg-batch-gen-btn" style="margin:0;">Generate Batch</button>
+          <button class="btn-download" id="reg-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+        </div>
+        <p id="reg-pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
+        <!-- ── Parameter Sweep ── -->
+        <details id="reg-pg-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="reg-pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="reg-pg-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
 
