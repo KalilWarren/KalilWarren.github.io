@@ -17,6 +17,7 @@ import {
   generateBatch,
   downloadDatasetBatchWorkbook,
   downloadBatchWorkbook,
+  addSweepRow,
 } from './batch.ts';
 import {
   generateStudentProblem,
@@ -159,9 +160,12 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById(`${pfx}-batch-gen-btn`)
       ?.addEventListener('click', () =>
         generateDatasetBatch(testType, `${pfx}-batch-count`,
-                             `${pfx}-batch-status`, `${pfx}-batch-dl-btn`));
+                             `${pfx}-batch-status`, `${pfx}-batch-dl-btn`,
+                             `${pfx}-sweep-rows`));
     document.getElementById(`${pfx}-batch-dl-btn`)
       ?.addEventListener('click', downloadDatasetBatchWorkbook);
+    document.getElementById(`${pfx}-sweep-add-btn`)
+      ?.addEventListener('click', () => addSweepRow(`${pfx}-sweep-rows`, testType));
   });
 
   /* ── Student Problem Batch (one per problem-gen card) ── */
@@ -172,39 +176,52 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!state.lastResult) return;
       generateBatch(
         state.lastResult.type as import('./types.ts').TestType,
-        'pg-batch-count', 'pg-batch-status', 'pg-batch-dl-btn'
+        'pg-batch-count', 'pg-batch-status', 'pg-batch-dl-btn', 'pg-sweep-rows'
       );
     });
   document.getElementById('pg-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
+  document.getElementById('pg-sweep-add-btn')
+    ?.addEventListener('click', () => {
+      if (!state.lastResult) return;
+      addSweepRow('pg-sweep-rows', state.lastResult.type as import('./types.ts').TestType);
+    });
 
   /* One-Way ANOVA */
   document.getElementById('ap-batch-gen-btn')
     ?.addEventListener('click', () =>
-      generateBatch('anova', 'ap-batch-count', 'ap-batch-status', 'ap-batch-dl-btn'));
+      generateBatch('anova', 'ap-batch-count', 'ap-batch-status', 'ap-batch-dl-btn', 'ap-sweep-rows'));
   document.getElementById('ap-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
+  document.getElementById('ap-sweep-add-btn')
+    ?.addEventListener('click', () => addSweepRow('ap-sweep-rows', 'anova'));
 
   /* Two-Way ANOVA */
   document.getElementById('ap2-batch-gen-btn')
     ?.addEventListener('click', () =>
-      generateBatch('anova', 'ap2-batch-count', 'ap2-batch-status', 'ap2-batch-dl-btn'));
+      generateBatch('anova', 'ap2-batch-count', 'ap2-batch-status', 'ap2-batch-dl-btn', 'ap2-sweep-rows'));
   document.getElementById('ap2-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
+  document.getElementById('ap2-sweep-add-btn')
+    ?.addEventListener('click', () => addSweepRow('ap2-sweep-rows', 'anova'));
 
   /* Pearson */
   document.getElementById('pear-pg-batch-gen-btn')
     ?.addEventListener('click', () =>
       generateBatch('pearson', 'pear-pg-batch-count',
-                    'pear-pg-batch-status', 'pear-pg-batch-dl-btn'));
+                    'pear-pg-batch-status', 'pear-pg-batch-dl-btn', 'pear-pg-sweep-rows'));
   document.getElementById('pear-pg-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
+  document.getElementById('pear-pg-sweep-add-btn')
+    ?.addEventListener('click', () => addSweepRow('pear-pg-sweep-rows', 'pearson'));
 
   /* Regression */
   document.getElementById('reg-pg-batch-gen-btn')
     ?.addEventListener('click', () =>
       generateBatch('regression', 'reg-pg-batch-count',
-                    'reg-pg-batch-status', 'reg-pg-batch-dl-btn'));
+                    'reg-pg-batch-status', 'reg-pg-batch-dl-btn', 'reg-pg-sweep-rows'));
   document.getElementById('reg-pg-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
+  document.getElementById('reg-pg-sweep-add-btn')
+    ?.addEventListener('click', () => addSweepRow('reg-pg-sweep-rows', 'regression'));
 });

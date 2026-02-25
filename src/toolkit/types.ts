@@ -365,6 +365,7 @@ export interface DatasetBatchItem {
   problemID:      number;
   testType:       TestType;
   datasetRows:    (string | number)[][];  /* header + data rows (AOA-ready) */
+  tableRows:      (string | number)[][];  /* ANOVA/regression summary table (empty for others) */
   alpha:          number;
   parametersUsed: string;
   timestamp:      number;
@@ -374,8 +375,9 @@ export interface BatchItem {
   problemID:      number;
   testType:       TestType;
   datasetRows:    (string | number)[][];
-  studentPrompt:  string;   /* plain-text scenario */
-  instructorKey:  string;   /* plain-text key + formulas */
+  tableRows:      (string | number)[][];  /* ANOVA/regression summary table (empty for others) */
+  problemRows:    (string | number | null)[][];  /* full student problem + instructor key AOA */
+  instructorKey:  string;   /* brief interpretation for the summary Instructor_Key sheet */
   decision:       string;   /* "Reject H₀" | "Fail to reject H₀" */
   effectSize:     string;   /* Cohen's d, r², or "—" */
   alpha:          number;
