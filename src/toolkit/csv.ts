@@ -47,9 +47,7 @@ export function downloadCSV(): void {
       parts.push(toCSV(r.results as unknown as Record<string, unknown>[]));
       break;
     case 'repeated_t_test':
-      parts.push('# Pre-Treatment\n' + arrToCSV(r.pre, '#,Score'));
-      parts.push('');
-      parts.push('# Post-Treatment\n' + arrToCSV(r.post, '#,Score'));
+      parts.push(['#,Pre,Post', ...r.pre.map((v, i) => `${i + 1},${v},${r.post[i]}`)].join('\n'));
       parts.push('');
       parts.push(toCSV(r.results as unknown as Record<string, unknown>[]));
       break;

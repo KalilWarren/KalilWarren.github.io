@@ -39,9 +39,13 @@ import {
 
 /* ── Set current year ── */
 import '../year.ts';
+import { initTooltips } from './tooltips.ts';
 
 /* ── Pyodide boot ── */
 window.addEventListener('DOMContentLoaded', initPyodide);
+
+/* ── Tooltip system ── */
+window.addEventListener('DOMContentLoaded', initTooltips);
 
 /* ── Generate button ── */
 async function generateProblem(): Promise<void> {
