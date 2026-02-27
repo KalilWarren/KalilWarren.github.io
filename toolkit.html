@@ -275,6 +275,58 @@
     .pg-key-toggle input[type="checkbox"] { width: auto; accent-color: var(--navy); cursor: pointer; }
     .pg-key-toggle label { font-weight: 700; font-size: 0.9rem; color: var(--navy); cursor: pointer; margin: 0; }
 
+    /* ── Tooltip system ── */
+    .tip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 50%;
+      border: 1px solid #aaa;
+      background: none;
+      color: #999;
+      font-size: 0.62rem;
+      font-style: italic;
+      font-weight: 700;
+      font-family: Georgia, serif;
+      line-height: 1;
+      cursor: help;
+      padding: 0;
+      vertical-align: text-bottom;
+      margin-left: 0.2rem;
+      flex-shrink: 0;
+      text-transform: none;
+      letter-spacing: normal;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .tip-icon:hover,
+    .tip-icon:focus {
+      background: #777;
+      border-color: #777;
+      color: #fff;
+      outline: none;
+    }
+    #stat-tooltip {
+      position: fixed;
+      z-index: 9999;
+      max-width: 260px;
+      padding: 0.5rem 0.75rem;
+      background: #2d2d2d;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      box-shadow: 0 3px 14px rgba(0,0,0,0.25);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      font-weight: normal;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    #stat-tooltip.visible { opacity: 1; }
+
     /* ── Treatment effect toggle ── */
     .tx-toggle-row {
       display: flex;
@@ -391,33 +443,33 @@
         <p class="section-label">Z-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Population Mean (&mu;)</label>
+            <label>Population Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Population SD (&sigma;)</label>
+            <label>Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n)</label>
+            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-n" value="10" min="2" step="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
             <input type="checkbox" id="z-tx-switch" checked />
-            <label for="z-tx-switch">Apply Treatment Effect</label>
+            <label for="z-tx-switch">Apply Treatment Effect <button type="button" class="tip-icon" data-tip="When checked, applies the treatment effect to generate outcome values that deviate from the null. Uncheck to simulate data under H₀." aria-label="More info">ⓘ</button></label>
           </div>
           <div id="z-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
             <div class="form-group">
-              <label>Treatment Effect</label>
+              <label>Treatment Effect <button type="button" class="tip-icon" data-tip="Amount added when generating the outcome variable. A non-zero value simulates a true effect in the population; 0 simulates the null." aria-label="More info">ⓘ</button></label>
               <input type="number" id="z-tx-effect" value="5" step="any" />
             </div>
             <div class="form-group">
-              <label>Noise SD</label>
+              <label>Noise SD <button type="button" class="tip-icon" data-tip="Random noise (standard deviation) added to each outcome value. Larger values increase variability and make effects harder to detect." aria-label="More info">ⓘ</button></label>
               <input type="number" id="z-noise-sd" value="3" step="any" />
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -432,35 +484,6 @@
             <input type="number" id="z-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="z-batch-count">Number of datasets</label>
-              <input type="number" id="z-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="z-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="z-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="z-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="z-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="z-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="z-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
-        </div>
       </div>
 
       <!-- ── ONE-SAMPLE t-TEST ── -->
@@ -468,33 +491,33 @@
         <p class="section-label">One-Sample t-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Population Mean (&mu;)</label>
+            <label>Population Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Population SD (&sigma;)</label>
+            <label>Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n)</label>
+            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-n" value="10" min="2" step="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
             <input type="checkbox" id="t-tx-switch" checked />
-            <label for="t-tx-switch">Apply Treatment Effect</label>
+            <label for="t-tx-switch">Apply Treatment Effect <button type="button" class="tip-icon" data-tip="When checked, applies the treatment effect to generate outcome values that deviate from the null. Uncheck to simulate data under H₀." aria-label="More info">ⓘ</button></label>
           </div>
           <div id="t-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
             <div class="form-group">
-              <label>Treatment Effect</label>
+              <label>Treatment Effect <button type="button" class="tip-icon" data-tip="Amount added when generating the outcome variable. A non-zero value simulates a true effect in the population; 0 simulates the null." aria-label="More info">ⓘ</button></label>
               <input type="number" id="t-tx-effect" value="5" step="any" />
             </div>
             <div class="form-group">
-              <label>Noise SD</label>
+              <label>Noise SD <button type="button" class="tip-icon" data-tip="Random noise (standard deviation) added to each outcome value. Larger values increase variability and make effects harder to detect." aria-label="More info">ⓘ</button></label>
               <input type="number" id="t-noise-sd" value="3" step="any" />
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -509,35 +532,6 @@
             <input type="number" id="t-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="t-batch-count">Number of datasets</label>
-              <input type="number" id="t-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="t-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="t-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="t-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="t-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="t-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="t-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
-        </div>
       </div>
 
       <!-- ── INDEPENDENT t-TEST ── -->
@@ -547,15 +541,15 @@
           <div>
             <p class="group-label">Group 1</p>
             <div class="form-group">
-              <label>Population Mean 1 (&mu;₁)</label>
+              <label>Population Mean 1 (&mu;₁) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-mean1" value="10" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 1 (&sigma;₁)</label>
+              <label>Population SD 1 (&sigma;₁) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-sd1" value="15" step="any" />
             </div>
             <div class="form-group">
-              <label>Sample Size (n₁)</label>
+              <label>Sample Size (n₁) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-n1" value="10" min="2" step="1" />
             </div>
             <div class="form-group">
@@ -566,15 +560,15 @@
           <div>
             <p class="group-label">Group 2</p>
             <div class="form-group">
-              <label>Population Mean 2 (&mu;₂)</label>
+              <label>Population Mean 2 (&mu;₂) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-mean2" value="20" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 2 (&sigma;₂)</label>
+              <label>Population SD 2 (&sigma;₂) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-sd2" value="15" step="any" />
             </div>
             <div class="form-group">
-              <label>Sample Size (n₂)</label>
+              <label>Sample Size (n₂) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-n2" value="10" min="2" step="1" />
             </div>
             <div class="form-group">
@@ -585,7 +579,7 @@
         </div>
         <div class="form-grid" style="margin-top:0.25rem;">
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="ind-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -596,35 +590,6 @@
             </select>
           </div>
         </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="ind-batch-count">Number of datasets</label>
-              <input type="number" id="ind-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="ind-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="ind-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="ind-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="ind-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="ind-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="ind-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
-        </div>
       </div>
 
       <!-- ── REPEATED t-TEST ── -->
@@ -632,27 +597,27 @@
         <p class="section-label">Repeated-Measures t-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Baseline Population Mean (&mu;)</label>
+            <label>Baseline Population Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Baseline Population SD (&sigma;)</label>
+            <label>Baseline Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n)</label>
+            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-n" value="10" min="2" step="1" />
           </div>
           <div class="form-group">
-            <label>Treatment Effect</label>
+            <label>Treatment Effect <button type="button" class="tip-icon" data-tip="Amount added when generating the outcome variable. A non-zero value simulates a true effect in the population; 0 simulates the null." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-tx-effect" value="5" step="any" />
           </div>
           <div class="form-group">
-            <label>Noise SD</label>
+            <label>Noise SD <button type="button" class="tip-icon" data-tip="Random noise (standard deviation) added to each outcome value. Larger values increase variability and make effects harder to detect." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-noise-sd" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -667,35 +632,6 @@
             <input type="number" id="rep-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="rep-batch-count">Number of datasets</label>
-              <input type="number" id="rep-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="rep-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="rep-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="rep-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="rep-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="rep-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="rep-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
-        </div>
       </div>
 
       <!-- ── ANOVA ── -->
@@ -708,11 +644,11 @@
             <p class="hint">Format: Name:Levels — e.g., <code>A:3</code> or <code>A:3,B:2</code></p>
           </div>
           <div class="form-group">
-            <label>Observations per Cell (n)</label>
+            <label>Observations per Cell (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-n" value="10" min="2" step="1" />
           </div>
           <div class="form-group">
-            <label>Grand Mean (&mu;)</label>
+            <label>Grand Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-mean" value="10" step="any" />
           </div>
           <div class="form-group">
@@ -720,46 +656,17 @@
             <input type="number" id="anova-std" value="2" step="any" />
           </div>
           <div class="form-group">
-            <label>Effect Size (between-cell SD)</label>
+            <label>Effect Size (between-cell SD) <button type="button" class="tip-icon" data-tip="Standard deviation of the group means around the grand mean. Larger values create more pronounced between-group differences." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-effect" value="2.0" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="anova-seed" placeholder="Leave blank for random" step="1" />
           </div>
-        </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="anova-batch-count">Number of datasets</label>
-              <input type="number" id="anova-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="anova-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="anova-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="anova-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="anova-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="anova-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="anova-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
         </div>
       </div>
 
@@ -784,7 +691,7 @@
             <input type="number" id="pear-y-std" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n)</label>
+            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pear-n" value="10" min="3" step="1" />
           </div>
           <div class="form-group">
@@ -793,20 +700,20 @@
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
             <input type="checkbox" id="pear-tx-switch" checked />
-            <label for="pear-tx-switch">Apply Treatment Effect to Y (introduces X–Y covariance)</label>
+            <label for="pear-tx-switch">Apply Treatment Effect to Y (introduces X–Y covariance) <button type="button" class="tip-icon" data-tip="When checked, applies the treatment effect to generate outcome values that deviate from the null. Uncheck to simulate data under H₀." aria-label="More info">ⓘ</button></label>
           </div>
           <div id="pear-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
             <div class="form-group">
-              <label>Treatment Effect</label>
+              <label>Treatment Effect <button type="button" class="tip-icon" data-tip="Amount added when generating the outcome variable. A non-zero value simulates a true effect in the population; 0 simulates the null." aria-label="More info">ⓘ</button></label>
               <input type="number" id="pear-tx-effect" value="10" step="any" />
             </div>
             <div class="form-group">
-              <label>Noise SD</label>
+              <label>Noise SD <button type="button" class="tip-icon" data-tip="Random noise (standard deviation) added to each outcome value. Larger values increase variability and make effects harder to detect." aria-label="More info">ⓘ</button></label>
               <input type="number" id="pear-noise-sd" value="3" step="any" />
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pear-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -820,35 +727,6 @@
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="pear-seed" placeholder="Leave blank for random" step="1" />
           </div>
-        </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="pear-batch-count">Number of datasets</label>
-              <input type="number" id="pear-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="pear-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="pear-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="pear-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="pear-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="pear-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="pear-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
         </div>
       </div>
 
@@ -873,60 +751,31 @@
             <input type="number" id="reg-y-std" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n)</label>
+            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="reg-n" value="10" min="3" step="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
             <input type="checkbox" id="reg-tx-switch" checked />
-            <label for="reg-tx-switch">Apply Treatment Effect to Y (introduces X–Y relationship)</label>
+            <label for="reg-tx-switch">Apply Treatment Effect to Y (introduces X–Y relationship) <button type="button" class="tip-icon" data-tip="When checked, applies the treatment effect to generate outcome values that deviate from the null. Uncheck to simulate data under H₀." aria-label="More info">ⓘ</button></label>
           </div>
           <div id="reg-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
             <div class="form-group">
-              <label>Treatment Effect</label>
+              <label>Treatment Effect <button type="button" class="tip-icon" data-tip="Amount added when generating the outcome variable. A non-zero value simulates a true effect in the population; 0 simulates the null." aria-label="More info">ⓘ</button></label>
               <input type="number" id="reg-tx-effect" value="10" step="any" />
             </div>
             <div class="form-group">
-              <label>Noise SD</label>
+              <label>Noise SD <button type="button" class="tip-icon" data-tip="Random noise (standard deviation) added to each outcome value. Larger values increase variability and make effects harder to detect." aria-label="More info">ⓘ</button></label>
               <input type="number" id="reg-noise-sd" value="3" step="any" />
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;)</label>
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="reg-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="reg-seed" placeholder="Leave blank for random" step="1" />
           </div>
-        </div>
-        <!-- ── Dataset Batch ── -->
-        <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid #ddd;">
-          <p class="section-label" style="margin-bottom:0.6rem;">Batch Dataset Generation</p>
-          <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin:0; min-width:150px;">
-              <label for="reg-batch-count">Number of datasets</label>
-              <input type="number" id="reg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
-            </div>
-            <button class="btn-generate" id="reg-batch-gen-btn" style="margin:0;">Generate Batch Datasets</button>
-            <button class="btn-download" id="reg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Datasets (Excel)</button>
-          </div>
-          <p id="reg-batch-status" style="display:none; margin-top:0.5rem; font-size:0.88rem; color:#555;"></p>
-          <!-- ── Parameter Sweep ── -->
-          <details id="reg-sweep-panel" style="margin-top:0.75rem;">
-            <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-              Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
-            </summary>
-            <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
-              <div id="reg-sweep-rows" style="margin-bottom:0.5rem;"></div>
-              <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-                <button type="button" id="reg-sweep-add-btn"
-                        style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                  + Add Parameter
-                </button>
-                <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
-              </div>
-            </div>
-          </details>
         </div>
       </div>
 
@@ -938,6 +787,202 @@
         <div class="dot"></div><div class="dot"></div><div class="dot"></div>
         <span>Running computation&hellip;</span>
       </div>
+      <!-- ── Batch Dataset Section: z_test ── -->
+      <div class="test-section" id="batch-z_test">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="z-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="z-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="z-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="z-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="z-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="z-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="z-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="z-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: t_test ── -->
+      <div class="test-section" id="batch-t_test">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="t-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="t-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="t-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="t-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="t-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="t-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="t-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="t-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: independent_t_test ── -->
+      <div class="test-section" id="batch-independent_t_test">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="ind-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="ind-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="ind-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="ind-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="ind-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="ind-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="ind-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="ind-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: repeated_t_test ── -->
+      <div class="test-section" id="batch-repeated_t_test">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="rep-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="rep-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="rep-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="rep-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="rep-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="rep-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="rep-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="rep-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: anova ── -->
+      <div class="test-section" id="batch-anova">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="anova-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="anova-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="anova-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="anova-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="anova-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="anova-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="anova-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="anova-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: pearson ── -->
+      <div class="test-section" id="batch-pearson">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="pear-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="pear-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="pear-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="pear-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="pear-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="pear-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="pear-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="pear-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: regression ── -->
+      <div class="test-section" id="batch-regression">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="reg-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="reg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="reg-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="reg-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="reg-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="reg-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="reg-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="reg-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
     </div>
 
     <!-- Results card (hidden until generated) -->
@@ -952,7 +997,7 @@
     <!-- ===== PROBLEM GENERATOR CARD (z-test / t-test, experimental) ===== -->
     <div class="card" id="problem-gen-card" style="display:none;">
       <h2>
-        Student Problem Generator
+        Student Problem Generator<button type="button" class="tip-icon" data-tip="Generates a student-facing problem statement (and optional instructor key) from the currently generated results." aria-label="More info">ⓘ</button>
         <span id="pg-tag" class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
           Experimental
         </span>
@@ -1012,16 +1057,20 @@
         </div>
       </div>
 
-      <button class="btn-generate" id="generate-student-btn" style="margin-top:0.75rem;">
-        Generate Student Problem
-      </button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn-generate" id="generate-student-btn" style="margin-top:0; flex:1;">
+          Generate Student Problem
+        </button>
+        <button type="button" class="tip-icon" data-tip="Creates a printable student prompt based on the current test output. Generate results first." aria-label="More info">ⓘ</button>
+      </div>
 
       <div id="pg-output" style="display:none; margin-top:1.75rem;">
+        <p class="hint" style="font-size:0.82rem; color:#888; margin:0 0 0.5rem 0;"><button type="button" class="tip-icon" data-tip="Copy/paste this prompt into an LMS, worksheet, or exam. Values match the current computed results." aria-label="More info">ⓘ</button> Copy/paste into an LMS, worksheet, or exam.</p>
         <div id="pg-problem-text"></div>
 
         <div class="pg-key-toggle">
           <input type="checkbox" id="pg-show-key" />
-          <label for="pg-show-key">Show Instructor Key</label>
+          <label for="pg-show-key">Show Instructor Key<button type="button" class="tip-icon" data-tip="Shows the answer key with formulas, computed values, and a decision/interpretation." aria-label="More info">ⓘ</button></label>
         </div>
 
         <div id="pg-instructor-key" style="display:none; margin-top:1rem;"></div>
@@ -1032,27 +1081,27 @@
       </div>
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
-        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
-            <label for="pg-batch-count">Number of problems</label>
+            <label for="pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
           </div>
-          <button class="btn-generate" id="pg-batch-gen-btn" style="margin:0;">Generate Batch</button>
-          <button class="btn-download" id="pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+          <button class="btn-generate" id="pg-batch-gen-btn" style="margin:0;">Generate Batch<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+          <button class="btn-download" id="pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
         </div>
         <p id="pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
         <!-- ── Parameter Sweep ── -->
         <details id="pg-sweep-panel" style="margin-top:0.75rem;">
           <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
           </summary>
           <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
             <div id="pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <button type="button" id="pg-sweep-add-btn"
                       style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                + Add Parameter
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
               </button>
               <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
             </div>
@@ -1064,7 +1113,7 @@
     <!-- ===== ANOVA TABLE PRACTICE PROBLEM CARD ===== -->
     <div class="card" id="anova-practice-card" style="display:none;">
       <h2>
-        ANOVA Table Practice Problem
+        ANOVA Table Practice Problem<button type="button" class="tip-icon" data-tip="Generates a student-facing problem statement (and optional instructor key) from the currently generated results." aria-label="More info">ⓘ</button>
         <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
           Experimental
         </span>
@@ -1090,16 +1139,20 @@
         </div>
       </div>
 
-      <button class="btn-generate" id="generate-anova-problem-btn" style="margin-top:0.75rem;">
-        Generate ANOVA Table Problem
-      </button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn-generate" id="generate-anova-problem-btn" style="margin-top:0; flex:1;">
+          Generate ANOVA Table Problem
+        </button>
+        <button type="button" class="tip-icon" data-tip="Creates a printable student prompt based on the current test output. Generate results first." aria-label="More info">ⓘ</button>
+      </div>
 
       <div id="ap-output" style="display:none; margin-top:1.75rem;">
+        <p class="hint" style="font-size:0.82rem; color:#888; margin:0 0 0.5rem 0;"><button type="button" class="tip-icon" data-tip="Cells marked with '?' are intentionally missing so students can fill them in." aria-label="More info">ⓘ</button> Cells marked with <strong>?</strong> are intentionally missing for students to fill in.</p>
         <div id="ap-problem-text"></div>
 
         <div class="pg-key-toggle">
           <input type="checkbox" id="ap-show-key" />
-          <label for="ap-show-key">Show Instructor Key</label>
+          <label for="ap-show-key">Show Instructor Key<button type="button" class="tip-icon" data-tip="Shows the answer key with formulas, computed values, and a decision/interpretation." aria-label="More info">ⓘ</button></label>
         </div>
 
         <div id="ap-instructor-key" style="display:none; margin-top:1rem;"></div>
@@ -1110,27 +1163,27 @@
       </div>
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
-        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
-            <label for="ap-batch-count">Number of problems</label>
+            <label for="ap-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
             <input type="number" id="ap-batch-count" min="1" max="20" value="5" style="width:5rem;" />
           </div>
-          <button class="btn-generate" id="ap-batch-gen-btn" style="margin:0;">Generate Batch</button>
-          <button class="btn-download" id="ap-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+          <button class="btn-generate" id="ap-batch-gen-btn" style="margin:0;">Generate Batch<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+          <button class="btn-download" id="ap-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
         </div>
         <p id="ap-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
         <!-- ── Parameter Sweep ── -->
         <details id="ap-sweep-panel" style="margin-top:0.75rem;">
           <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
           </summary>
           <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
             <div id="ap-sweep-rows" style="margin-bottom:0.5rem;"></div>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <button type="button" id="ap-sweep-add-btn"
                       style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                + Add Parameter
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
               </button>
               <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
             </div>
@@ -1142,7 +1195,7 @@
     <!-- ===== TWO-WAY ANOVA TABLE PRACTICE PROBLEM CARD ===== -->
     <div class="card" id="anova-2way-practice-card" style="display:none;">
       <h2>
-        Two-Way ANOVA Table Practice Problem
+        Two-Way ANOVA Table Practice Problem<button type="button" class="tip-icon" data-tip="Generates a student-facing problem statement (and optional instructor key) from the currently generated results." aria-label="More info">ⓘ</button>
         <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
           Experimental
         </span>
@@ -1168,16 +1221,20 @@
         </div>
       </div>
 
-      <button class="btn-generate" id="generate-anova-2way-problem-btn" style="margin-top:0.75rem;">
-        Generate Two-Way ANOVA Table Problem
-      </button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn-generate" id="generate-anova-2way-problem-btn" style="margin-top:0; flex:1;">
+          Generate Two-Way ANOVA Table Problem
+        </button>
+        <button type="button" class="tip-icon" data-tip="Creates a printable student prompt based on the current test output. Generate results first." aria-label="More info">ⓘ</button>
+      </div>
 
       <div id="ap2-output" style="display:none; margin-top:1.75rem;">
+        <p class="hint" style="font-size:0.82rem; color:#888; margin:0 0 0.5rem 0;"><button type="button" class="tip-icon" data-tip="Cells marked with '?' are intentionally missing so students can fill them in." aria-label="More info">ⓘ</button> Cells marked with <strong>?</strong> are intentionally missing for students to fill in.</p>
         <div id="ap2-problem-text"></div>
 
         <div class="pg-key-toggle">
           <input type="checkbox" id="ap2-show-key" />
-          <label for="ap2-show-key">Show Instructor Key</label>
+          <label for="ap2-show-key">Show Instructor Key<button type="button" class="tip-icon" data-tip="Shows the answer key with formulas, computed values, and a decision/interpretation." aria-label="More info">ⓘ</button></label>
         </div>
 
         <div id="ap2-instructor-key" style="display:none; margin-top:1rem;"></div>
@@ -1188,27 +1245,27 @@
       </div>
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
-        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
-            <label for="ap2-batch-count">Number of problems</label>
+            <label for="ap2-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
             <input type="number" id="ap2-batch-count" min="1" max="20" value="5" style="width:5rem;" />
           </div>
-          <button class="btn-generate" id="ap2-batch-gen-btn" style="margin:0;">Generate Batch</button>
-          <button class="btn-download" id="ap2-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+          <button class="btn-generate" id="ap2-batch-gen-btn" style="margin:0;">Generate Batch<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+          <button class="btn-download" id="ap2-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
         </div>
         <p id="ap2-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
         <!-- ── Parameter Sweep ── -->
         <details id="ap2-sweep-panel" style="margin-top:0.75rem;">
           <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
           </summary>
           <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
             <div id="ap2-sweep-rows" style="margin-bottom:0.5rem;"></div>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <button type="button" id="ap2-sweep-add-btn"
                       style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                + Add Parameter
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
               </button>
               <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
             </div>
@@ -1220,7 +1277,7 @@
     <!-- ===== PEARSON CORRELATION STUDENT PROBLEM CARD ===== -->
     <div class="card" id="pearson-problem-card" style="display:none;">
       <h2>
-        Student Problem Generator
+        Student Problem Generator<button type="button" class="tip-icon" data-tip="Generates a student-facing problem statement (and optional instructor key) from the currently generated results." aria-label="More info">ⓘ</button>
         <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
           Experimental
         </span>
@@ -1249,16 +1306,20 @@
         <p class="hint">Who the sample is drawn from</p>
       </div>
 
-      <button class="btn-generate" id="generate-pearson-problem-btn" style="margin-top:0.75rem;">
-        Generate Student Problem
-      </button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn-generate" id="generate-pearson-problem-btn" style="margin-top:0; flex:1;">
+          Generate Student Problem
+        </button>
+        <button type="button" class="tip-icon" data-tip="Creates a printable student prompt based on the current test output. Generate results first." aria-label="More info">ⓘ</button>
+      </div>
 
       <div id="pear-pg-output" style="display:none; margin-top:1.75rem;">
+        <p class="hint" style="font-size:0.82rem; color:#888; margin:0 0 0.5rem 0;"><button type="button" class="tip-icon" data-tip="Copy/paste this prompt into an LMS, worksheet, or exam. Values match the current computed results." aria-label="More info">ⓘ</button> Copy/paste into an LMS, worksheet, or exam.</p>
         <div id="pear-pg-problem-text"></div>
 
         <div class="pg-key-toggle">
           <input type="checkbox" id="pear-pg-show-key" />
-          <label for="pear-pg-show-key">Show Instructor Key</label>
+          <label for="pear-pg-show-key">Show Instructor Key<button type="button" class="tip-icon" data-tip="Shows the answer key with formulas, computed values, and a decision/interpretation." aria-label="More info">ⓘ</button></label>
         </div>
 
         <div id="pear-pg-instructor-key" style="display:none; margin-top:1rem;"></div>
@@ -1269,27 +1330,27 @@
       </div>
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
-        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
-            <label for="pear-pg-batch-count">Number of problems</label>
+            <label for="pear-pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pear-pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
           </div>
-          <button class="btn-generate" id="pear-pg-batch-gen-btn" style="margin:0;">Generate Batch</button>
-          <button class="btn-download" id="pear-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+          <button class="btn-generate" id="pear-pg-batch-gen-btn" style="margin:0;">Generate Batch<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+          <button class="btn-download" id="pear-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
         </div>
         <p id="pear-pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
         <!-- ── Parameter Sweep ── -->
         <details id="pear-pg-sweep-panel" style="margin-top:0.75rem;">
           <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
           </summary>
           <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
             <div id="pear-pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <button type="button" id="pear-pg-sweep-add-btn"
                       style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                + Add Parameter
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
               </button>
               <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
             </div>
@@ -1301,7 +1362,7 @@
     <!-- ===== REGRESSION TABLE PRACTICE PROBLEM CARD ===== -->
     <div class="card" id="reg-practice-card" style="display:none;">
       <h2>
-        Regression Table Practice Problem
+        Regression Table Practice Problem<button type="button" class="tip-icon" data-tip="Generates a student-facing problem statement (and optional instructor key) from the currently generated results." aria-label="More info">ⓘ</button>
         <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
           Experimental
         </span>
@@ -1340,16 +1401,20 @@
         </div>
       </div>
 
-      <button class="btn-generate" id="generate-reg-problem-btn" style="margin-top:0.75rem;">
-        Generate Regression Table Problem
-      </button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn-generate" id="generate-reg-problem-btn" style="margin-top:0; flex:1;">
+          Generate Regression Table Problem
+        </button>
+        <button type="button" class="tip-icon" data-tip="Creates a printable student prompt based on the current test output. Generate results first." aria-label="More info">ⓘ</button>
+      </div>
 
       <div id="reg-pg-output" style="display:none; margin-top:1.75rem;">
+        <p class="hint" style="font-size:0.82rem; color:#888; margin:0 0 0.5rem 0;"><button type="button" class="tip-icon" data-tip="Cells marked with '?' are intentionally missing so students can fill them in." aria-label="More info">ⓘ</button> Cells marked with <strong>?</strong> are intentionally missing for students to fill in.</p>
         <div id="reg-pg-problem-text"></div>
 
         <div class="pg-key-toggle">
           <input type="checkbox" id="reg-pg-show-key" />
-          <label for="reg-pg-show-key">Show Instructor Key</label>
+          <label for="reg-pg-show-key">Show Instructor Key<button type="button" class="tip-icon" data-tip="Shows the answer key with formulas, computed values, and a decision/interpretation." aria-label="More info">ⓘ</button></label>
         </div>
 
         <div id="reg-pg-instructor-key" style="display:none; margin-top:1rem;"></div>
@@ -1360,27 +1425,27 @@
       </div>
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
-        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation</p>
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
-            <label for="reg-pg-batch-count">Number of problems</label>
+            <label for="reg-pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
             <input type="number" id="reg-pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
           </div>
-          <button class="btn-generate" id="reg-pg-batch-gen-btn" style="margin:0;">Generate Batch</button>
-          <button class="btn-download" id="reg-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)</button>
+          <button class="btn-generate" id="reg-pg-batch-gen-btn" style="margin:0;">Generate Batch<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+          <button class="btn-download" id="reg-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
         </div>
         <p id="reg-pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
         <!-- ── Parameter Sweep ── -->
         <details id="reg-pg-sweep-panel" style="margin-top:0.75rem;">
           <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
-            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span>
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
           </summary>
           <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
             <div id="reg-pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <button type="button" id="reg-pg-sweep-add-btn"
                       style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
-                + Add Parameter
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
               </button>
               <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
             </div>

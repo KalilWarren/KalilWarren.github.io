@@ -760,7 +760,19 @@ export function downloadProblemExcel(): void {
       `and a standard deviation of SD_D = ${d.sdDiff} ${d.unit}. ` +
       `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${d.testPhrasePlain}.`;
     const rSqStr = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
+
+    /* Include raw pre/post datasets side-by-side at the top of the sheet */
+    const rawResult = (state.lastResult && state.lastResult.type === 'repeated_t_test')
+      ? state.lastResult as { pre: number[]; post: number[] }
+      : null;
+    const dataRows: (string | number)[][] = rawResult ? [
+      ['ID', `${d.pre} Score`, `${d.post} Score`],
+      ...rawResult.pre.map((v, i) => [i + 1, v, rawResult.post[i]] as [number, number, number]),
+      [],
+    ] : [];
+
     rows = [
+      ...dataRows,
       ['STUDENT PROBLEM — Repeated-Measures T-Test'],
       [],
       ['Scenario'], [narrative], [],

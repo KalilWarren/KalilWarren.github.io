@@ -1,5 +1,6 @@
 import { state } from './state.ts';
 import { gv, fmt, valClass } from './ui.ts';
+import { tipHTML, STAT_ROW_TIPS, COL_HEADER_TIPS } from './tooltips.ts';
 import type { TestResult, StatRecord, AnovaRow, TableRow } from './types.ts';
 
 /* ── HTML table builders ── */
@@ -13,14 +14,23 @@ export function recordsTable(
   let h = `<div class="result-block"><div class="tbl-wrap">`;
   if (title) h += `<h3>${title}</h3>`;
   h += `<table class="stat-table"><thead><tr>`;
-  keys.forEach(k => { h += `<th>${k}</th>`; });
+  keys.forEach(k => {
+    const hdrTip = COL_HEADER_TIPS[k] ? tipHTML(COL_HEADER_TIPS[k]) : '';
+    h += `<th>${k}${hdrTip}</th>`;
+  });
   h += `</tr></thead><tbody>`;
   records.forEach(row => {
     const isDecision = (row as StatRecord)['Statistic'] === 'Decision';
     h += `<tr${isDecision ? ' class="row-decision"' : ''}>`;
     keys.forEach(k => {
-      const v = fmt((row as Record<string, unknown>)[k]);
-      h += `<td${valClass((row as Record<string, unknown>)[k])}>${v}</td>`;
+      const raw = (row as Record<string, unknown>)[k];
+      const v   = fmt(raw);
+      let cell  = String(v);
+      if (k === 'Statistic' && typeof raw === 'string') {
+        const rowTip = STAT_ROW_TIPS[raw] ? tipHTML(STAT_ROW_TIPS[raw]) : '';
+        if (rowTip) cell += rowTip;
+      }
+      h += `<td${valClass(raw)}>${cell}</td>`;
     });
     h += `</tr>`;
   });

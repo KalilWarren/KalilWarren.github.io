@@ -46,6 +46,7 @@ export function onTestChange(): void {
   const btn = document.getElementById('generate-btn') as HTMLButtonElement;
   if (sel) {
     document.getElementById('params-' + sel)?.classList.add('active');
+    document.getElementById('batch-' + sel)?.classList.add('active');
     btn.disabled = false;
     btn.textContent = 'Generate Problem';
   } else {
