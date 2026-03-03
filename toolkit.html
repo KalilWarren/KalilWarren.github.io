@@ -541,15 +541,15 @@
           <div>
             <p class="group-label">Group 1</p>
             <div class="form-group">
-              <label>Population Mean 1 (&mu;₁) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+              <label>Population Mean 1 (&mu;₁) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ1): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-mean1" value="10" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 1 (&sigma;₁) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
+              <label>Population SD 1 (&sigma;₁) <button type="button" class="tip-icon" data-tip="Population standard deviation (σ1). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-sd1" value="15" step="any" />
             </div>
             <div class="form-group">
-              <label>Sample Size (n₁) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+              <label>Sample Size (n₁) <button type="button" class="tip-icon" data-tip="Sample size n1 (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-n1" value="10" min="2" step="1" />
             </div>
             <div class="form-group">
@@ -560,15 +560,15 @@
           <div>
             <p class="group-label">Group 2</p>
             <div class="form-group">
-              <label>Population Mean 2 (&mu;₂) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+              <label>Population Mean 2 (&mu;₂) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ2): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-mean2" value="20" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 2 (&sigma;₂) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
+              <label>Population SD 2 (&sigma;₂) <button type="button" class="tip-icon" data-tip="Population standard deviation (σ2). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-sd2" value="15" step="any" />
             </div>
             <div class="form-group">
-              <label>Sample Size (n₂) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+              <label>Sample Size (n₂) <button type="button" class="tip-icon" data-tip="Sample size n2 (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-n2" value="10" min="2" step="1" />
             </div>
             <div class="form-group">
@@ -601,7 +601,7 @@
             <input type="number" id="rep-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Baseline Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
+            <label>Baseline Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
@@ -652,7 +652,7 @@
             <input type="number" id="anova-mean" value="10" step="any" />
           </div>
           <div class="form-group">
-            <label>Within-Cell SD</label>
+            <label>Within-Cell SD  <button type="button" class="tip-icon" data-tip="Within-cell standard deviation (σ). Used to generate random samples from each group. As σ increases, the within-group variation increases and the between-group differences become less pronounced." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-std" value="2" step="any" />
           </div>
           <div class="form-group">
