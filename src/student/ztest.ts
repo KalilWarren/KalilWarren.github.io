@@ -263,7 +263,7 @@ export function renderProblem(p: ZProblem): void {
     `Historically, the population mean is μ = ${p.mu0} ${p.unit}, ` +
     `with a known population standard deviation of σ = ${p.sigma} ${p.unit}.</p>` +
     `<p>The researcher collects a random sample of n = ${p.n} participants ` +
-    `and obtains a sample mean of x̄ = ${p.xbar} ${p.unit}.</p>` +
+    `and obtains a sample mean of M = ${p.xbar} ${p.unit}.</p>` +
     `<p>Using α = ${alphaStr} (${tailLabel(p.tail)}), test whether the population mean ${p.testPhrase}.</p>` +
     `<ol>` +
     `<li>State the null and alternative hypotheses.</li>` +
@@ -321,10 +321,10 @@ function feedbackHtml(correct: boolean, hint: string): string {
 
 export function renderFeedback(p: ZProblem, grade: GradeResult): void {
   setHtml('fb-hyp',      feedbackHtml(grade.hyp,      'Select the hypothesis pair that matches the tail direction.'));
-  setHtml('fb-z',        feedbackHtml(grade.z,        'Recheck z = (x̄ − μ₀) / (σ / √n).'));
+  setHtml('fb-z',        feedbackHtml(grade.z,        'Recheck z = (M − μ₀) / (σ / √n).'));
   setHtml('fb-crit',     feedbackHtml(grade.crit,     'Critical value depends on α and tail (z<sub>α</sub> or z<sub>α/2</sub>).'));
   setHtml('fb-decision', feedbackHtml(grade.decision,  'Compare z to the critical value(s).'));
-  setHtml('fb-d',        feedbackHtml(grade.d,         'd = (x̄ − μ₀) / σ.'));
+  setHtml('fb-d',        feedbackHtml(grade.d,         'd = (M − μ₀) / σ.'));
 
   const banner = document.getElementById('fb-banner');
   if (banner) {
@@ -373,7 +373,7 @@ export function renderSolution(p: ZProblem): void {
       <tr><td>μ₀</td><td>${p.mu0}</td></tr>
       <tr><td>σ</td><td>${p.sigma}</td></tr>
       <tr><td>n</td><td>${p.n}</td></tr>
-      <tr><td>x̄</td><td>${p.xbar}</td></tr>
+      <tr><td>M</td><td>${p.xbar}</td></tr>
       <tr><td>α</td><td>${alphaStr}</td></tr>
       <tr><td>Tail</td><td>${tailLabel(p.tail)}</td></tr>
 
@@ -385,7 +385,7 @@ export function renderSolution(p: ZProblem): void {
       <tr><td>SE = σ / √n</td><td>${seStr}</td></tr>
 
       <tr><th colspan="2">Test Statistic</th></tr>
-      <tr><td>z = (x̄ − μ₀) / SE</td><td>${zStr}</td></tr>
+      <tr><td>z = (M − μ₀) / SE</td><td>${zStr}</td></tr>
 
       <tr><th colspan="2">Critical Value(s)</th></tr>
       <tr><td>z<sub>crit</sub></td><td>${critDisplay(p)}</td></tr>
@@ -395,7 +395,7 @@ export function renderSolution(p: ZProblem): void {
       <tr><td>Result</td><td><strong>${decWord}</strong></td></tr>
 
       <tr><th colspan="2">Effect Size</th></tr>
-      <tr><td>Cohen's d = (x̄ − μ₀) / σ</td><td>${dStr}</td></tr>
+      <tr><td>Cohen's d = (M − μ₀) / σ</td><td>${dStr}</td></tr>
 
       <tr><th colspan="2">Interpretation</th></tr>
       <tr><td colspan="2">${interpretation(p)}</td></tr>

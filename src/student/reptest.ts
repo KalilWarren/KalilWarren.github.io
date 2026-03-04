@@ -346,7 +346,7 @@ function effectSectionHtml(p: RepProblem): string {
     return `
       <div class="sp-section-label">5. Compute Cohen's d (Effect Size)</div>
       <div class="sp-input-row">
-        <label for="rp-answer-es">d = M<sub>D</sub> / SD<sub>D</sub></label>
+        <label for="rp-answer-es">d = M<sub>D</sub> / s<sub>D</sub></label>
         <input type="number" step="0.01" id="rp-answer-es" class="sp-num-input"
                placeholder="e.g. 0.52" />
       </div>`;
@@ -391,7 +391,7 @@ export function renderProblem(p: RepProblem): void {
     `at Pre-Test and again at Post-Test.</p>` +
     `<p>The difference scores (Pre-Test − Post-Test) have a mean of ` +
     `M<sub>D</sub> = ${p.MD} ${p.unit} and a standard deviation of ` +
-    `SD<sub>D</sub> = ${p.SDD} ${p.unit}.</p>` +
+    `s<sub>D</sub> = ${p.SDD} ${p.unit}.</p>` +
     `<p>Using α = ${alphaStr} (${tailLabel(p.tail)}), test whether there is a significant ` +
     `mean difference between the Pre-Test and Post-Test conditions.</p>` +
     `<ol>` +
@@ -453,7 +453,7 @@ function feedbackHtml(correct: boolean, hint: string): string {
 function esFeedbackHtml(p: RepProblem, correct: boolean): string {
   if (correct) return feedbackIcon(true);
   if (p.effectTask === 'cohens_d')
-    return feedbackHtml(false, 'd = M<sub>D</sub> / SD<sub>D</sub>.');
+    return feedbackHtml(false, 'd = M<sub>D</sub> / s<sub>D</sub>.');
   if (p.effectTask === 'r_squared')
     return feedbackHtml(false, 'R² = t² / (t² + df).');
   const level = Math.round((1 - p.alpha) * 100);
@@ -462,7 +462,7 @@ function esFeedbackHtml(p: RepProblem, correct: boolean): string {
 
 export function renderFeedback(p: RepProblem, grade: GradeResult): void {
   setHtml('rp-fb-hyp',      feedbackHtml(grade.hyp,      'Select the hypothesis pair that matches the tail direction.'));
-  setHtml('rp-fb-t',        feedbackHtml(grade.t,        't = M<sub>D</sub> / (SD<sub>D</sub> / √n).'));
+  setHtml('rp-fb-t',        feedbackHtml(grade.t,        't = M<sub>D</sub> / (s<sub>D</sub> / √n).'));
   setHtml('rp-fb-df',       feedbackHtml(grade.df,       'df = n − 1.'));
   setHtml('rp-fb-crit',     feedbackHtml(grade.crit,     'Critical value depends on α, tail, and df.'));
   setHtml('rp-fb-es',       esFeedbackHtml(p, grade.es));
@@ -512,7 +512,7 @@ export function renderSolution(p: RepProblem): void {
       <tr><th colspan="2">Given Values</th></tr>
       <tr><td>n</td><td>${p.n}</td></tr>
       <tr><td>M<sub>D</sub></td><td>${p.MD} ${p.unit}</td></tr>
-      <tr><td>SD<sub>D</sub></td><td>${p.SDD} ${p.unit}</td></tr>
+      <tr><td>s<sub>D</sub></td><td>${p.SDD} ${p.unit}</td></tr>
       <tr><td>df = n − 1</td><td>${p.df}</td></tr>
       <tr><td>α</td><td>${alphaStr}</td></tr>
       <tr><td>Tail</td><td>${tailLabel(p.tail)}</td></tr>
@@ -522,7 +522,7 @@ export function renderSolution(p: RepProblem): void {
       <tr><td>H₁</td><td>μ<sub>D</sub> ${altSym} 0</td></tr>
 
       <tr><th colspan="2">Standard Error</th></tr>
-      <tr><td>SE = SD<sub>D</sub> / √n</td><td>${seStr}</td></tr>
+      <tr><td>SE = s<sub>D</sub> / √n</td><td>${seStr}</td></tr>
 
       <tr><th colspan="2">Test Statistic</th></tr>
       <tr><td>t = M<sub>D</sub> / SE</td><td>${tStr}</td></tr>
@@ -535,7 +535,7 @@ export function renderSolution(p: RepProblem): void {
       <tr><td>Result</td><td><strong>${decWord}</strong></td></tr>
 
       <tr><th colspan="2">Effect Sizes</th></tr>
-      <tr><td>Cohen's d = M<sub>D</sub> / SD<sub>D</sub></td><td>${dzStr}</td></tr>
+      <tr><td>Cohen's d = M<sub>D</sub> / s<sub>D</sub></td><td>${dzStr}</td></tr>
       <tr><td>R² = t² / (t² + df)</td><td>${r2Str}</td></tr>
       <tr><td>${level}% CI = M<sub>D</sub> ± t<sub>crit</sub> × SE</td><td>${ciStr}</td></tr>
 

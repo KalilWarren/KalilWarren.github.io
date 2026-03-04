@@ -36,6 +36,7 @@ export interface AnovaProblem {
 export interface GradeResult {
   cells:      Partial<Record<MaskedField, boolean>>;
   hyp:        boolean;
+  fcrit:      boolean;
   eta2:       boolean;
   decision:   boolean;
   allCorrect: boolean;
@@ -243,7 +244,7 @@ function buildTableHtml(p: AnovaProblem): string {
   function inputCell(field: MaskedField, isInt = false): string {
     return `<td style="${tdStyle}">
       <input type="number" step="${isInt ? '1' : '0.01'}" id="ap-input-${field}"
-             class="sp-num-input" style="width:75px;text-align:center;" placeholder="?" />
+             class="sp-num-input" style="width:105px;text-align:center;" placeholder="?" />
       <span id="ap-cell-fb-${field}" style="margin-left:0.25rem;font-size:1em;"></span>
     </td>`;
   }
@@ -308,8 +309,7 @@ export function renderProblem(p: AnovaProblem): void {
     <p>The partially completed ANOVA summary table is shown below
     (difficulty: <em>${diffLabel}</em>).
     Fill in all cells marked <strong>?</strong>, then answer the questions below
-    using α&nbsp;=&nbsp;${alphaStr}
-    (F<sub>crit</sub> = ${p.Fcrit.toFixed(3)} for df = ${p.table.DFB}, ${p.table.DFW}).</p>
+    using α&nbsp;=&nbsp;${alphaStr}.</p>
   `;
 
   setHtml('ap-problem-text', narrative + buildTableHtml(p));
@@ -317,9 +317,9 @@ export function renderProblem(p: AnovaProblem): void {
   // Hypothesis radio options (shuffled)
   const kSubs = Array.from({ length: p.k }, (_, i) => `μ${i + 1}`).join(' = ');
   const opts = [
-    { value: 'correct',  label: `H₀: ${kSubs} &nbsp;&nbsp; Hₐ: At least one group mean differs` },
-    { value: 'reversed', label: `H₀: At least one group mean differs &nbsp;&nbsp; Hₐ: ${kSubs}` },
-    { value: 'variance', label: `H₀: All group variances are equal &nbsp;&nbsp; Hₐ: At least one variance differs` },
+    { value: 'correct',  label: `H₀: ${kSubs} &nbsp;&nbsp; H₁: At least one group mean differs` },
+    { value: 'reversed', label: `H₀: At least one group mean differs &nbsp;&nbsp; H₁: ${kSubs}` },
+    { value: 'variance', label: `H₀: All group variances are equal &nbsp;&nbsp; H₁: At least one variance differs` },
   ];
   for (let i = opts.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -369,13 +369,15 @@ export function gradeAnswers(p: AnovaProblem): GradeResult {
     cells[field] = ok;
   }
 
-  const eta2Input = readNum('ap-answer-eta2');
-  const eta2      = !isNaN(eta2Input) && Math.abs(eta2Input - p.eta2) <= 0.02;
-  const hyp       = readRadio('ap-hyp-select') === 'correct';
-  const decision  = readRadio('ap-decision-select') === p.decision_true;
-  const allCorrect = Object.values(cells).every(v => v) && hyp && eta2 && decision;
+  const eta2Input  = readNum('ap-answer-eta2');
+  const fcritInput = readNum('ap-answer-fcrit');
+  const eta2       = !isNaN(eta2Input)  && Math.abs(eta2Input  - p.eta2)  <= 0.02;
+  const fcrit      = !isNaN(fcritInput) && Math.abs(fcritInput - p.Fcrit) <= 0.005;
+  const hyp        = readRadio('ap-hyp-select') === 'correct';
+  const decision   = readRadio('ap-decision-select') === p.decision_true;
+  const allCorrect = Object.values(cells).every(v => v) && hyp && fcrit && eta2 && decision;
 
-  return { cells, hyp, eta2, decision, allCorrect };
+  return { cells, hyp, fcrit, eta2, decision, allCorrect };
 }
 
 /* ── Feedback helpers ── */
@@ -413,8 +415,9 @@ export function renderFeedback(p: AnovaProblem, grade: GradeResult): void {
     if (fbEl) fbEl.innerHTML = ok ? feedbackIcon(true) : `${feedbackIcon(false)} <span class="sp-hint">${hints[field] ?? ''}</span>`;
   }
 
-  setHtml('ap-fb-hyp',      fbHtml(grade.hyp,      'H₀ states all group means are equal; Hₐ states at least one differs.'));
-  setHtml('ap-fb-decision', fbHtml(grade.decision, `F = ${r2(t.F).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.toFixed(3)} at α = ${p.alpha.toFixed(2)}.`));
+  setHtml('ap-fb-hyp',      fbHtml(grade.hyp,      'H₀ states all group means are equal; H₁ states at least one differs.'));
+  setHtml('ap-fb-fcrit',   fbHtml(grade.fcrit,    `F<sub>crit</sub>(${t.DFB}, ${t.DFW}) at α = ${p.alpha.toFixed(2)} = ${p.Fcrit.toFixed(3)}.`));
+  setHtml('ap-fb-decision', fbHtml(grade.decision, `F = ${r2(t.F).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.toFixed(3)}. Reject H₀ if F ≥ F<sub>crit</sub>.`));
   setHtml('ap-fb-eta2',     fbHtml(grade.eta2,     `η² = SS<sub>Between</sub> / SS<sub>Total</sub> = ${r2(t.SSB).toFixed(2)} / ${r2(t.SST).toFixed(2)} = ${p.eta2.toFixed(2)}`));
 
   const banner = document.getElementById('ap-fb-banner');
@@ -458,18 +461,43 @@ function renderSolution(p: AnovaProblem): void {
 
       <tr><th colspan="2">Hypotheses</th></tr>
       <tr><td>H₀</td><td>${kSubs}</td></tr>
-      <tr><td>Hₐ</td><td>At least one group mean differs</td></tr>
+      <tr><td>H₁</td><td>At least one group mean differs</td></tr>
 
       <tr><th colspan="2">ANOVA Table</th></tr>
-      <tr><td>SS<sub>Between</sub></td><td>${r2(t.SSB).toFixed(2)}</td></tr>
-      <tr><td>SS<sub>Within</sub></td><td>${r2(t.SSW).toFixed(2)}</td></tr>
-      <tr><td>SS<sub>Total</sub></td><td>${r2(t.SST).toFixed(2)}</td></tr>
-      <tr><td>df<sub>Between</sub> = k − 1</td><td>${t.DFB}</td></tr>
-      <tr><td>df<sub>Within</sub> = N − k</td><td>${t.DFW}</td></tr>
-      <tr><td>df<sub>Total</sub> = N − 1</td><td>${t.DFT}</td></tr>
-      <tr><td>MS<sub>Between</sub> = SS<sub>B</sub> / df<sub>B</sub></td><td>${r2(t.MSB).toFixed(2)}</td></tr>
-      <tr><td>MS<sub>Within</sub> = SS<sub>W</sub> / df<sub>W</sub></td><td>${r2(t.MSW).toFixed(2)}</td></tr>
-      <tr><td>F = MS<sub>B</sub> / MS<sub>W</sub></td><td>${r2(t.F).toFixed(2)}</td></tr>
+      <tr><td colspan="2">
+        <table style="border-collapse:collapse;width:100%;font-size:0.87rem;margin:0.3rem 0;">
+          <thead><tr>
+            <th style="padding:0.3rem 0.5rem;border:1px solid var(--border);background:var(--bg-subtle);text-align:left;">Source</th>
+            <th style="padding:0.3rem 0.5rem;border:1px solid var(--border);background:var(--bg-subtle);">SS</th>
+            <th style="padding:0.3rem 0.5rem;border:1px solid var(--border);background:var(--bg-subtle);">df</th>
+            <th style="padding:0.3rem 0.5rem;border:1px solid var(--border);background:var(--bg-subtle);">MS</th>
+            <th style="padding:0.3rem 0.5rem;border:1px solid var(--border);background:var(--bg-subtle);">F</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);">Between</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${r2(t.SSB).toFixed(2)}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${t.DFB}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${r2(t.MSB).toFixed(2)}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${r2(t.F).toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);">Within</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${r2(t.SSW).toFixed(2)}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${t.DFW}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${r2(t.MSW).toFixed(2)}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;color:#aaa;">—</td>
+            </tr>
+            <tr>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);">Total</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${r2(t.SST).toFixed(2)}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;">${t.DFT}</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;color:#aaa;">—</td>
+              <td style="padding:0.3rem 0.5rem;border:1px solid var(--border);text-align:center;color:#aaa;">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </td></tr>
 
       <tr><th colspan="2">Significance</th></tr>
       <tr><td>F<sub>crit</sub>(${t.DFB}, ${t.DFW}), α = ${alphaStr}</td><td>${p.Fcrit.toFixed(3)}</td></tr>
@@ -491,6 +519,7 @@ function renderSolution(p: AnovaProblem): void {
 export function resetUI(): void {
   const allFields: MaskedField[] = ['SSB', 'SSW', 'SST', 'DFB', 'DFW', 'DFT', 'MSB', 'MSW', 'F'];
   allFields.forEach(f => clearInput(`ap-input-${f}`));
+  clearInput('ap-answer-fcrit');
   clearInput('ap-answer-eta2');
   uncheckRadios('ap-hyp-select');
   uncheckRadios('ap-decision-select');
@@ -505,6 +534,7 @@ export function resetUI(): void {
   setHtml('ap-problem-text', '<span class="sp-placeholder">Click <strong>New Problem</strong> below to generate a practice problem.</span>');
   setHtml('ap-hyp-options',  '<span class="sp-placeholder">Generate a problem to see options.</span>');
   setHtml('ap-fb-hyp',      '');
+  setHtml('ap-fb-fcrit',   '');
   setHtml('ap-fb-decision', '');
   setHtml('ap-fb-eta2',     '');
 }

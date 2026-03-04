@@ -358,9 +358,9 @@ function buildPromptAndKey(testType: TestType): {
         `Historically, the population mean is μ = ${d.mu0} ${d.unit}, ` +
         `with a known population standard deviation of σ = ${d.sigma} ${d.unit}. ` +
         `The researcher collects a random sample of n = ${d.n} participants ` +
-        `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}. ` +
+        `and obtains a sample mean of M = ${d.xbar} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ${d.testPhrasePlain}.`;
-      const cohenFml = `(x̄ − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
+      const cohenFml = `(M − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
       return {
         problemRows: [
           ['STUDENT PROBLEM — One-Sample Z-Test'],
@@ -378,7 +378,7 @@ function buildPromptAndKey(testType: TestType): {
           ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
           [],
           ['2. Z Statistic'],
-          ['Formula:',       'z = (x̄ − μ) / (σ / √n)'],
+          ['Formula:',       'z = (M − μ) / (σ / √n)'],
           ['Substitution:',  `z = (${d.xbar} − ${d.mu0}) / (${d.sigma} / √${d.n})`],
           ['Simplify:',      `z = (${d.xbar} − ${d.mu0}) / ${d.se}`],
           ['Result:',        `z = ${d.zScore}`],
@@ -409,10 +409,10 @@ function buildPromptAndKey(testType: TestType): {
         `A researcher is studying ${d.variable} in ${d.pop}. ` +
         `The null hypothesis posits a population mean of μ₀ = ${d.mu0} ${d.unit} (population SD is unknown). ` +
         `The researcher collects a random sample of n = ${d.n} participants ` +
-        `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}, ` +
+        `and obtains a sample mean of M = ${d.xbar} ${d.unit}, ` +
         `with a sample standard deviation of s = ${d.sampleSD} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ${d.testPhrasePlain}.`;
-      const cohenFml = `(x̄ − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
+      const cohenFml = `(M − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
       const rSqStr   = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
       return {
         problemRows: [
@@ -431,7 +431,7 @@ function buildPromptAndKey(testType: TestType): {
           ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
           [],
           ['2. T Statistic'],
-          ['Formula:',       't = (x̄ − μ₀) / (s / √n)'],
+          ['Formula:',       't = (M − μ₀) / (s / √n)'],
           ['Substitution:',  `t = (${d.xbar} − ${d.mu0}) / (${d.sampleSD} / √${d.n})`],
           ['Simplify:',      `t = (${d.xbar} − ${d.mu0}) / ${d.se}`],
           ['Result:',        `t = ${d.tScore}`],
@@ -464,8 +464,8 @@ function buildPromptAndKey(testType: TestType): {
       const narrative =
         `A researcher is studying ${d.variable} in two groups: ${d.group1} and ${d.group2}. ` +
         `The sample statistics are: ` +
-        `${d.group1}: n = ${d.n1}, M = ${d.m1} ${d.unit}, SD = ${d.sd1} ${d.unit}; ` +
-        `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, SD = ${d.sd2} ${d.unit}. ` +
+        `${d.group1}: n = ${d.n1}, M = ${d.m1} ${d.unit}, s = ${d.sd1} ${d.unit}; ` +
+        `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, s = ${d.sd2} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether ${d.group1} and ${d.group2} ${d.testPhrasePlain}.`;
       return {
         problemRows: [
@@ -517,7 +517,7 @@ function buildPromptAndKey(testType: TestType): {
       const narrative =
         `A researcher measures ${d.variable} in n = ${d.n} participants at ${d.pre} and again at ${d.post}. ` +
         `The difference scores (${d.pre} − ${d.post}) have a mean of M_D = ${d.meanDiff} ${d.unit} ` +
-        `and a standard deviation of SD_D = ${d.sdDiff} ${d.unit}. ` +
+        `and a standard deviation of s_D = ${d.sdDiff} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${d.testPhrasePlain}.`;
       return {
         problemRows: [
@@ -536,7 +536,7 @@ function buildPromptAndKey(testType: TestType): {
           ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
           [],
           ['2. T Statistic'],
-          ['Formula:',       't = M_D / (SD_D / √n)'],
+          ['Formula:',       't = M_D / (s_D / √n)'],
           ['Substitution:',  `t = ${d.meanDiff} / (${d.sdDiff} / √${d.n})`],
           ['Simplify:',      `t = ${d.meanDiff} / ${d.se}`],
           ['Result:',        `t = ${d.tScore}`],
@@ -545,7 +545,7 @@ function buildPromptAndKey(testType: TestType): {
           [],
           ['3. p-value & Effect Size'],
           ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
-          ["Cohen's d:", `M_D / SD_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`],
+          ["Cohen's d:", `M_D / s_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`],
           ['r²:',        rSqStr],
           [],
           ['4. Decision'], ['', decStr],

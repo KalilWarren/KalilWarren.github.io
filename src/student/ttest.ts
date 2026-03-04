@@ -306,7 +306,7 @@ function effectSectionHtml(p: TProblem): string {
     return `
       <div class="sp-section-label">5. Compute Cohen's d (Effect Size)</div>
       <div class="sp-input-row">
-        <label for="tp-answer-es">d = (x̄ − μ₀) / s</label>
+        <label for="tp-answer-es">d = (M − μ₀) / s</label>
         <input type="number" step="0.01" id="tp-answer-es" class="sp-num-input"
                placeholder="e.g. 0.52" />
       </div>`;
@@ -324,12 +324,12 @@ function effectSectionHtml(p: TProblem): string {
   return `
     <div class="sp-section-label">5. Compute the ${level}% Confidence Interval</div>
     <div class="sp-input-row">
-      <label for="tp-answer-ci-lower">Lower bound: x̄ − t<sub>crit</sub> × SE</label>
+      <label for="tp-answer-ci-lower">Lower bound: M − t<sub>crit</sub> × SE</label>
       <input type="number" step="0.01" id="tp-answer-ci-lower" class="sp-num-input"
              placeholder="e.g. 72.34" />
     </div>
     <div class="sp-input-row" style="margin-top:0.4rem;">
-      <label for="tp-answer-ci-upper">Upper bound: x̄ + t<sub>crit</sub> × SE</label>
+      <label for="tp-answer-ci-upper">Upper bound: M + t<sub>crit</sub> × SE</label>
       <input type="number" step="0.01" id="tp-answer-ci-upper" class="sp-num-input"
              placeholder="e.g. 81.56" />
     </div>`;
@@ -352,7 +352,7 @@ export function renderProblem(p: TProblem): void {
     `Historically, the population mean is μ = ${p.mu0} ${p.unit}. ` +
     `The population standard deviation is unknown.</p>` +
     `<p>The researcher collects a random sample of n = ${p.n} participants ` +
-    `and obtains a sample mean of x̄ = ${p.xbar} ${p.unit} ` +
+    `and obtains a sample mean of M = ${p.xbar} ${p.unit} ` +
     `with a sample standard deviation of s = ${p.s} ${p.unit}.</p>` +
     `<p>Using α = ${alphaStr} (${tailLabel(p.tail)}), test whether the population mean ${p.testPhrase}.</p>` +
     `<ol>` +
@@ -411,15 +411,15 @@ function feedbackHtml(correct: boolean, hint: string): string {
 
 function esFeedbackHtml(p: TProblem, correct: boolean): string {
   if (correct) return feedbackIcon(true);
-  if (p.effectType === 'cohen_d') return feedbackHtml(false, 'd = (x̄ − μ₀) / s.');
+  if (p.effectType === 'cohen_d') return feedbackHtml(false, 'd = (M − μ₀) / s.');
   if (p.effectType === 'r_squared') return feedbackHtml(false, 'r² = t² / (t² + df).');
   const level = ciLevel(p.alpha);
-  return feedbackHtml(false, `${level}% CI: x̄ ± t<sub>crit</sub> × SE. Check both bounds.`);
+  return feedbackHtml(false, `${level}% CI: M ± t<sub>crit</sub> × SE. Check both bounds.`);
 }
 
 export function renderFeedback(p: TProblem, grade: GradeResult): void {
   setHtml('tp-fb-hyp',      feedbackHtml(grade.hyp,      'Select the hypothesis pair that matches the tail direction.'));
-  setHtml('tp-fb-t',        feedbackHtml(grade.t,        'Recheck t = (x̄ − μ₀) / (s / √n).'));
+  setHtml('tp-fb-t',        feedbackHtml(grade.t,        'Recheck t = (M − μ₀) / (s / √n).'));
   setHtml('tp-fb-crit',     feedbackHtml(grade.crit,     'Critical value depends on α, tail, and df = n − 1.'));
   setHtml('tp-fb-decision', feedbackHtml(grade.decision, 'Compare t to the critical value(s).'));
   setHtml('tp-fb-es',       esFeedbackHtml(p, grade.es));
@@ -469,7 +469,7 @@ export function renderSolution(p: TProblem): void {
       <tr><td>μ₀</td><td>${p.mu0}</td></tr>
       <tr><td>n</td><td>${p.n}</td></tr>
       <tr><td>df = n − 1</td><td>${p.df}</td></tr>
-      <tr><td>x̄</td><td>${p.xbar}</td></tr>
+      <tr><td>M</td><td>${p.xbar}</td></tr>
       <tr><td>s</td><td>${p.s}</td></tr>
       <tr><td>α</td><td>${alphaStr}</td></tr>
       <tr><td>Tail</td><td>${tailLabel(p.tail)}</td></tr>
@@ -482,7 +482,7 @@ export function renderSolution(p: TProblem): void {
       <tr><td>SE = s / √n</td><td>${seStr}</td></tr>
 
       <tr><th colspan="2">Test Statistic</th></tr>
-      <tr><td>t = (x̄ − μ₀) / SE</td><td>${tStr}</td></tr>
+      <tr><td>t = (M − μ₀) / SE</td><td>${tStr}</td></tr>
 
       <tr><th colspan="2">Critical Value(s) — df = ${p.df}</th></tr>
       <tr><td>t<sub>crit</sub></td><td>${critDisplay(p)}</td></tr>
@@ -492,9 +492,9 @@ export function renderSolution(p: TProblem): void {
       <tr><td>Result</td><td><strong>${decWord}</strong></td></tr>
 
       <tr><th colspan="2">Effect Sizes</th></tr>
-      <tr><td>Cohen's d = (x̄ − μ₀) / s</td><td>${dStr}</td></tr>
+      <tr><td>Cohen's d = (M − μ₀) / s</td><td>${dStr}</td></tr>
       <tr><td>R² = t² / (t² + df)</td><td>${rsStr}</td></tr>
-      <tr><td>${level}% CI = x̄ ± t<sub>crit</sub> × SE</td><td>${ciStr}</td></tr>
+      <tr><td>${level}% CI = M ± t<sub>crit</sub> × SE</td><td>${ciStr}</td></tr>
 
       <tr><th colspan="2">Interpretation</th></tr>
       <tr><td colspan="2">${interpretation(p)}</td></tr>

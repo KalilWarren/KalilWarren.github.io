@@ -212,7 +212,8 @@
     #tp-feedback-section,
     #ip-feedback-section,
     #rp-feedback-section,
-    #ap-feedback-section {
+    #ap-feedback-section,
+    #twp-feedback-section {
       display: none;
       margin-top: 1.5rem;
       padding-top: 1rem;
@@ -243,7 +244,8 @@
     #tp-solution-toggle,
     #ip-solution-toggle,
     #rp-solution-toggle,
-    #ap-solution-toggle {
+    #ap-solution-toggle,
+    #twp-solution-toggle {
       display: none;
       margin-top: 1rem;
     }
@@ -251,7 +253,8 @@
     #tp-solution-toggle > summary,
     #ip-solution-toggle > summary,
     #rp-solution-toggle > summary,
-    #ap-solution-toggle > summary {
+    #ap-solution-toggle > summary,
+    #twp-solution-toggle > summary {
       cursor: pointer;
       font-size: 0.87rem;
       color: var(--text-light);
@@ -262,7 +265,8 @@
     #tp-solution-toggle > summary:hover,
     #ip-solution-toggle > summary:hover,
     #rp-solution-toggle > summary:hover,
-    #ap-solution-toggle > summary:hover {
+    #ap-solution-toggle > summary:hover,
+    #twp-solution-toggle > summary:hover {
       color: var(--navy);
     }
 
@@ -403,7 +407,11 @@
       </label>
       <label class="sp-type-pill">
         <input type="checkbox" id="sel-anovatest" checked />
-        One-Way ANOVA
+        One-Way Independent ANOVA
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-twatest" checked />
+        Two-Way Independent ANOVA <span class="sp-sel-sub">(2 factors)</span>
       </label>
       <span class="sp-no-sel-warning" id="no-sel-warning">Select at least one test type.</span>
     </div>
@@ -441,7 +449,7 @@
           <div class="sp-field-block">
             <div class="sp-section-label">2. Compute the z Test Statistic</div>
             <div class="sp-input-row">
-              <label for="answer-z">z = (x̄ − μ₀) / (σ / √n)</label>
+              <label for="answer-z">z = (M − μ₀) / (σ / √n)</label>
               <input type="number" step="0.01" id="answer-z" class="sp-num-input"
                      placeholder="e.g. 2.45" />
             </div>
@@ -480,7 +488,7 @@
           <div class="sp-field-block">
             <div class="sp-section-label">5. Compute Cohen's d (Effect Size)</div>
             <div class="sp-input-row">
-              <label for="answer-d">d = (x̄ − μ₀) / σ</label>
+              <label for="answer-d">d = (M − μ₀) / σ</label>
               <input type="number" step="0.01" id="answer-d" class="sp-num-input"
                      placeholder="e.g. 0.52" />
             </div>
@@ -528,7 +536,7 @@
           <div class="sp-field-block">
             <div class="sp-section-label">2. Compute the t Test Statistic</div>
             <div class="sp-input-row">
-              <label for="tp-answer-t">t = (x̄ − μ₀) / (s / √n)</label>
+              <label for="tp-answer-t">t = (M − μ₀) / (s / √n)</label>
               <input type="number" step="0.01" id="tp-answer-t" class="sp-num-input"
                      placeholder="e.g. 2.45" />
             </div>
@@ -703,7 +711,7 @@
           <div class="sp-field-block">
             <div class="sp-section-label">2. Compute the t Test Statistic</div>
             <div class="sp-input-row">
-              <label for="rp-answer-t">t = M<sub>D</sub> / (SD<sub>D</sub> / √n)</label>
+              <label for="rp-answer-t">t = M<sub>D</sub> / (s<sub>D</sub> / √n)</label>
               <input type="number" step="0.01" id="rp-answer-t" class="sp-num-input"
                      placeholder="e.g. 2.45" />
             </div>
@@ -794,9 +802,20 @@
             <div class="sp-fb-row" id="ap-fb-hyp"></div>
           </div>
 
-          <!-- 3. Decision -->
+          <!-- 3. Critical value -->
           <div class="sp-field-block">
-            <div class="sp-section-label">3. Determine Statistical Significance</div>
+            <div class="sp-section-label">3. Find the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="ap-answer-fcrit">F<sub>crit</sub>(df<sub>B</sub>, df<sub>W</sub>)</label>
+              <input type="number" step="0.001" id="ap-answer-fcrit" class="sp-num-input"
+                     placeholder="e.g. 3.354" />
+            </div>
+            <div class="sp-fb-row" id="ap-fb-fcrit"></div>
+          </div>
+
+          <!-- 4. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Determine Statistical Significance</div>
             <div class="sp-radio-group">
               <label class="sp-radio-label">
                 <input type="radio" name="ap-decision-select" value="reject" />
@@ -810,9 +829,9 @@
             <div class="sp-fb-row" id="ap-fb-decision"></div>
           </div>
 
-          <!-- 4. Effect size η² -->
+          <!-- 5. Effect size η² -->
           <div class="sp-field-block">
-            <div class="sp-section-label">4. Compute η² (Effect Size)</div>
+            <div class="sp-section-label">5. Compute η² (Effect Size)</div>
             <div class="sp-input-row">
               <label for="ap-answer-eta2">η² = SS<sub>Between</sub> / SS<sub>Total</sub></label>
               <input type="number" step="0.01" id="ap-answer-eta2" class="sp-num-input"
@@ -835,6 +854,167 @@
         </details>
 
       </div><!-- end anova-section -->
+
+      <!-- ══ Two-Factor ANOVA section ══ -->
+      <div id="twa-section" style="display:none;">
+
+        <!-- Problem text + interactive table -->
+        <div class="sp-problem-box">
+          <div id="twp-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="twp-answer-form" onsubmit="return false;">
+
+          <!-- 1. ANOVA table (rendered dynamically into twp-problem-text above) -->
+
+          <!-- 2. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. State the Hypotheses</div>
+
+            <div style="margin-top:0.5rem;">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-light);margin-bottom:0.3rem;">Factor A</div>
+              <div class="sp-radio-group" id="twp-hyp-options-a">
+                <span class="sp-placeholder">Generate a problem to see options.</span>
+              </div>
+              <div class="sp-fb-row" id="twp-fb-hyp-a"></div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-light);margin-bottom:0.3rem;">Factor B</div>
+              <div class="sp-radio-group" id="twp-hyp-options-b">
+                <span class="sp-placeholder">Generate a problem to see options.</span>
+              </div>
+              <div class="sp-fb-row" id="twp-fb-hyp-b"></div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-light);margin-bottom:0.3rem;">A &times; B Interaction</div>
+              <div class="sp-radio-group" id="twp-hyp-options-ab">
+                <span class="sp-placeholder">Generate a problem to see options.</span>
+              </div>
+              <div class="sp-fb-row" id="twp-fb-hyp-ab"></div>
+            </div>
+          </div>
+
+          <!-- 3. F Critical Values -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Find the F Critical Values</div>
+
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="twp-answer-fcrit-a">F<sub>crit</sub>(df<sub>A</sub>, df<sub>Error</sub>) — Factor A</label>
+              <input type="number" step="0.001" id="twp-answer-fcrit-a" class="sp-num-input"
+                     placeholder="e.g. 3.354" />
+            </div>
+            <div class="sp-fb-row" id="twp-fb-fcrit-a"></div>
+
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="twp-answer-fcrit-b">F<sub>crit</sub>(df<sub>B</sub>, df<sub>Error</sub>) — Factor B</label>
+              <input type="number" step="0.001" id="twp-answer-fcrit-b" class="sp-num-input"
+                     placeholder="e.g. 4.060" />
+            </div>
+            <div class="sp-fb-row" id="twp-fb-fcrit-b"></div>
+
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="twp-answer-fcrit-ab">F<sub>crit</sub>(df<sub>A×B</sub>, df<sub>Error</sub>) — A&times;B</label>
+              <input type="number" step="0.001" id="twp-answer-fcrit-ab" class="sp-num-input"
+                     placeholder="e.g. 3.354" />
+            </div>
+            <div class="sp-fb-row" id="twp-fb-fcrit-ab"></div>
+          </div>
+
+          <!-- 4. Significance Decisions -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Determine Statistical Significance</div>
+
+            <div style="margin-top:0.5rem;">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-light);margin-bottom:0.3rem;">Factor A</div>
+              <div class="sp-radio-group">
+                <label class="sp-radio-label">
+                  <input type="radio" name="twp-dec-a" value="reject" />
+                  Reject H₀ (Factor A effect is significant)
+                </label>
+                <label class="sp-radio-label">
+                  <input type="radio" name="twp-dec-a" value="fail" />
+                  Fail to reject H₀ (not significant)
+                </label>
+              </div>
+              <div class="sp-fb-row" id="twp-fb-dec-a"></div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-light);margin-bottom:0.3rem;">Factor B</div>
+              <div class="sp-radio-group">
+                <label class="sp-radio-label">
+                  <input type="radio" name="twp-dec-b" value="reject" />
+                  Reject H₀ (Factor B effect is significant)
+                </label>
+                <label class="sp-radio-label">
+                  <input type="radio" name="twp-dec-b" value="fail" />
+                  Fail to reject H₀ (not significant)
+                </label>
+              </div>
+              <div class="sp-fb-row" id="twp-fb-dec-b"></div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <div style="font-size:0.85rem;font-weight:600;color:var(--text-light);margin-bottom:0.3rem;">A &times; B Interaction</div>
+              <div class="sp-radio-group">
+                <label class="sp-radio-label">
+                  <input type="radio" name="twp-dec-ab" value="reject" />
+                  Reject H₀ (interaction is significant)
+                </label>
+                <label class="sp-radio-label">
+                  <input type="radio" name="twp-dec-ab" value="fail" />
+                  Fail to reject H₀ (not significant)
+                </label>
+              </div>
+              <div class="sp-fb-row" id="twp-fb-dec-ab"></div>
+            </div>
+          </div>
+
+          <!-- 5. Effect Sizes (η²) -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">5. Compute η² (Effect Size)</div>
+
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="twp-answer-eta2-a">η²<sub>A</sub> = SS<sub>A</sub> / SS<sub>Total</sub></label>
+              <input type="number" step="0.01" id="twp-answer-eta2-a" class="sp-num-input"
+                     placeholder="e.g. 0.25" />
+            </div>
+            <div class="sp-fb-row" id="twp-fb-eta2-a"></div>
+
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="twp-answer-eta2-b">η²<sub>B</sub> = SS<sub>B</sub> / SS<sub>Total</sub></label>
+              <input type="number" step="0.01" id="twp-answer-eta2-b" class="sp-num-input"
+                     placeholder="e.g. 0.12" />
+            </div>
+            <div class="sp-fb-row" id="twp-fb-eta2-b"></div>
+
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="twp-answer-eta2-ab">η²<sub>A×B</sub> = SS<sub>A×B</sub> / SS<sub>Total</sub></label>
+              <input type="number" step="0.01" id="twp-answer-eta2-ab" class="sp-num-input"
+                     placeholder="e.g. 0.08" />
+            </div>
+            <div class="sp-fb-row" id="twp-fb-eta2-ab"></div>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="twp-feedback-section">
+          <div id="twp-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="twp-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="twp-solution-body"></div>
+        </details>
+
+      </div><!-- end twa-section -->
 
       <!-- ══ Shared button row ══ -->
       <div class="sp-btn-row">

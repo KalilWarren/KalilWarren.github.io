@@ -59,7 +59,7 @@ export function generateZTestProblem(): void {
   Historically, the population mean is μ&nbsp;=&nbsp;${mu0}&nbsp;${unit},
   with a known population standard deviation of σ&nbsp;=&nbsp;${sigma}&nbsp;${unit}.</p>
   <p>The researcher collects a random sample of <em>n</em>&nbsp;=&nbsp;${n} participants
-  and obtains a sample mean of <em>x̄</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit}.</p>
+  and obtains a sample mean of <em>M</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit}.</p>
   <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether the population mean
   ${testPhraseHTML}.</p>
   <div class="problem-questions">
@@ -98,7 +98,7 @@ export function generateZTestProblem(): void {
   <div class="key-section">
     <strong>2. Z Statistic</strong>
     <div class="key-formula">
-      z = (x̄ &minus; μ) / (σ / &radic;n)<br>
+      z = (M &minus; μ) / (σ / &radic;n)<br>
       z = (${xbar} &minus; ${mu0}) / (${sigma} / &radic;${n})<br>
       z = (${xbar} &minus; ${mu0}) / ${se}<br>
       z = ${zScore}
@@ -109,7 +109,7 @@ export function generateZTestProblem(): void {
   <div class="key-section">
     <strong>3. p-value &amp; Effect Size</strong>
     <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-    <p>Cohen's d = (x̄ &minus; μ) / σ = (${xbar} &minus; ${mu0}) / ${sigma} = ${cohenD}</p>
+    <p>Cohen's d = (M &minus; μ) / σ = (${xbar} &minus; ${mu0}) / ${sigma} = ${cohenD}</p>
   </div>
 
   <div class="key-section">
@@ -198,7 +198,7 @@ export function generateTTestProblem(): void {
   The null hypothesis posits a population mean of μ₀&nbsp;=&nbsp;${mu0}&nbsp;${unit}
   (population SD is unknown).</p>
   <p>The researcher collects a random sample of <em>n</em>&nbsp;=&nbsp;${n} participants
-  and obtains a sample mean of <em>x̄</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit},
+  and obtains a sample mean of <em>M</em>&nbsp;=&nbsp;${xbar}&nbsp;${unit},
   with a sample standard deviation of <em>s</em>&nbsp;=&nbsp;${sampleSD}&nbsp;${unit}.</p>
   <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether the population mean
   ${testPhraseHTML}.</p>
@@ -239,7 +239,7 @@ export function generateTTestProblem(): void {
   <div class="key-section">
     <strong>2. T Statistic</strong>
     <div class="key-formula">
-      t = (x̄ &minus; μ₀) / (s / &radic;n)<br>
+      t = (M &minus; μ₀) / (s / &radic;n)<br>
       t = (${xbar} &minus; ${mu0}) / (${sampleSD} / &radic;${n})<br>
       t = (${xbar} &minus; ${mu0}) / ${se}<br>
       t = ${tScore}
@@ -251,7 +251,7 @@ export function generateTTestProblem(): void {
   <div class="key-section">
     <strong>3. p-value &amp; Effect Size</strong>
     <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-    <p>Cohen's d = (x̄ &minus; μ₀) / s = (${xbar} &minus; ${mu0}) / ${sampleSD} = ${cohenD}</p>
+    <p>Cohen's d = (M &minus; μ₀) / s = (${xbar} &minus; ${mu0}) / ${sampleSD} = ${cohenD}</p>
     <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
   </div>
 
@@ -353,8 +353,8 @@ export function generateIndTTestProblem(): void {
   <strong>${group1}</strong> and <strong>${group2}</strong>.</p>
   <p>The sample statistics are:</p>
   <ul>
-    <li><strong>${group1}:</strong> <em>n</em>&nbsp;=&nbsp;${n1}, <em>M</em>&nbsp;=&nbsp;${m1}&nbsp;${unit}, <em>SD</em>&nbsp;=&nbsp;${sd1}&nbsp;${unit}</li>
-    <li><strong>${group2}:</strong> <em>n</em>&nbsp;=&nbsp;${n2}, <em>M</em>&nbsp;=&nbsp;${m2}&nbsp;${unit}, <em>SD</em>&nbsp;=&nbsp;${sd2}&nbsp;${unit}</li>
+    <li><strong>${group1}:</strong> <em>n</em>&nbsp;=&nbsp;${n1}, <em>M</em>&nbsp;=&nbsp;${m1}&nbsp;${unit}, <em>s</em>&nbsp;=&nbsp;${sd1}&nbsp;${unit}</li>
+    <li><strong>${group2}:</strong> <em>n</em>&nbsp;=&nbsp;${n2}, <em>M</em>&nbsp;=&nbsp;${m2}&nbsp;${unit}, <em>s</em>&nbsp;=&nbsp;${sd2}&nbsp;${unit}</li>
   </ul>
   <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether ${group1} and ${group2}
   ${testPhraseHTML}.</p>
@@ -500,7 +500,7 @@ export function generateRmTTestProblem(): void {
   at <strong>${pre}</strong> and again at <strong>${post}</strong>.</p>
   <p>The difference scores (<em>${pre} &minus; ${post}</em>) have a mean of
   <em>M</em><sub>D</sub>&nbsp;=&nbsp;${meanDiff}&nbsp;${unit}
-  and a standard deviation of <em>SD</em><sub>D</sub>&nbsp;=&nbsp;${sdDiff}&nbsp;${unit}.</p>
+  and a standard deviation of <em>s</em><sub>D</sub>&nbsp;=&nbsp;${sdDiff}&nbsp;${unit}.</p>
   <p>Using α&nbsp;=&nbsp;${alpha} (${tailLabel}), test whether there is ${testPhraseHTML}.</p>
   <div class="problem-questions">
     <ol>
@@ -536,7 +536,7 @@ export function generateRmTTestProblem(): void {
   <div class="key-section">
     <strong>2. T Statistic</strong>
     <div class="key-formula">
-      t = M<sub>D</sub> / (SD<sub>D</sub> / &radic;n)<br>
+      t = M<sub>D</sub> / (s<sub>D</sub> / &radic;n)<br>
       t = ${meanDiff} / (${sdDiff} / &radic;${n})<br>
       t = ${meanDiff} / ${se}<br>
       t = ${tScore}
@@ -548,7 +548,7 @@ export function generateRmTTestProblem(): void {
   <div class="key-section">
     <strong>3. p-value &amp; Effect Size</strong>
     <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-    <p>Cohen's d = M<sub>D</sub> / SD<sub>D</sub> = ${meanDiff} / ${sdDiff} = ${cohenD}</p>
+    <p>Cohen's d = M<sub>D</sub> / s<sub>D</sub> = ${meanDiff} / ${sdDiff} = ${cohenD}</p>
     <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
   </div>
 
@@ -622,10 +622,10 @@ export function downloadProblemExcel(): void {
       `Historically, the population mean is μ = ${d.mu0} ${d.unit}, ` +
       `with a known population standard deviation of σ = ${d.sigma} ${d.unit}. ` +
       `The researcher collects a random sample of n = ${d.n} participants ` +
-      `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}. ` +
+      `and obtains a sample mean of M = ${d.xbar} ${d.unit}. ` +
       `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
       `${d.testPhrasePlain}.`;
-    const cohenFml = `(x̄ − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
+    const cohenFml = `(M − μ) / σ = (${d.xbar} − ${d.mu0}) / ${d.sigma} = ${d.cohenD}`;
     rows = [
       ['STUDENT PROBLEM — One-Sample Z-Test'],
       [],
@@ -642,7 +642,7 @@ export function downloadProblemExcel(): void {
       ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
       [],
       ['2. Z Statistic'],
-      ['Formula:',       'z = (x̄ − μ) / (σ / √n)'],
+      ['Formula:',       'z = (M − μ) / (σ / √n)'],
       ['Substitution:',  `z = (${d.xbar} − ${d.mu0}) / (${d.sigma} / √${d.n})`],
       ['Simplify:',      `z = (${d.xbar} − ${d.mu0}) / ${d.se}`],
       ['Result:',        `z = ${d.zScore}`],
@@ -665,11 +665,11 @@ export function downloadProblemExcel(): void {
       `A researcher is studying ${d.variable} in ${d.pop}. ` +
       `The null hypothesis posits a population mean of μ₀ = ${d.mu0} ${d.unit} (population SD is unknown). ` +
       `The researcher collects a random sample of n = ${d.n} participants ` +
-      `and obtains a sample mean of x̄ = ${d.xbar} ${d.unit}, ` +
+      `and obtains a sample mean of M = ${d.xbar} ${d.unit}, ` +
       `with a sample standard deviation of s = ${d.sampleSD} ${d.unit}. ` +
       `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ` +
       `${d.testPhrasePlain}.`;
-    const cohenFml = `(x̄ − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
+    const cohenFml = `(M − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
     const rSqStr   = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
     rows = [
       ['STUDENT PROBLEM — One-Sample T-Test'],
@@ -687,7 +687,7 @@ export function downloadProblemExcel(): void {
       ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
       [],
       ['2. T Statistic'],
-      ['Formula:',       't = (x̄ − μ₀) / (s / √n)'],
+      ['Formula:',       't = (M − μ₀) / (s / √n)'],
       ['Substitution:',  `t = (${d.xbar} − ${d.mu0}) / (${d.sampleSD} / √${d.n})`],
       ['Simplify:',      `t = (${d.xbar} − ${d.mu0}) / ${d.se}`],
       ['Result:',        `t = ${d.tScore}`],
@@ -711,8 +711,8 @@ export function downloadProblemExcel(): void {
     const narrative =
       `A researcher is studying ${d.variable} in two groups: ${d.group1} and ${d.group2}. ` +
       `The sample statistics are: ` +
-      `${d.group1}: n = ${d.n1}, M = ${d.m1} ${d.unit}, SD = ${d.sd1} ${d.unit}; ` +
-      `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, SD = ${d.sd2} ${d.unit}. ` +
+      `${d.group1}: n = ${d.n1}, M = ${d.m1} ${d.unit}, s = ${d.sd1} ${d.unit}; ` +
+      `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, s = ${d.sd2} ${d.unit}. ` +
       `Using α = ${d.alpha} (${d.tailLabel}), test whether ${d.group1} and ${d.group2} ` +
       `${d.testPhrasePlain}.`;
     const rSqStr = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
@@ -757,7 +757,7 @@ export function downloadProblemExcel(): void {
     const narrative =
       `A researcher measures ${d.variable} in n = ${d.n} participants at ${d.pre} and again at ${d.post}. ` +
       `The difference scores (${d.pre} − ${d.post}) have a mean of M_D = ${d.meanDiff} ${d.unit} ` +
-      `and a standard deviation of SD_D = ${d.sdDiff} ${d.unit}. ` +
+      `and a standard deviation of s_D = ${d.sdDiff} ${d.unit}. ` +
       `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${d.testPhrasePlain}.`;
     const rSqStr = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
 
@@ -788,7 +788,7 @@ export function downloadProblemExcel(): void {
       ['1. Hypotheses'], ['H₀:', d.h0], ['H₁:', d.h1],
       [],
       ['2. T Statistic'],
-      ['Formula:',       't = M_D / (SD_D / √n)'],
+      ['Formula:',       't = M_D / (s_D / √n)'],
       ['Substitution:',  `t = ${d.meanDiff} / (${d.sdDiff} / √${d.n})`],
       ['Simplify:',      `t = ${d.meanDiff} / ${d.se}`],
       ['Result:',        `t = ${d.tScore}`],
@@ -797,7 +797,7 @@ export function downloadProblemExcel(): void {
       [],
       ['3. p-value & Effect Size'],
       ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
-      ["Cohen's d:", `M_D / SD_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`],
+      ["Cohen's d:", `M_D / s_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`],
       ['r²:',        rSqStr],
       [],
       ['4. Decision'], ['', decStr],
@@ -1296,6 +1296,12 @@ function renderTwoWayAnovaStudentTable(full: TwoWayAnovaFullTable, masked: Set<s
     </thead>
     <tbody>
       <tr>
+        <td style="font-weight:700;">Between Treatments</td>
+        <td>${r2(full.ssA + full.ssB + full.ssAB)}</td>
+        <td>${full.dfA + full.dfB + full.dfAB}</td>
+        ${BLANK}${BLANK}
+      </tr>
+      <tr>
         <td>${full.factorNameA}</td>
         ${cell('A','SS',full.ssA)} ${cell('A','df',full.dfA)}
         ${cell('A','MS',full.msA)} ${cell('A','F',full.fA)}
@@ -1338,6 +1344,12 @@ function renderTwoWayAnovaFullTable(full: TwoWayAnovaFullTable): string {
       <tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr>
     </thead>
     <tbody>
+      <tr>
+        <td style="font-weight:700;">Between Treatments</td>
+        <td>${r2(full.ssA + full.ssB + full.ssAB)}</td>
+        <td>${full.dfA + full.dfB + full.dfAB}</td>
+        ${BLANK}${BLANK}
+      </tr>
       <tr>
         <td>${full.factorNameA}</td>
         <td>${r2(full.ssA)}</td><td>${full.dfA}</td>
@@ -1526,6 +1538,7 @@ export function downloadTwoWayAnovaPracticeExcel(): void {
     [],
     ['ANOVA Table (Student Version)'],
     ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Between Treatments', r2(full.ssA + full.ssB + full.ssAB), full.dfA + full.dfB + full.dfAB, '—', '—'],
     [full.factorNameA,  mc('A','SS',full.ssA),   mc('A','df',full.dfA),   mc('A','MS',full.msA),   mc('A','F',full.fA)],
     [full.factorNameB,  mc('B','SS',full.ssB),   mc('B','df',full.dfB),   mc('B','MS',full.msB),   mc('B','F',full.fB)],
     [intLabel,          mc('AxB','SS',full.ssAB), mc('AxB','df',full.dfAB),mc('AxB','MS',full.msAB),mc('AxB','F',full.fAB)],
@@ -1537,6 +1550,7 @@ export function downloadTwoWayAnovaPracticeExcel(): void {
     [],
     ['ANOVA Table (Completed)'],
     ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Between Treatments', r2(full.ssA + full.ssB + full.ssAB), full.dfA + full.dfB + full.dfAB, '—', '—'],
     [full.factorNameA,  r2(full.ssA),    full.dfA,  r2(full.msA),  r2(full.fA)],
     [full.factorNameB,  r2(full.ssB),    full.dfB,  r2(full.msB),  r2(full.fB)],
     [intLabel,          r2(full.ssAB),   full.dfAB, r2(full.msAB), r2(full.fAB)],
