@@ -482,6 +482,48 @@ footer a {
   text-decoration: none;
 }
 
+/* --- Hero Button Dropdown --- */
+.btn-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy-dark);
+  border-radius: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  min-width: 140px;
+  padding: 0.3rem 0;
+  z-index: 200;
+}
+
+.btn-dropdown:hover .btn-dropdown-menu,
+.btn-dropdown:focus-within .btn-dropdown-menu {
+  display: block;
+}
+
+.btn-dropdown-menu a {
+  display: block;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-dropdown-menu a:hover {
+  background-color: var(--gold);
+  color: #fff;
+  text-decoration: none;
+}
+
 /* --- Responsive Nav --- */
 @media (max-width: 600px) {
   .header-inner {
