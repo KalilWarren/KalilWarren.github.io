@@ -13,9 +13,10 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 ├── index.html              — Homepage (bio, research interests, news)
 ├── research.html           — Research statement, projects, publications
 ├── cv.html                 — Full curriculum vitae
-├── toolkit.html            — StatTeacher Toolkit web app
+├── toolkit.html            — StatTeacher Toolkit (Instructor view)
+├── student.html            — Student Practice page
 ├── css/
-│   └── style.css           — Site-wide styles
+│   └── style.css           — Site-wide styles (including nav dropdown)
 ├── assets/
 │   ├── Picture1.jpg        — Headshot
 │   └── *.pdf               — CV PDF
@@ -24,19 +25,25 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 │       └── Engine_v1.0.0.py — StatTeacher statistical engine (served as-is)
 ├── src/
 │   ├── year.ts             — Current-year display (used by all pages)
-│   └── toolkit/
-│       ├── index.ts        — Entry point; registers all event listeners
-│       ├── init.ts         — Pyodide initialization and py() helper
-│       ├── ui.ts           — Form helpers, test selector, formatting
-│       ├── types.ts        — TypeScript interfaces for all test results
-│       ├── state.ts        — Shared mutable app state singleton
-│       ├── runners.ts      — One function per statistical test (calls Python)
-│       ├── rendering.ts    — HTML table builders and results renderer
-│       ├── csv.ts          — CSV conversion and dataset download
-│       ├── stats.ts        — Browser-side p-value math
-│       ├── problems.ts     — Student problem generator and Excel export
-│       ├── batch.ts        — Batch dataset and problem generation with parameter sweep
-│       └── globals.d.ts    — Ambient type declarations for Pyodide and SheetJS
+│   ├── toolkit/
+│   │   ├── index.ts        — Entry point; registers all event listeners
+│   │   ├── init.ts         — Pyodide initialization and py() helper
+│   │   ├── ui.ts           — Form helpers, test selector, formatting
+│   │   ├── types.ts        — TypeScript interfaces for all test results
+│   │   ├── state.ts        — Shared mutable app state singleton
+│   │   ├── runners.ts      — One function per statistical test (calls Python)
+│   │   ├── rendering.ts    — HTML table builders and results renderer
+│   │   ├── csv.ts          — CSV conversion and dataset download
+│   │   ├── stats.ts        — Browser-side p-value math
+│   │   ├── problems.ts     — Student problem generator and Excel export
+│   │   ├── batch.ts        — Batch dataset and problem generation with parameter sweep
+│   │   └── globals.d.ts    — Ambient type declarations for Pyodide and SheetJS
+│   └── student/
+│       ├── index.ts        — Entry point; unified test selector and streak logic
+│       ├── ztest.ts        — Single-sample Z-test problem generator and grader
+│       ├── ttest.ts        — Single-sample t-test problem generator and grader
+│       ├── indtest.ts      — Independent-measures t-test problem generator and grader
+│       └── reptest.ts      — Repeated-measures t-test problem generator and grader
 ├── package.json            — npm scripts and dev dependencies
 ├── tsconfig.json           — TypeScript compiler configuration
 ├── vite.config.ts          — Vite multi-page build configuration
@@ -68,6 +75,43 @@ The app loads `toolkit/Engine_v1.0.0.py` at runtime into a Pyodide Python enviro
 - NumPy, SciPy, Pandas
 - TypeScript (compiled to ES modules by [Vite 6](https://vitejs.dev))
 - HTML/CSS with the site's warm academic theme
+
+---
+
+## Student Practice Page
+
+**Live:** [https://kalilwarren.github.io/student.html](https://kalilwarren.github.io/student.html)
+
+A standalone, fully browser-based practice tool for students learning hypothesis testing. No accounts, no installation, and no Python/Pyodide required — all computation runs in pure TypeScript.
+
+Students select one or more test types, click **New Problem**, work through each step, and get instant per-field feedback with hints. A collapsible **Show Full Solution** key expands after grading. A 🔥 streak counter tracks consecutive all-correct submissions.
+
+### Supported Test Types
+
+| Test | Given to Student | Graded Fields |
+|---|---|---|
+| **Single-Sample Z-Test** | μ₀, σ, n, x̄, α, tail | Hypotheses, z statistic, critical value, decision, Cohen's d |
+| **Single-Sample t-Test** | μ₀, n, x̄, s, α, tail | Hypotheses, t statistic, df, critical value, decision, effect size |
+| **Independent-Measures t-Test** | n₁, M₁, SS₁, n₂, M₂, SS₂, α, tail | Hypotheses, t statistic, df, critical value, decision, effect size |
+| **Repeated-Measures t-Test** | n, M_D, SD_D, α, tail | Hypotheses, t statistic, df, critical value, effect size, decision |
+
+Effect size questions rotate randomly among Cohen's d, R², and confidence intervals (where applicable). The full solution table always shows all effect sizes regardless of which one was asked.
+
+### Problem Design
+
+Problems are generated entirely in the browser with back-calculation: the test type, tail direction, and target significance outcome (reject/fail) are chosen first; the observable data (sample means, SDs, etc.) are then derived to guarantee that outcome within ±2% rounding tolerance. Critical values are computed numerically via inverse-t (Lanczos + bisection) with no lookup tables or external libraries.
+
+Grading tolerances:
+- Numeric answers (t, z, d, R²): ±0.02
+- Critical values: ±0.005
+- CI bounds: ±0.05 per bound
+- df and decision: exact
+
+### Navigation
+
+The **StatTeacher Toolkit** nav item on every page now opens a dropdown with two options:
+- **Instructor** → `toolkit.html` (the full toolkit with Python/Pyodide engine)
+- **Student** → `student.html` (the lightweight practice page)
 
 ---
 
