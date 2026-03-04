@@ -30,6 +30,22 @@ import {
   resetUI         as repResetUI,
 } from './reptest.ts';
 
+import {
+  generateProblem as anovaGenerate,
+  gradeAnswers    as anovaGrade,
+  renderProblem   as anovaRenderProblem,
+  renderFeedback  as anovaRenderFeedback,
+  resetUI         as anovaResetUI,
+} from './anovatest.ts';
+
+import {
+  generateProblem as twaGenerate,
+  gradeAnswers    as twaGrade,
+  renderProblem   as twaRenderProblem,
+  renderFeedback  as twaRenderFeedback,
+  resetUI         as twaResetUI,
+} from './twowaytest.ts';
+
 /* ── Unified streak ── */
 
 const STREAK_KEY = 'sp_practice_streak';
@@ -56,39 +72,45 @@ function renderStreak(): void {
 
 /* ── State ── */
 
-type TestType = 'z' | 't' | 'ind' | 'rep';
+type TestType = 'z' | 't' | 'ind' | 'rep' | 'anova' | 'twa';
 let activeType: TestType | null = null;
-let zCurrentProblem:   ReturnType<typeof zGenerate>   | null = null;
-let tCurrentProblem:   ReturnType<typeof tGenerate>   | null = null;
-let indCurrentProblem: ReturnType<typeof indGenerate> | null = null;
-let repCurrentProblem: ReturnType<typeof repGenerate> | null = null;
+let zCurrentProblem:    ReturnType<typeof zGenerate>    | null = null;
+let tCurrentProblem:    ReturnType<typeof tGenerate>    | null = null;
+let indCurrentProblem:  ReturnType<typeof indGenerate>  | null = null;
+let repCurrentProblem:  ReturnType<typeof repGenerate>  | null = null;
+let anovaCurrentProblem: ReturnType<typeof anovaGenerate> | null = null;
+let twaCurrentProblem:  ReturnType<typeof twaGenerate>  | null = null;
 
 /* ── DOM refs ── */
 
-const newBtn    = document.getElementById('new-btn')    as HTMLButtonElement;
-const checkBtn  = document.getElementById('check-btn')  as HTMLButtonElement;
-const zSection   = document.getElementById('z-section')   as HTMLElement;
-const tSection   = document.getElementById('t-section')   as HTMLElement;
-const indSection = document.getElementById('ind-section') as HTMLElement;
-const repSection = document.getElementById('rep-section') as HTMLElement;
-const cardTitle = document.getElementById('card-title') as HTMLElement;
-const cardSub   = document.getElementById('card-subtitle') as HTMLElement;
-const selZ      = document.getElementById('sel-ztest')   as HTMLInputElement;
-const selT      = document.getElementById('sel-ttest')   as HTMLInputElement;
-const selInd    = document.getElementById('sel-indtest') as HTMLInputElement;
-const selRep    = document.getElementById('sel-reptest') as HTMLInputElement;
-const noSelWarn = document.getElementById('no-sel-warning') as HTMLElement;
+const newBtn      = document.getElementById('new-btn')      as HTMLButtonElement;
+const checkBtn    = document.getElementById('check-btn')    as HTMLButtonElement;
+const zSection    = document.getElementById('z-section')    as HTMLElement;
+const tSection    = document.getElementById('t-section')    as HTMLElement;
+const indSection  = document.getElementById('ind-section')  as HTMLElement;
+const repSection  = document.getElementById('rep-section')  as HTMLElement;
+const anovaSection = document.getElementById('anova-section') as HTMLElement;
+const twaSection  = document.getElementById('twa-section')  as HTMLElement;
+const cardTitle   = document.getElementById('card-title')   as HTMLElement;
+const cardSub     = document.getElementById('card-subtitle') as HTMLElement;
+const selZ        = document.getElementById('sel-ztest')    as HTMLInputElement;
+const selT        = document.getElementById('sel-ttest')    as HTMLInputElement;
+const selInd      = document.getElementById('sel-indtest')  as HTMLInputElement;
+const selRep      = document.getElementById('sel-reptest')  as HTMLInputElement;
+const selAnova    = document.getElementById('sel-anovatest') as HTMLInputElement;
+const selTwa      = document.getElementById('sel-twatest')  as HTMLInputElement;
+const noSelWarn   = document.getElementById('no-sel-warning') as HTMLElement;
 
 /* ── Card header ── */
 
 const HEADERS: Record<TestType, { title: string; subtitle: string }> = {
   z: {
     title:    'Single-Sample Z-Test (known σ)',
-    subtitle: 'Given: μ₀, known σ, n, and x̄. &nbsp;State hypotheses, compute z, find the critical value, decide, and compute Cohen\'s d.',
+    subtitle: 'Given: μ₀, known σ, n, and M. &nbsp;State hypotheses, compute z, find the critical value, decide, and compute Cohen\'s d.',
   },
   t: {
     title:    'Single-Sample t-Test (unknown σ)',
-    subtitle: 'Given: μ₀, n, x̄, and s. &nbsp;State hypotheses, compute t, find the critical value, decide, and compute an effect size.',
+    subtitle: 'Given: μ₀, n, M, and s. &nbsp;State hypotheses, compute t, find the critical value, decide, and compute an effect size.',
   },
   ind: {
     title:    'Independent-Measures t-Test (equal variances)',
@@ -96,7 +118,15 @@ const HEADERS: Record<TestType, { title: string; subtitle: string }> = {
   },
   rep: {
     title:    'Repeated-Measures t-Test (paired samples)',
-    subtitle: 'Given: n, M<sub>D</sub>, and SD<sub>D</sub>. &nbsp;State hypotheses, compute t, df, critical value, find an effect size, and decide.',
+    subtitle: 'Given: n, M<sub>D</sub>, and s<sub>D</sub>. &nbsp;State hypotheses, compute t, df, critical value, find an effect size, and decide.',
+  },
+  anova: {
+    title:    'One-Way Independent ANOVA',
+    subtitle: 'Given: a partially completed ANOVA table and α. &nbsp;Fill in missing values, state hypotheses, find F<sub>crit</sub>, determine significance, and compute η².',
+  },
+  twa: {
+    title:    'Two-Factor Independent ANOVA',
+    subtitle: 'Given: a partially completed two-way ANOVA table and α. &nbsp;Fill in missing values, state hypotheses for Factor A, Factor B, and the interaction, find F critical values, determine significance for each effect, and compute η².',
   },
 };
 
@@ -108,20 +138,24 @@ function setHeader(type: TestType): void {
 /* ── Show/hide sections ── */
 
 function showSection(type: TestType): void {
-  zSection.style.display   = type === 'z'   ? '' : 'none';
-  tSection.style.display   = type === 't'   ? '' : 'none';
-  indSection.style.display = type === 'ind' ? '' : 'none';
-  repSection.style.display = type === 'rep' ? '' : 'none';
+  zSection.style.display    = type === 'z'     ? '' : 'none';
+  tSection.style.display    = type === 't'     ? '' : 'none';
+  indSection.style.display  = type === 'ind'   ? '' : 'none';
+  repSection.style.display  = type === 'rep'   ? '' : 'none';
+  anovaSection.style.display = type === 'anova' ? '' : 'none';
+  twaSection.style.display  = type === 'twa'   ? '' : 'none';
 }
 
 /* ── Random pick from enabled types ── */
 
 function pickType(): TestType | null {
   const pool: TestType[] = [];
-  if (selZ.checked)   pool.push('z');
-  if (selT.checked)   pool.push('t');
-  if (selInd.checked) pool.push('ind');
-  if (selRep.checked) pool.push('rep');
+  if (selZ.checked)     pool.push('z');
+  if (selT.checked)     pool.push('t');
+  if (selInd.checked)   pool.push('ind');
+  if (selRep.checked)   pool.push('rep');
+  if (selAnova.checked) pool.push('anova');
+  if (selTwa.checked)   pool.push('twa');
   if (pool.length === 0) return null;
   return pool[Math.floor(Math.random() * pool.length)];
 }
@@ -153,10 +187,18 @@ function newProblem(): void {
     indResetUI();
     indCurrentProblem = indGenerate();
     indRenderProblem(indCurrentProblem);
-  } else {
+  } else if (type === 'rep') {
     repResetUI();
     repCurrentProblem = repGenerate();
     repRenderProblem(repCurrentProblem);
+  } else if (type === 'anova') {
+    anovaResetUI();
+    anovaCurrentProblem = anovaGenerate();
+    anovaRenderProblem(anovaCurrentProblem);
+  } else {
+    twaResetUI();
+    twaCurrentProblem = twaGenerate();
+    twaRenderProblem(twaCurrentProblem);
   }
 
   renderStreak();
@@ -181,6 +223,14 @@ function checkAnswers(): void {
     const grade = repGrade(repCurrentProblem);
     repRenderFeedback(repCurrentProblem, grade);
     updateStreak(grade.allCorrect);
+  } else if (activeType === 'anova' && anovaCurrentProblem) {
+    const grade = anovaGrade(anovaCurrentProblem);
+    anovaRenderFeedback(anovaCurrentProblem, grade);
+    updateStreak(grade.allCorrect);
+  } else if (activeType === 'twa' && twaCurrentProblem) {
+    const grade = twaGrade(twaCurrentProblem);
+    twaRenderFeedback(twaCurrentProblem, grade);
+    updateStreak(grade.allCorrect);
   }
 }
 
@@ -190,8 +240,9 @@ newBtn.addEventListener('click', newProblem);
 checkBtn.addEventListener('click', checkAnswers);
 
 // Warn immediately if toggling leaves nothing selected
-[selZ, selT, selInd, selRep].forEach(cb => cb.addEventListener('change', () => {
-  noSelWarn.style.display = (!selZ.checked && !selT.checked && !selInd.checked && !selRep.checked) ? '' : 'none';
+[selZ, selT, selInd, selRep, selAnova, selTwa].forEach(cb => cb.addEventListener('change', () => {
+  noSelWarn.style.display =
+    (!selZ.checked && !selT.checked && !selInd.checked && !selRep.checked && !selAnova.checked && !selTwa.checked) ? '' : 'none';
 }));
 
 // Auto-generate on load

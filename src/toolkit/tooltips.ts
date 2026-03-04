@@ -5,7 +5,7 @@ export const TOOLTIPS: Record<string, string> = {
   n:          'Sample size (number of observations). Larger n reduces standard error and increases power.',
   mu0:        'Null hypothesis mean (μ₀): the population mean assumed true under H₀.',
   sigma:      'Known population standard deviation (σ). Used in z-tests to compute standard error.',
-  xbar:       'Sample mean (x̄): the average of the observed sample.',
+  xbar:       'Sample mean (M): the average of the observed sample.',
   z:          'z statistic: standardized distance between sample mean and μ₀ in standard error units.',
   t:          't statistic: standardized difference using an estimated standard error.',
   F:          'F statistic: ratio of explained variance to unexplained variance (MS_effect / MS_error).',
