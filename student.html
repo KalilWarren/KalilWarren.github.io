@@ -211,7 +211,8 @@
     #feedback-section,
     #tp-feedback-section,
     #ip-feedback-section,
-    #rp-feedback-section {
+    #rp-feedback-section,
+    #ap-feedback-section {
       display: none;
       margin-top: 1.5rem;
       padding-top: 1rem;
@@ -241,14 +242,16 @@
     #solution-toggle,
     #tp-solution-toggle,
     #ip-solution-toggle,
-    #rp-solution-toggle {
+    #rp-solution-toggle,
+    #ap-solution-toggle {
       display: none;
       margin-top: 1rem;
     }
     #solution-toggle > summary,
     #tp-solution-toggle > summary,
     #ip-solution-toggle > summary,
-    #rp-solution-toggle > summary {
+    #rp-solution-toggle > summary,
+    #ap-solution-toggle > summary {
       cursor: pointer;
       font-size: 0.87rem;
       color: var(--text-light);
@@ -258,7 +261,8 @@
     #solution-toggle > summary:hover,
     #tp-solution-toggle > summary:hover,
     #ip-solution-toggle > summary:hover,
-    #rp-solution-toggle > summary:hover {
+    #rp-solution-toggle > summary:hover,
+    #ap-solution-toggle > summary:hover {
       color: var(--navy);
     }
 
@@ -396,6 +400,10 @@
       <label class="sp-type-pill">
         <input type="checkbox" id="sel-reptest" checked />
         Rep. t-Test <span class="sp-sel-sub">(paired samples)</span>
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-anovatest" checked />
+        One-Way ANOVA
       </label>
       <span class="sp-no-sel-warning" id="no-sel-warning">Select at least one test type.</span>
     </div>
@@ -761,6 +769,72 @@
         </details>
 
       </div><!-- end rep-section -->
+
+      <!-- ══ One-Way ANOVA section ══ -->
+      <div id="anova-section" style="display:none;">
+
+        <!-- Problem text + interactive table -->
+        <div class="sp-problem-box">
+          <div id="ap-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="ap-answer-form" onsubmit="return false;">
+
+          <!-- 1. ANOVA table (rendered dynamically into ap-problem-text above) -->
+
+          <!-- 2. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. State the Hypotheses</div>
+            <div class="sp-radio-group" id="ap-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="ap-fb-hyp"></div>
+          </div>
+
+          <!-- 3. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Determine Statistical Significance</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="ap-decision-select" value="reject" />
+                Reject H₀ (result is significant)
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="ap-decision-select" value="fail" />
+                Fail to reject H₀ (result is not significant)
+              </label>
+            </div>
+            <div class="sp-fb-row" id="ap-fb-decision"></div>
+          </div>
+
+          <!-- 4. Effect size η² -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Compute η² (Effect Size)</div>
+            <div class="sp-input-row">
+              <label for="ap-answer-eta2">η² = SS<sub>Between</sub> / SS<sub>Total</sub></label>
+              <input type="number" step="0.01" id="ap-answer-eta2" class="sp-num-input"
+                     placeholder="e.g. 0.42" />
+            </div>
+            <div class="sp-fb-row" id="ap-fb-eta2"></div>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="ap-feedback-section">
+          <div id="ap-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="ap-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="ap-solution-body"></div>
+        </details>
+
+      </div><!-- end anova-section -->
 
       <!-- ══ Shared button row ══ -->
       <div class="sp-btn-row">
