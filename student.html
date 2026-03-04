@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Practice | StatTeacher Toolkit</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Student Practice specific styles ── */
+
+    .sp-page-intro {
+      color: var(--text-light);
+      font-size: 0.95rem;
+      margin-bottom: 0;
+    }
+
+    /* ── Type selector ── */
+    .sp-type-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .sp-selector-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin: 0;
+      white-space: nowrap;
+    }
+
+    .sp-type-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.9rem;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: var(--text-light);
+      background: var(--white);
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      user-select: none;
+    }
+
+    .sp-type-pill:has(input:checked) {
+      border-color: var(--navy);
+      background: var(--light-gold);
+      color: var(--navy);
+      font-weight: 700;
+    }
+
+    .sp-type-pill input[type="checkbox"] {
+      accent-color: var(--navy);
+    }
+
+    .sp-sel-sub {
+      font-weight: 400;
+      font-size: 0.82rem;
+      color: inherit;
+      opacity: 0.8;
+    }
+
+    .sp-no-sel-warning {
+      font-size: 0.83rem;
+      color: #8B1A00;
+      font-style: italic;
+      display: none;
+    }
+
+    /* ── Practice card ── */
+    .sp-test-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .sp-test-card h2 {
+      font-family: 'EB Garamond', serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 0.25rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sp-test-card .sp-subtitle {
+      font-size: 0.83rem;
+      color: var(--text-light);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Problem card ── */
+    .sp-problem-box {
+      background: #f9f7f4;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--navy);
+      border-radius: 4px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.75rem;
+      font-size: 0.96rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .sp-problem-box p { margin-bottom: 0.75rem; }
+    .sp-problem-box p:last-of-type { margin-bottom: 0.5rem; }
+    .sp-problem-box ol {
+      margin: 0.25rem 0 0 1.5rem;
+      padding: 0;
+    }
+    .sp-problem-box ol li { margin-bottom: 0.1rem; }
+
+    /* ── Section headers inside card ── */
+    .sp-section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--navy);
+      margin-bottom: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .sp-section-label:first-of-type {
+      margin-top: 0;
+    }
+
+    /* ── Radio options ── */
+    .sp-radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .sp-radio-label {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      font-size: 0.93rem;
+      cursor: pointer;
+      padding: 0.4rem 0.7rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: #fdfaf7;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .sp-radio-label:hover {
+      background: var(--light-gold);
+      border-color: var(--gold);
+    }
+    .sp-radio-label input[type="radio"] {
+      accent-color: var(--navy);
+      flex-shrink: 0;
+      align-self: center;
+      margin-top: 1px;
+    }
+
+    /* ── Numeric inputs ── */
+    .sp-input-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .sp-input-row label {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      min-width: 200px;
+    }
+
+    .sp-num-input {
+      width: 120px;
+      padding: 0.38rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.93rem;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s;
+    }
+    .sp-num-input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+
+    .sp-hint {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      font-style: italic;
+    }
+
+    /* ── Feedback inline ── */
+    .sp-fb-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      min-height: 1.2em;
+    }
+
+    /* ── Feedback section ── */
+    #feedback-section,
+    #tp-feedback-section,
+    #ip-feedback-section,
+    #rp-feedback-section {
+      display: none;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Banner ── */
+    .sp-banner {
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+    }
+    .sp-banner-success {
+      background: #edf7ed;
+      color: #1d5c1d;
+      border: 1px solid #a8d8a8;
+    }
+    .sp-banner-error {
+      background: #fdf0ed;
+      color: #8B1A00;
+      border: 1px solid #f0b8a8;
+    }
+
+    /* ── Solution toggle ── */
+    #solution-toggle,
+    #tp-solution-toggle,
+    #ip-solution-toggle,
+    #rp-solution-toggle {
+      display: none;
+      margin-top: 1rem;
+    }
+    #solution-toggle > summary,
+    #tp-solution-toggle > summary,
+    #ip-solution-toggle > summary,
+    #rp-solution-toggle > summary {
+      cursor: pointer;
+      font-size: 0.87rem;
+      color: var(--text-light);
+      user-select: none;
+      padding: 0.3rem 0;
+    }
+    #solution-toggle > summary:hover,
+    #tp-solution-toggle > summary:hover,
+    #ip-solution-toggle > summary:hover,
+    #rp-solution-toggle > summary:hover {
+      color: var(--navy);
+    }
+
+    /* ── Solution table ── */
+    .sp-solution-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+      margin-top: 0.75rem;
+    }
+    .sp-solution-table th {
+      background: var(--light-gold);
+      color: var(--navy-dark);
+      text-align: left;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .sp-solution-table td {
+      padding: 0.35rem 0.75rem;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .sp-solution-table tr:nth-child(even) td { background: #fdfaf7; }
+
+    /* ── Action buttons ── */
+    .sp-btn-row {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .sp-btn {
+      padding: 0.55rem 1.2rem;
+      border-radius: 4px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .sp-btn-primary {
+      background: var(--navy);
+      border: 2px solid var(--navy);
+      color: #fff;
+    }
+    .sp-btn-primary:hover {
+      background: var(--navy-dark);
+      border-color: var(--navy-dark);
+    }
+
+    .sp-btn-secondary {
+      background: transparent;
+      border: 2px solid var(--navy);
+      color: var(--navy);
+    }
+    .sp-btn-secondary:hover {
+      background: var(--light-gold);
+    }
+
+    /* ── Streak ── */
+    #streak-display {
+      font-size: 0.88rem;
+      color: var(--gold);
+      font-weight: 700;
+      margin-left: auto;
+      align-self: center;
+    }
+
+    /* ── Divider between fields ── */
+    .sp-field-block {
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Placeholder text when no problem loaded ── */
+    .sp-placeholder {
+      color: var(--text-light);
+      font-size: 0.93rem;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="header-inner">
+      <span class="site-name">Kalil Warren</span>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="research.html">Research</a></li>
+          <li><a href="cv.html">CV</a></li>
+          <li class="nav-dropdown">
+            <a href="toolkit.html" class="active">StatTeacher Toolkit</a>
+            <ul class="nav-dropdown-menu">
+              <li><a href="toolkit.html">Instructor</a></li>
+              <li><a href="student.html" class="active">Student</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="page-container">
+    <h1 class="page-title">Student Practice</h1>
+    <p class="sp-page-intro">
+      Generate randomized hypothesis-testing problems, enter your answers, and get instant feedback.
+      Select your test type(s) below, then click <strong>New Problem</strong> to begin.
+    </p>
+
+    <!-- ── Type selector ── -->
+    <div class="sp-type-selector">
+      <span class="sp-selector-label">Practice with:</span>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-ztest" checked />
+        Z-Test <span class="sp-sel-sub">(known σ)</span>
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-ttest" checked />
+        t-Test <span class="sp-sel-sub">(unknown σ)</span>
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-indtest" checked />
+        Ind. t-Test <span class="sp-sel-sub">(two groups)</span>
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-reptest" checked />
+        Rep. t-Test <span class="sp-sel-sub">(paired samples)</span>
+      </label>
+      <span class="sp-no-sel-warning" id="no-sel-warning">Select at least one test type.</span>
+    </div>
+
+    <!-- ── Unified practice card ── -->
+    <div class="sp-test-card" style="margin-top: 1.5rem;">
+      <h2 id="card-title">Hypothesis Testing Practice</h2>
+      <p class="sp-subtitle" id="card-subtitle">
+        Select your test type(s) above and click <strong>New Problem</strong> to begin.
+      </p>
+
+      <!-- ══ Z-Test section (shown when active test = z) ══ -->
+      <div id="z-section" style="display:none;">
+
+        <!-- Problem text -->
+        <div class="sp-problem-box">
+          <div id="problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="answer-form" onsubmit="return false;">
+
+          <!-- 1. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">1. Select the Correct Hypotheses</div>
+            <div class="sp-radio-group" id="hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="fb-hyp"></div>
+          </div>
+
+          <!-- 2. z statistic -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. Compute the z Test Statistic</div>
+            <div class="sp-input-row">
+              <label for="answer-z">z = (x̄ − μ₀) / (σ / √n)</label>
+              <input type="number" step="0.01" id="answer-z" class="sp-num-input"
+                     placeholder="e.g. 2.45" />
+            </div>
+            <div class="sp-fb-row" id="fb-z"></div>
+          </div>
+
+          <!-- 3. Critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Find the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="answer-crit" id="crit-label">Critical value</label>
+              <input type="number" step="0.0001" id="answer-crit" class="sp-num-input"
+                     placeholder="e.g. 1.96" />
+            </div>
+            <span class="sp-hint" id="crit-hint" style="display:none;"></span>
+            <div class="sp-fb-row" id="fb-crit"></div>
+          </div>
+
+          <!-- 4. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Make a Decision</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="decision-select" value="reject" />
+                Reject H₀
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="decision-select" value="fail" />
+                Fail to reject H₀
+              </label>
+            </div>
+            <div class="sp-fb-row" id="fb-decision"></div>
+          </div>
+
+          <!-- 5. Cohen's d -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">5. Compute Cohen's d (Effect Size)</div>
+            <div class="sp-input-row">
+              <label for="answer-d">d = (x̄ − μ₀) / σ</label>
+              <input type="number" step="0.01" id="answer-d" class="sp-num-input"
+                     placeholder="e.g. 0.52" />
+            </div>
+            <div class="sp-fb-row" id="fb-d"></div>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="feedback-section">
+          <div id="fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="solution-body"></div>
+        </details>
+
+      </div><!-- end z-section -->
+
+      <!-- ══ T-Test section (shown when active test = t) ══ -->
+      <div id="t-section" style="display:none;">
+
+        <!-- Problem text -->
+        <div class="sp-problem-box">
+          <div id="tp-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="tp-answer-form" onsubmit="return false;">
+
+          <!-- 1. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">1. Select the Correct Hypotheses</div>
+            <div class="sp-radio-group" id="tp-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="tp-fb-hyp"></div>
+          </div>
+
+          <!-- 2. t statistic -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. Compute the t Test Statistic</div>
+            <div class="sp-input-row">
+              <label for="tp-answer-t">t = (x̄ − μ₀) / (s / √n)</label>
+              <input type="number" step="0.01" id="tp-answer-t" class="sp-num-input"
+                     placeholder="e.g. 2.45" />
+            </div>
+            <div class="sp-fb-row" id="tp-fb-t"></div>
+          </div>
+
+          <!-- 3. Critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Find the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="tp-answer-crit" id="tp-crit-label">Critical value</label>
+              <input type="number" step="0.0001" id="tp-answer-crit" class="sp-num-input"
+                     placeholder="e.g. 2.093" />
+            </div>
+            <span class="sp-hint" id="tp-crit-hint" style="display:none;"></span>
+            <div class="sp-fb-row" id="tp-fb-crit"></div>
+          </div>
+
+          <!-- 4. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Make a Decision</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="tp-decision-select" value="reject" />
+                Reject H₀
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="tp-decision-select" value="fail" />
+                Fail to reject H₀
+              </label>
+            </div>
+            <div class="sp-fb-row" id="tp-fb-decision"></div>
+          </div>
+
+          <!-- 5. Effect size (dynamically populated by renderProblem) -->
+          <div class="sp-field-block" id="tp-effect-section">
+            <span class="sp-placeholder">Generate a problem to see this section.</span>
+          </div>
+          <div class="sp-fb-row" id="tp-fb-es"></div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="tp-feedback-section">
+          <div id="tp-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="tp-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="tp-solution-body"></div>
+        </details>
+
+      </div><!-- end t-section -->
+
+      <!-- ══ Independent-Measures t-Test section ══ -->
+      <div id="ind-section" style="display:none;">
+
+        <!-- Problem text -->
+        <div class="sp-problem-box">
+          <div id="ip-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="ip-answer-form" onsubmit="return false;">
+
+          <!-- 1. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">1. State the Hypotheses</div>
+            <div class="sp-radio-group" id="ip-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="ip-fb-hyp"></div>
+          </div>
+
+          <!-- 2. t statistic -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. Compute the t Test Statistic</div>
+            <div class="sp-input-row">
+              <label for="ip-answer-t">t = (M₁ − M₂) / SE</label>
+              <input type="number" step="0.01" id="ip-answer-t" class="sp-num-input"
+                     placeholder="e.g. 2.45" />
+            </div>
+            <div class="sp-fb-row" id="ip-fb-t"></div>
+          </div>
+
+          <!-- 3. df -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Compute Degrees of Freedom</div>
+            <div class="sp-input-row">
+              <label for="ip-answer-df">df = n₁ + n₂ − 2</label>
+              <input type="number" step="1" id="ip-answer-df" class="sp-num-input"
+                     placeholder="e.g. 38" />
+            </div>
+            <div class="sp-fb-row" id="ip-fb-df"></div>
+          </div>
+
+          <!-- 4. Critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Find the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="ip-answer-crit" id="ip-crit-label">Critical value</label>
+              <input type="number" step="0.001" id="ip-answer-crit" class="sp-num-input"
+                     placeholder="e.g. 2.024" />
+            </div>
+            <span class="sp-hint" id="ip-crit-hint" style="display:none;"></span>
+            <div class="sp-fb-row" id="ip-fb-crit"></div>
+          </div>
+
+          <!-- 5. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">5. Make a Decision</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="ip-decision-select" value="reject" />
+                Reject H₀
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="ip-decision-select" value="fail" />
+                Fail to reject H₀
+              </label>
+            </div>
+            <div class="sp-fb-row" id="ip-fb-decision"></div>
+          </div>
+
+          <!-- 6. Effect size (dynamically populated) -->
+          <div class="sp-field-block" id="ip-effect-section">
+            <span class="sp-placeholder">Generate a problem to see this section.</span>
+          </div>
+          <div class="sp-fb-row" id="ip-fb-es"></div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="ip-feedback-section">
+          <div id="ip-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="ip-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="ip-solution-body"></div>
+        </details>
+
+      </div><!-- end ind-section -->
+
+      <!-- ══ Repeated-Measures t-Test section ══ -->
+      <div id="rep-section" style="display:none;">
+
+        <!-- Problem text -->
+        <div class="sp-problem-box">
+          <div id="rp-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="rp-answer-form" onsubmit="return false;">
+
+          <!-- 1. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">1. State the Hypotheses</div>
+            <div class="sp-radio-group" id="rp-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="rp-fb-hyp"></div>
+          </div>
+
+          <!-- 2. t statistic -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. Compute the t Test Statistic</div>
+            <div class="sp-input-row">
+              <label for="rp-answer-t">t = M<sub>D</sub> / (SD<sub>D</sub> / √n)</label>
+              <input type="number" step="0.01" id="rp-answer-t" class="sp-num-input"
+                     placeholder="e.g. 2.45" />
+            </div>
+            <div class="sp-fb-row" id="rp-fb-t"></div>
+          </div>
+
+          <!-- 3. df -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Compute Degrees of Freedom</div>
+            <div class="sp-input-row">
+              <label for="rp-answer-df">df = n − 1</label>
+              <input type="number" step="1" id="rp-answer-df" class="sp-num-input"
+                     placeholder="e.g. 19" />
+            </div>
+            <div class="sp-fb-row" id="rp-fb-df"></div>
+          </div>
+
+          <!-- 4. Critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Find the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="rp-answer-crit" id="rp-crit-label">Critical value</label>
+              <input type="number" step="0.001" id="rp-answer-crit" class="sp-num-input"
+                     placeholder="e.g. 2.093" />
+            </div>
+            <span class="sp-hint" id="rp-crit-hint" style="display:none;"></span>
+            <div class="sp-fb-row" id="rp-fb-crit"></div>
+          </div>
+
+          <!-- 5. Effect size (dynamically populated) -->
+          <div class="sp-field-block" id="rp-effect-section">
+            <span class="sp-placeholder">Generate a problem to see this section.</span>
+          </div>
+          <div class="sp-fb-row" id="rp-fb-es"></div>
+
+          <!-- 6. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">6. Make a Decision</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="rp-decision-select" value="reject" />
+                Reject H₀
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="rp-decision-select" value="fail" />
+                Fail to reject H₀
+              </label>
+            </div>
+            <div class="sp-fb-row" id="rp-fb-decision"></div>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="rp-feedback-section">
+          <div id="rp-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="rp-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="rp-solution-body"></div>
+        </details>
+
+      </div><!-- end rep-section -->
+
+      <!-- ══ Shared button row ══ -->
+      <div class="sp-btn-row">
+        <button type="button" id="check-btn" class="sp-btn sp-btn-primary" disabled>
+          Check Answers
+        </button>
+        <button type="button" id="new-btn" class="sp-btn sp-btn-secondary">
+          New Problem
+        </button>
+        <span id="streak-display"></span>
+      </div>
+
+    </div><!-- end sp-test-card -->
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>Kalil Warren &mdash; University of South Carolina &mdash; StatTeacher Toolkit</p>
+  </footer>
+
+  <script type="module" src="src/student/index.ts"></script>
+</body>
+</html>
