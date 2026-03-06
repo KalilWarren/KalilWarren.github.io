@@ -213,7 +213,9 @@
     #ip-feedback-section,
     #rp-feedback-section,
     #ap-feedback-section,
-    #twp-feedback-section {
+    #twp-feedback-section,
+    #pp-feedback-section,
+    #lrp-feedback-section {
       display: none;
       margin-top: 1.5rem;
       padding-top: 1rem;
@@ -245,7 +247,9 @@
     #ip-solution-toggle,
     #rp-solution-toggle,
     #ap-solution-toggle,
-    #twp-solution-toggle {
+    #twp-solution-toggle,
+    #pp-solution-toggle,
+    #lrp-solution-toggle {
       display: none;
       margin-top: 1rem;
     }
@@ -254,7 +258,9 @@
     #ip-solution-toggle > summary,
     #rp-solution-toggle > summary,
     #ap-solution-toggle > summary,
-    #twp-solution-toggle > summary {
+    #twp-solution-toggle > summary,
+    #pp-solution-toggle > summary,
+    #lrp-solution-toggle > summary {
       cursor: pointer;
       font-size: 0.87rem;
       color: var(--text-light);
@@ -266,7 +272,9 @@
     #ip-solution-toggle > summary:hover,
     #rp-solution-toggle > summary:hover,
     #ap-solution-toggle > summary:hover,
-    #twp-solution-toggle > summary:hover {
+    #twp-solution-toggle > summary:hover,
+    #pp-solution-toggle > summary:hover,
+    #lrp-solution-toggle > summary:hover {
       color: var(--navy);
     }
 
@@ -412,6 +420,14 @@
       <label class="sp-type-pill">
         <input type="checkbox" id="sel-twatest" checked />
         Two-Way Independent ANOVA <span class="sp-sel-sub">(2 factors)</span>
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-peartest" checked />
+        Pearson Correlation <span class="sp-sel-sub">(r test)</span>
+      </label>
+      <label class="sp-type-pill">
+        <input type="checkbox" id="sel-regtest" checked />
+        Linear Regression <span class="sp-sel-sub">(1 predictor)</span>
       </label>
       <span class="sp-no-sel-warning" id="no-sel-warning">Select at least one test type.</span>
     </div>
@@ -1015,6 +1031,212 @@
         </details>
 
       </div><!-- end twa-section -->
+
+      <!-- ══ Pearson Correlation section ══ -->
+      <div id="pear-section" style="display:none;">
+
+        <!-- Problem text -->
+        <div class="sp-problem-box">
+          <div id="pp-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="pp-answer-form" onsubmit="return false;">
+
+          <!-- 1. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">1. Select the Correct Hypotheses</div>
+            <div class="sp-radio-group" id="pp-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="pp-fb-hyp"></div>
+          </div>
+
+          <!-- 2. t statistic -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. Compute the Test Statistic</div>
+            <div class="sp-input-row">
+              <label for="pp-answer-t">t = r &times; &radic;df / &radic;(1 &minus; r&sup2;)</label>
+              <input type="number" step="0.01" id="pp-answer-t" class="sp-num-input"
+                     placeholder="e.g. 2.45" />
+            </div>
+            <div class="sp-fb-row" id="pp-fb-t"></div>
+          </div>
+
+          <!-- 3. df -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Compute Degrees of Freedom</div>
+            <div class="sp-input-row">
+              <label for="pp-answer-df">df = n &minus; 2</label>
+              <input type="number" step="1" id="pp-answer-df" class="sp-num-input"
+                     placeholder="e.g. 18" />
+            </div>
+            <div class="sp-fb-row" id="pp-fb-df"></div>
+          </div>
+
+          <!-- 4. Critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Determine the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="pp-answer-crit" id="pp-crit-label">Critical value</label>
+              <input type="number" step="0.001" id="pp-answer-crit" class="sp-num-input"
+                     placeholder="e.g. 2.101" />
+            </div>
+            <span class="sp-hint" id="pp-crit-hint" style="display:none;"></span>
+            <div class="sp-fb-row" id="pp-fb-crit"></div>
+          </div>
+
+          <!-- 5. r² -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">5. Compute r&sup2; (Effect Size)</div>
+            <div class="sp-input-row">
+              <label for="pp-answer-r2">r&sup2; = r &times; r</label>
+              <input type="number" step="0.0001" id="pp-answer-r2" class="sp-num-input"
+                     placeholder="e.g. 0.3456" />
+            </div>
+            <div class="sp-fb-row" id="pp-fb-r2"></div>
+          </div>
+
+          <!-- 6. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">6. Make a Decision</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="pp-decision-select" value="reject" />
+                Reject H₀
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="pp-decision-select" value="fail" />
+                Fail to reject H₀
+              </label>
+            </div>
+            <div class="sp-fb-row" id="pp-fb-decision"></div>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="pp-feedback-section">
+          <div id="pp-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="pp-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="pp-solution-body"></div>
+        </details>
+
+      </div><!-- end pear-section -->
+
+      <!-- ══ Linear Regression section ══ -->
+      <div id="lrp-section" style="display:none;">
+
+        <!-- Problem text + ANOVA table -->
+        <div class="sp-problem-box">
+          <div id="lrp-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="lrp-answer-form" onsubmit="return false;">
+
+          <!-- 1. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">1. Select the Correct Hypotheses</div>
+            <div class="sp-radio-group" id="lrp-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="lrp-fb-hyp"></div>
+          </div>
+
+          <!-- 2. Regression equation -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. Write the Regression Equation &nbsp;<span style="font-size:0.82rem;font-weight:400;color:var(--text-light);">Ŷ = b₀ + b₁X</span></div>
+            <div class="sp-input-row">
+              <label for="lrp-answer-b0">Intercept (b₀)</label>
+              <input type="number" step="0.01" id="lrp-answer-b0" class="sp-num-input"
+                     placeholder="e.g. 42.15" />
+            </div>
+            <div class="sp-fb-row" id="lrp-fb-b0"></div>
+            <div class="sp-input-row" style="margin-top:0.5rem;">
+              <label for="lrp-answer-b1">Slope (b₁)</label>
+              <input type="number" step="0.01" id="lrp-answer-b1" class="sp-num-input"
+                     placeholder="e.g. 1.38" />
+            </div>
+            <div class="sp-fb-row" id="lrp-fb-b1"></div>
+          </div>
+
+          <!-- 3. F critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Determine the F Critical Value</div>
+            <div class="sp-input-row">
+              <label for="lrp-answer-fcrit">F<sub>crit</sub> &nbsp;<span class="sp-hint" id="lrp-fcrit-hint" style="display:none;"></span></label>
+              <input type="number" step="0.001" id="lrp-answer-fcrit" class="sp-num-input"
+                     placeholder="e.g. 4.414" />
+            </div>
+            <div class="sp-fb-row" id="lrp-fb-fcrit"></div>
+          </div>
+
+          <!-- 4. Significance decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Make a Decision</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="lrp-decision-select" value="reject" />
+                Reject H₀ (slope is significant)
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="lrp-decision-select" value="fail" />
+                Fail to reject H₀ (slope is not significant)
+              </label>
+            </div>
+            <div class="sp-fb-row" id="lrp-fb-decision"></div>
+          </div>
+
+          <!-- 5. R² -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">5. Compute R² (Effect Size)</div>
+            <div class="sp-input-row">
+              <label for="lrp-answer-R2">R² = SS<sub>Regression</sub> / SS<sub>Total</sub></label>
+              <input type="number" step="0.01" id="lrp-answer-R2" class="sp-num-input"
+                     placeholder="e.g. 0.42" />
+            </div>
+            <div class="sp-fb-row" id="lrp-fb-R2"></div>
+          </div>
+
+          <!-- 6. Slope interpretation (not graded) -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">6. Interpret the Slope <span style="font-size:0.8rem;font-weight:400;color:var(--text-light);">(not graded)</span></div>
+            <textarea id="lrp-answer-slope-interp" rows="2"
+                      style="width:100%;padding:0.4rem 0.6rem;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;resize:vertical;"
+                      placeholder="For each one-unit increase in X, Y increases/decreases by … on average."></textarea>
+          </div>
+
+          <!-- 7. R² interpretation (not graded) -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">7. Interpret R² <span style="font-size:0.8rem;font-weight:400;color:var(--text-light);">(not graded)</span></div>
+            <textarea id="lrp-answer-R2-interp" rows="2"
+                      style="width:100%;padding:0.4rem 0.6rem;border:1px solid var(--border);border-radius:4px;font-size:0.9rem;resize:vertical;"
+                      placeholder="Approximately …% of the variance in Y is explained by X."></textarea>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="lrp-feedback-section">
+          <div id="lrp-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="lrp-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="lrp-solution-body"></div>
+        </details>
+
+      </div><!-- end lrp-section -->
 
       <!-- ══ Shared button row ══ -->
       <div class="sp-btn-row">
