@@ -5,7 +5,9 @@
  *   moderate: hide SSE, MSR, MSE, F      (SSR, df_reg=1, df_err, SST, df_tot shown)
  *   hard:     hide SSR, SSE, MSE, SST, DFT (df_reg=1, MSR, F, df_err shown)
  *
- * Note: DFR (=1) and DFE (=n-2) are never masked in any difficulty.
+ * Given to students: M_X, M_Y, SS_X, SS_Y (= SST), r
+ * Students compute:  b = r × √(SS_Y / SS_X),  a = M_Y − b × M_X
+ * Notation:          Ŷ = bX + a
  */
 
 /* ── Types ── */
@@ -30,8 +32,15 @@ export interface RegProblem {
   variable_y: string;
   unit_y:     string;
   population: string;
-  b0:         number;  // intercept (2 dp)
-  b1:         number;  // slope (2 dp)
+  /* Given values (displayed to student) */
+  MX:         number;  // mean of X (2 dp)
+  MY:         number;  // mean of Y (2 dp)
+  SS_X:       number;  // Σ(X − M_X)²  (2 dp)
+  SS_Y:       number;  // Σ(Y − M_Y)² = SST (2 dp)
+  r_display:  number;  // Pearson r (2 dp)
+  /* Expected answers (derived from displayed values) */
+  b:          number;  // slope    = r × √(SS_Y / SS_X)  (2 dp)
+  a:          number;  // intercept = M_Y − b × M_X       (2 dp)
   table:      RegTable;
   R2:         number;  // 2 dp
   Fcrit:      number;  // 3 dp
@@ -42,8 +51,8 @@ export interface RegProblem {
 export interface GradeResult {
   cells:      Partial<Record<MaskedField, boolean>>;
   hyp:        boolean;
-  b0:         boolean;
-  b1:         boolean;
+  b:          boolean;
+  a:          boolean;
   fcrit:      boolean;
   R2:         boolean;
   decision:   boolean;
@@ -201,16 +210,16 @@ function clearInput(id: string): void {
 
 function uncheckRadios(name: string): void {
   document.querySelectorAll<HTMLInputElement>(`input[name="${name}"]`)
-    .forEach(r => { r.checked = false; });
+    .forEach(radio => { radio.checked = false; });
 }
 
 /* ── Generate problem ── */
 
 export function generateProblem(): RegProblem {
-  const nOpts    = [10, 12, 15, 20, 25, 30];
-  const n        = rChoice(nOpts);
-  const alpha    = rWeighted([0.10, 0.05, 0.01], [0.2, 0.7, 0.1]);
-  const tail     = rWeighted<Tail>(['two', 'right', 'left'], [0.5, 0.25, 0.25]);
+  const nOpts     = [10, 12, 15, 20, 25, 30];
+  const n         = rChoice(nOpts);
+  const alpha     = rWeighted([0.10, 0.05, 0.01], [0.2, 0.7, 0.1]);
+  const tail      = rWeighted<Tail>(['two', 'right', 'left'], [0.5, 0.25, 0.25]);
   const targetSig = rWeighted(['sig', 'nonsig'], [0.6, 0.4]);
   const difficulty = rWeighted<Difficulty>(['easy', 'moderate', 'hard'], [0.33, 0.34, 0.33]);
 
@@ -218,24 +227,24 @@ export function generateProblem(): RegProblem {
   const idxX = rInt(0, VARIABLES.length - 1);
   let idxY   = rInt(0, VARIABLES.length - 2);
   if (idxY >= idxX) idxY++;
-  const varX  = VARIABLES[idxX];
-  const varY  = VARIABLES[idxY];
-  const pop   = rChoice(POPULATIONS);
+  const varX = VARIABLES[idxX];
+  const varY = VARIABLES[idxY];
+  const pop  = rChoice(POPULATIONS);
 
   // Population moments
   const gmOpts: number[] = [];
   for (let v = 40; v <= 120; v += 5) gmOpts.push(v);
-  const muX  = rChoice(gmOpts);
-  const sdX  = rInt(6, 20);
-  const muY  = rChoice(gmOpts);
-  const sdY  = rInt(6, 20);
+  const muX = rChoice(gmOpts);
+  const sdX = rInt(6, 20);
+  const muY = rChoice(gmOpts);
+  const sdY = rInt(6, 20);
 
   // df
   const DFR = 1;
   const DFE = n - 2;
   const DFT = n - 1;
 
-  // Target significance → target F → target R²
+  // Target F → target R²
   const Fcrit = r3(fInv(alpha, DFR, DFE));
   let Ftarget: number;
   if (targetSig === 'sig') {
@@ -256,7 +265,7 @@ export function generateProblem(): RegProblem {
     return muX + sdX * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
   });
 
-  // Generate standardized noise
+  // Standardized noise
   const Znoise: number[] = Array.from({ length: n }, () => {
     const u1 = Math.random(), u2 = Math.random();
     return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
@@ -272,7 +281,7 @@ export function generateProblem(): RegProblem {
   const zSd   = Math.sqrt(Znoise.reduce((s, v) => s + (v - zMean) ** 2, 0) / (n - 1));
   const Zstd  = Znoise.map(v => (zSd > 0 ? (v - zMean) / zSd : v));
 
-  // Y_std = sign * rTarget * X_std + sqrt(1 - rTarget²) * Z_std
+  // Y_std = sign * rTarget * X_std + sqrt(1 − rTarget²) * Z_std
   const residualWeight = Math.sqrt(Math.max(0, 1 - rTarget * rTarget));
   const Ystd = Xstd.map((xs, i) => sign * rTarget * xs + residualWeight * Zstd[i]);
 
@@ -281,52 +290,62 @@ export function generateProblem(): RegProblem {
   const ystdSd   = Math.sqrt(Ystd.reduce((s, v) => s + (v - ystdMean) ** 2, 0) / (n - 1));
   const Y = Ystd.map(v => muY + (ystdSd > 0 ? sdY * (v - ystdMean) / ystdSd : 0));
 
-  // OLS regression
+  // Sample statistics
   const yMean = Y.reduce((s, v) => s + v, 0) / n;
-  const Sxx   = X.reduce((s, v) => s + (v - xMean) ** 2, 0);
+  const Sxx   = X.reduce((s, v) => s + (v - xMean) ** 2, 0);  // SS_X
+  const Syy   = Y.reduce((s, v) => s + (v - yMean) ** 2, 0);  // SS_Y = SST
   const Sxy   = X.reduce((s, v, i) => s + (v - xMean) * (Y[i] - yMean), 0);
 
-  if (Sxx < 1e-10) return generateProblem(); // degenerate X
+  if (Sxx < 1e-10 || Syy < 1e-10) return generateProblem();
 
-  const b1raw = Sxy / Sxx;
-  const b0raw = yMean - b1raw * xMean;
+  // OLS coefficients (raw)
+  const b_raw = Sxy / Sxx;
+  const a_raw = yMean - b_raw * xMean;
 
-  const Yhat  = X.map(x => b0raw + b1raw * x);
-  const SSR   = Yhat.reduce((s, yh) => s + (yh - yMean) ** 2, 0);
-  const SSE   = Y.reduce((s, y, i) => s + (y - Yhat[i]) ** 2, 0);
-  const SST   = SSR + SSE;
-
-  // Quality control
-  if (SSE < 0.001 || SST < 0.001 || !isFinite(SSR) || !isFinite(SSE) || !isFinite(SST)) {
-    return generateProblem();
-  }
-
+  // ANOVA table (raw)
+  const Yhat = X.map(x => a_raw + b_raw * x);
+  const SSR  = Yhat.reduce((s, yh) => s + (yh - yMean) ** 2, 0);
+  const SSE  = Y.reduce((s, y, i) => s + (y - Yhat[i]) ** 2, 0);
+  const SST  = SSR + SSE;
   const MSR  = SSR / DFR;
   const MSE  = SSE / DFE;
   const Fval = MSR / MSE;
   const R2   = r2(SSR / SST);
 
-  if (!isFinite(Fval) || !isFinite(b0raw) || !isFinite(b1raw)) return generateProblem();
+  if (SSE < 0.001 || SST < 0.001 || !isFinite(Fval) || !isFinite(b_raw)) return generateProblem();
 
-  // Verify significance matches intent
+  // Significance check
   const decision_true: 'reject' | 'fail' = Fval >= Fcrit ? 'reject' : 'fail';
   if ((decision_true === 'reject') !== (targetSig === 'sig')) return generateProblem();
 
-  // Verify slope sign matches tail when significant
+  // Slope sign check when targeting significant + directional
   if (targetSig === 'sig' && tail !== 'two') {
-    const correctSign = tail === 'right' ? b1raw >= 0 : b1raw <= 0;
+    const correctSign = tail === 'right' ? b_raw >= 0 : b_raw <= 0;
     if (!correctSign) return generateProblem();
   }
 
-  const b0 = r2(b0raw);
-  const b1 = r2(b1raw);
+  // Pearson r from raw data
+  const r_raw = Sxy / Math.sqrt(Sxx * Syy);
+
+  // Displayed given values (all 2 dp)
+  const MX        = r2(xMean);
+  const MY        = r2(yMean);
+  const SS_X      = r2(Sxx);
+  const SS_Y      = r2(Syy);   // equals SST
+  const r_display = r2(r_raw);
+
+  // Expected answers computed from displayed values (so students' arithmetic matches)
+  const SS_ratio = SS_X > 0 ? SS_Y / SS_X : 0;
+  const b        = r2(r_display * Math.sqrt(SS_ratio));
+  const a        = r2(MY - b * MX);
 
   return {
     n, alpha, tail, difficulty,
     variable_x: varX.variable, unit_x: varX.unit,
     variable_y: varY.variable, unit_y: varY.unit,
     population: pop,
-    b0, b1,
+    MX, MY, SS_X, SS_Y, r_display,
+    b, a,
     table: { SSR, SSE, SST, DFR, DFE, DFT, MSR, MSE, F: Fval },
     R2, Fcrit, decision_true,
     masked: getMasked(difficulty),
@@ -397,18 +416,18 @@ function buildTableHtml(p: RegProblem): string {
 /* ── Hypothesis options ── */
 
 function hypOptions(tail: Tail): Array<{ value: string; label: string }> {
-  const haLabel = tail === 'two'   ? 'H₀: β₁ = 0 &nbsp;&nbsp; Hₐ: β₁ ≠ 0'
-                : tail === 'right' ? 'H₀: β₁ ≤ 0 &nbsp;&nbsp; Hₐ: β₁ &gt; 0'
-                :                   'H₀: β₁ ≥ 0 &nbsp;&nbsp; Hₐ: β₁ &lt; 0';
+  const correctLabel = tail === 'two'   ? 'H₀: β = 0 &nbsp;&nbsp; Hₐ: β ≠ 0'
+                     : tail === 'right' ? 'H₀: β ≤ 0 &nbsp;&nbsp; Hₐ: β &gt; 0'
+                     :                   'H₀: β ≥ 0 &nbsp;&nbsp; Hₐ: β &lt; 0';
 
-  const foil1Label = tail === 'two'   ? 'H₀: β₁ ≠ 0 &nbsp;&nbsp; Hₐ: β₁ = 0'
-                   : tail === 'right' ? 'H₀: β₁ ≥ 0 &nbsp;&nbsp; Hₐ: β₁ &lt; 0'
-                   :                   'H₀: β₁ ≤ 0 &nbsp;&nbsp; Hₐ: β₁ &gt; 0';
+  const foil1Label  = tail === 'two'   ? 'H₀: β ≠ 0 &nbsp;&nbsp; Hₐ: β = 0'
+                    : tail === 'right' ? 'H₀: β ≥ 0 &nbsp;&nbsp; Hₐ: β &lt; 0'
+                    :                   'H₀: β ≤ 0 &nbsp;&nbsp; Hₐ: β &gt; 0';
 
   return [
-    { value: 'correct',  label: haLabel },
+    { value: 'correct',  label: correctLabel },
     { value: 'reversed', label: foil1Label },
-    { value: 'foil',     label: 'H₀: r = 0 &nbsp;&nbsp; Hₐ: r ≠ 0' },
+    { value: 'foil',     label: 'H₀: ρ = 0 &nbsp;&nbsp; Hₐ: ρ ≠ 0' },
   ];
 }
 
@@ -420,12 +439,26 @@ export function renderProblem(p: RegProblem): void {
   const tailLabel = p.tail === 'two' ? 'two-tailed' : p.tail === 'right' ? 'right-tailed' : 'left-tailed';
   const dirPhrase = p.tail === 'right' ? 'a positive ' : p.tail === 'left' ? 'a negative ' : 'a ';
 
+  const tdG = 'padding:0.3rem 0.75rem;border:1px solid var(--border);';
+  const thG = 'padding:0.3rem 0.75rem;border:1px solid var(--border);background:var(--bg-subtle);text-align:left;font-weight:600;';
+
+  const givenTable = `
+    <table style="border-collapse:collapse;font-size:0.9rem;margin:0.6rem 0;">
+      <tbody>
+        <tr><th style="${thG}">M<sub>X</sub> (mean of X)</th><td style="${tdG}">${p.MX.toFixed(2)} ${p.unit_x}</td></tr>
+        <tr><th style="${thG}">M<sub>Y</sub> (mean of Y)</th><td style="${tdG}">${p.MY.toFixed(2)} ${p.unit_y}</td></tr>
+        <tr><th style="${thG}">SS<sub>X</sub> = Σ(X − M<sub>X</sub>)²</th><td style="${tdG}">${p.SS_X.toFixed(2)}</td></tr>
+        <tr><th style="${thG}">SS<sub>Y</sub> = Σ(Y − M<sub>Y</sub>)²</th><td style="${tdG}">${p.SS_Y.toFixed(2)}</td></tr>
+        <tr><th style="${thG}">r (Pearson correlation)</th><td style="${tdG}">${p.r_display.toFixed(2)}</td></tr>
+      </tbody>
+    </table>`;
+
   const narrative = `
     <p>A researcher is investigating whether <strong>${p.variable_x}</strong>
     predicts <strong>${p.variable_y}</strong> in ${p.population}.
     A random sample of n&nbsp;=&nbsp;${p.n} participants was obtained.</p>
-    <p>The fitted intercept is <strong>b₀&nbsp;=&nbsp;${p.b0.toFixed(2)}</strong> and
-    the fitted slope is <strong>b₁&nbsp;=&nbsp;${p.b1.toFixed(2)}</strong>.</p>
+    <p>The following descriptive statistics were computed from the sample:</p>
+    ${givenTable}
     <p>The partially completed regression ANOVA table is shown below
     (difficulty: <em>${diffLabel}</em>).
     Fill in all cells marked <strong>?</strong>, then answer the questions below
@@ -491,21 +524,21 @@ export function gradeAnswers(p: RegProblem): GradeResult {
     cells[field] = ok;
   }
 
-  const b0Input    = readNum('lrp-answer-b0');
-  const b1Input    = readNum('lrp-answer-b1');
+  const bInput     = readNum('lrp-answer-b');
+  const aInput     = readNum('lrp-answer-a');
   const R2Input    = readNum('lrp-answer-R2');
   const fcritInput = readNum('lrp-answer-fcrit');
 
   const hyp      = readRadio('lrp-hyp-select') === 'correct';
-  const b0ok     = !isNaN(b0Input)    && Math.abs(b0Input    - p.b0)    <= TOL;
-  const b1ok     = !isNaN(b1Input)    && Math.abs(b1Input    - p.b1)    <= TOL;
+  const bok      = !isNaN(bInput)     && Math.abs(bInput     - p.b)     <= TOL;
+  const aok      = !isNaN(aInput)     && Math.abs(aInput     - p.a)     <= TOL;
   const R2ok     = !isNaN(R2Input)    && Math.abs(R2Input    - p.R2)    <= 0.02;
   const fcritok  = !isNaN(fcritInput) && Math.abs(fcritInput - p.Fcrit) <= 0.005;
   const decision = readRadio('lrp-decision-select') === p.decision_true;
 
-  const allCorrect = Object.values(cells).every(v => v) && hyp && b0ok && b1ok && R2ok && fcritok && decision;
+  const allCorrect = Object.values(cells).every(v => v) && hyp && bok && aok && R2ok && fcritok && decision;
 
-  return { cells, hyp, b0: b0ok, b1: b1ok, fcrit: fcritok, R2: R2ok, decision, allCorrect };
+  return { cells, hyp, b: bok, a: aok, fcrit: fcritok, R2: R2ok, decision, allCorrect };
 }
 
 /* ── Feedback helpers ── */
@@ -526,13 +559,13 @@ export function renderFeedback(p: RegProblem, grade: GradeResult): void {
   const t = p.table;
 
   const hints: Partial<Record<MaskedField, string>> = {
-    SSR: `SS<sub>Regression</sub> = MS<sub>Regression</sub> × df<sub>Reg</sub> = ${r2(t.MSR).toFixed(2)} × 1`,
-    SSE: `SS<sub>Residual</sub> = SS<sub>Total</sub> − SS<sub>Regression</sub> = ${r2(t.SST).toFixed(2)} − ${r2(t.SSR).toFixed(2)}`,
-    SST: `SS<sub>Total</sub> = SS<sub>Regression</sub> + SS<sub>Residual</sub> = ${r2(t.SSR).toFixed(2)} + ${r2(t.SSE).toFixed(2)}`,
+    SSR: `SS<sub>Regression</sub> = MS<sub>Reg</sub> × df<sub>Reg</sub> = ${r2(t.MSR).toFixed(2)} × 1`,
+    SSE: `SS<sub>Residual</sub> = SS<sub>Total</sub> − SS<sub>Reg</sub> = ${r2(t.SST).toFixed(2)} − ${r2(t.SSR).toFixed(2)}`,
+    SST: `SS<sub>Total</sub> = SS<sub>Reg</sub> + SS<sub>Res</sub> = ${r2(t.SSR).toFixed(2)} + ${r2(t.SSE).toFixed(2)}`,
     DFT: `df<sub>Total</sub> = df<sub>Reg</sub> + df<sub>Res</sub> = 1 + ${t.DFE} = ${t.DFT}`,
     MSR: `MS<sub>Regression</sub> = SS<sub>Reg</sub> / df<sub>Reg</sub> = ${r2(t.SSR).toFixed(2)} / 1`,
     MSE: `MS<sub>Residual</sub> = SS<sub>Res</sub> / df<sub>Res</sub> = ${r2(t.SSE).toFixed(2)} / ${t.DFE}`,
-    F:   `F = MS<sub>Regression</sub> / MS<sub>Residual</sub> = ${r2(t.MSR).toFixed(2)} / ${r2(t.MSE).toFixed(2)}`,
+    F:   `F = MS<sub>Reg</sub> / MS<sub>Res</sub> = ${r2(t.MSR).toFixed(2)} / ${r2(t.MSE).toFixed(2)}`,
   };
 
   for (const [field, ok] of Object.entries(grade.cells) as [MaskedField, boolean][]) {
@@ -542,11 +575,11 @@ export function renderFeedback(p: RegProblem, grade: GradeResult): void {
       : `${feedbackIcon(false)} <span class="sp-hint">${hints[field] ?? ''}</span>`;
   }
 
-  setHtml('lrp-fb-hyp',      fbHtml(grade.hyp,      'H₀: β₁ = 0; Hₐ depends on the tail direction of the test.'));
-  setHtml('lrp-fb-b0',       fbHtml(grade.b0,       `b₀ = ${p.b0.toFixed(2)} (the fitted intercept displayed in the problem).`));
-  setHtml('lrp-fb-b1',       fbHtml(grade.b1,       `b₁ = ${p.b1.toFixed(2)} (the fitted slope displayed in the problem).`));
+  setHtml('lrp-fb-hyp',      fbHtml(grade.hyp,      'H₀: β = 0; Hₐ depends on the tail direction of the test.'));
+  setHtml('lrp-fb-b',        fbHtml(grade.b,        `b = r × √(SS<sub>Y</sub> / SS<sub>X</sub>) = ${p.r_display.toFixed(2)} × √(${p.SS_Y.toFixed(2)} / ${p.SS_X.toFixed(2)}) = ${p.b.toFixed(2)}`));
+  setHtml('lrp-fb-a',        fbHtml(grade.a,        `a = M<sub>Y</sub> − b × M<sub>X</sub> = ${p.MY.toFixed(2)} − ${p.b.toFixed(2)} × ${p.MX.toFixed(2)} = ${p.a.toFixed(2)}`));
   setHtml('lrp-fb-fcrit',    fbHtml(grade.fcrit,    `F<sub>crit</sub>(1, ${t.DFE}), α = ${p.alpha.toFixed(2)} = ${p.Fcrit.toFixed(3)}.`));
-  setHtml('lrp-fb-R2',       fbHtml(grade.R2,       `R² = SS<sub>Regression</sub> / SS<sub>Total</sub> = ${r2(t.SSR).toFixed(2)} / ${r2(t.SST).toFixed(2)} = ${p.R2.toFixed(2)}.`));
+  setHtml('lrp-fb-R2',       fbHtml(grade.R2,       `R² = SS<sub>Reg</sub> / SS<sub>Total</sub> = ${r2(t.SSR).toFixed(2)} / ${r2(t.SST).toFixed(2)} = ${p.R2.toFixed(2)}.`));
   setHtml('lrp-fb-decision', fbHtml(grade.decision, `F = ${r2(t.F).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.toFixed(3)}. Reject H₀ if F ≥ F<sub>crit</sub>.`));
 
   const banner = document.getElementById('lrp-fb-banner');
@@ -574,17 +607,16 @@ function renderSolution(p: RegProblem): void {
   const alphaStr = p.alpha.toFixed(2);
   const decWord  = p.decision_true === 'reject' ? 'Reject H₀' : 'Fail to reject H₀';
 
-  const haLine = p.tail === 'two'   ? 'Hₐ: β₁ ≠ 0'
-               : p.tail === 'right' ? 'Hₐ: β₁ > 0'
-               :                     'Hₐ: β₁ < 0';
+  const haStr = p.tail === 'two'   ? 'β ≠ 0'
+              : p.tail === 'right' ? 'β > 0'
+              :                     'β < 0';
+  const h0Str = p.tail === 'two' ? 'β = 0' : p.tail === 'right' ? 'β ≤ 0' : 'β ≥ 0';
 
-  const h0Line = p.tail === 'two' ? 'H₀: β₁ = 0' : p.tail === 'right' ? 'H₀: β₁ ≤ 0' : 'H₀: β₁ ≥ 0';
+  const slopeInterp = p.b >= 0
+    ? `For each one-unit increase in ${p.variable_x}, predicted ${p.variable_y} increases by ${Math.abs(p.b).toFixed(2)} ${p.unit_y} on average.`
+    : `For each one-unit increase in ${p.variable_x}, predicted ${p.variable_y} decreases by ${Math.abs(p.b).toFixed(2)} ${p.unit_y} on average.`;
 
-  const slopeInterp = p.b1 >= 0
-    ? `For each one-unit increase in ${p.variable_x}, predicted ${p.variable_y} increases by ${Math.abs(p.b1).toFixed(2)} ${p.unit_y} on average.`
-    : `For each one-unit increase in ${p.variable_x}, predicted ${p.variable_y} decreases by ${Math.abs(p.b1).toFixed(2)} ${p.unit_y} on average.`;
-
-  const R2pct  = (p.R2 * 100).toFixed(1);
+  const R2pct    = (p.R2 * 100).toFixed(1);
   const R2interp = `Approximately ${R2pct}% of the variance in ${p.variable_y} is explained by ${p.variable_x}.`;
 
   const sigStatement = p.decision_true === 'reject'
@@ -601,8 +633,8 @@ function renderSolution(p: RegProblem): void {
       <tr><td>α</td><td>${alphaStr}</td></tr>
 
       <tr><th colspan="2">Hypotheses</th></tr>
-      <tr><td>H₀</td><td>${h0Line.replace('H₀: ', '')}</td></tr>
-      <tr><td>Hₐ</td><td>${haLine.replace('Hₐ: ', '')}</td></tr>
+      <tr><td>H₀</td><td>${h0Str}</td></tr>
+      <tr><td>Hₐ</td><td>${haStr}</td></tr>
 
       <tr><th colspan="2">Regression ANOVA Table</th></tr>
       <tr><td colspan="2">
@@ -640,8 +672,14 @@ function renderSolution(p: RegProblem): void {
         </table>
       </td></tr>
 
+      <tr><th colspan="2">Regression Coefficients</th></tr>
+      <tr><td>b = r × √(SS<sub>Y</sub> / SS<sub>X</sub>)</td>
+          <td>${p.r_display.toFixed(2)} × √(${p.SS_Y.toFixed(2)} / ${p.SS_X.toFixed(2)}) = <strong>${p.b.toFixed(2)}</strong></td></tr>
+      <tr><td>a = M<sub>Y</sub> − b × M<sub>X</sub></td>
+          <td>${p.MY.toFixed(2)} − ${p.b.toFixed(2)} × ${p.MX.toFixed(2)} = <strong>${p.a.toFixed(2)}</strong></td></tr>
+
       <tr><th colspan="2">Regression Equation</th></tr>
-      <tr><td>Ŷ = b₀ + b₁X</td><td>Ŷ = ${p.b0.toFixed(2)} + (${p.b1.toFixed(2)})X</td></tr>
+      <tr><td>Ŷ = bX + a</td><td>Ŷ = ${p.b.toFixed(2)}X + (${p.a.toFixed(2)})</td></tr>
 
       <tr><th colspan="2">Significance Test</th></tr>
       <tr><td>F<sub>crit</sub>(1, ${t.DFE}), α = ${alphaStr}</td><td>${p.Fcrit.toFixed(3)}</td></tr>
@@ -665,8 +703,8 @@ function renderSolution(p: RegProblem): void {
 export function resetUI(): void {
   const allFields: MaskedField[] = ['SSR', 'SSE', 'SST', 'DFT', 'MSR', 'MSE', 'F'];
   allFields.forEach(f => clearInput(`lrp-input-${f}`));
-  clearInput('lrp-answer-b0');
-  clearInput('lrp-answer-b1');
+  clearInput('lrp-answer-b');
+  clearInput('lrp-answer-a');
   clearInput('lrp-answer-fcrit');
   clearInput('lrp-answer-R2');
   uncheckRadios('lrp-hyp-select');
@@ -683,8 +721,8 @@ export function resetUI(): void {
   setHtml('lrp-problem-text', '<span class="sp-placeholder">Click <strong>New Problem</strong> below to generate a practice problem.</span>');
   setHtml('lrp-hyp-options',  '<span class="sp-placeholder">Generate a problem to see options.</span>');
   setHtml('lrp-fb-hyp',      '');
-  setHtml('lrp-fb-b0',       '');
-  setHtml('lrp-fb-b1',       '');
+  setHtml('lrp-fb-b',        '');
+  setHtml('lrp-fb-a',        '');
   setHtml('lrp-fb-fcrit',    '');
   setHtml('lrp-fb-R2',       '');
   setHtml('lrp-fb-decision', '');
