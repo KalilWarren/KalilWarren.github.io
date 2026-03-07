@@ -5,6 +5,7 @@ import type {
   AnovaDifficulty,
   AnovaFullTable, AnovaMissingCell,
   TwoWayAnovaFullTable, TwoWayAnovaMissingCell,
+  RmaAnovaFullTable, RmaAnovaMissingCell,
   PearsonProblemData,
   RegFullTable, RegMissingCell, RegPracticeData,
   TableRow,
@@ -2208,4 +2209,279 @@ export function downloadRegressionPracticeExcel(): void {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Regression Practice');
   XLSX.writeFile(wb, `statteacher_regression_practice_${Date.now()}.xlsx`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   REPEATED-MEASURES ANOVA TABLE PRACTICE PROBLEM
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Build a typed full-table object from the engine's RMA-ANOVA TableRow array ── */
+
+function buildRmaAnovaFullTable(table: TableRow[], alpha: number): RmaAnovaFullTable | null {
+  const r2 = (v: unknown) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+  const btRow    = table.find(r => r['Source'] === 'Between Treatments');
+  const bsRow    = table.find(r => r['Source'] === 'Between Subjects');
+  const errRow   = table.find(r => r['Source'] === 'Error');
+  const totalRow = table.find(r => r['Source'] === 'Total');
+  if (!btRow || !bsRow || !errRow || !totalRow) return null;
+
+  const dfBT = r2(btRow['df']);
+  const dfBS = r2(bsRow['df']);
+
+  return {
+    ssBT: r2(btRow['SS']),   dfBT,   msBT: r2(btRow['MS']),
+    fStat:  r2(btRow['F']),  pValue: r2(btRow['p-value']),
+    ssBS: r2(bsRow['SS']),   dfBS,   msBS: r2(bsRow['MS']),
+    ssErr: r2(errRow['SS']), dfErr:  r2(errRow['df']), msErr: r2(errRow['MS']),
+    ssTotal: r2(totalRow['SS']), dfTotal: r2(totalRow['df']),
+    nSubjects:   dfBS + 1,
+    nConditions: dfBT + 1,
+    alpha,
+  };
+}
+
+/* ── Masking ── */
+
+function maskRmaAnovaTable(
+  full: RmaAnovaFullTable,
+  difficulty: AnovaDifficulty,
+): { missing: RmaAnovaMissingCell[]; masked: Set<string> } {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const { ssBT, dfBT, msBT, fStat, ssBS, dfBS, msBS,
+          ssErr, dfErr, msErr, ssTotal, dfTotal,
+          nSubjects: n, nConditions: k } = full;
+
+  let missing: RmaAnovaMissingCell[];
+
+  if (difficulty === 'easy') {
+    missing = [
+      { row: 'bt',    col: 'MS', value: r2(msBT),  formula: `MS_treatments = SS_treatments / df_treatments = ${r2(ssBT)} / ${dfBT} = ${r2(msBT)}` },
+      { row: 'bs',    col: 'MS', value: r2(msBS),  formula: `MS_subjects   = SS_subjects / df_subjects = ${r2(ssBS)} / ${dfBS} = ${r2(msBS)}` },
+      { row: 'error', col: 'MS', value: r2(msErr), formula: `MS_error      = SS_error / df_error = ${r2(ssErr)} / ${dfErr} = ${r2(msErr)}` },
+      { row: 'bt',    col: 'F',  value: r2(fStat), formula: `F = MS_treatments / MS_error = ${r2(msBT)} / ${r2(msErr)} = ${r2(fStat)}` },
+    ];
+  } else if (difficulty === 'moderate') {
+    missing = [
+      { row: 'bt',    col: 'df', value: dfBT,      formula: `df_treatments = k − 1 = ${k} − 1 = ${dfBT}` },
+      { row: 'bs',    col: 'df', value: dfBS,      formula: `df_subjects   = n − 1 = ${n} − 1 = ${dfBS}` },
+      { row: 'error', col: 'df', value: dfErr,     formula: `df_error      = (n − 1)(k − 1) = ${dfBS} × ${dfBT} = ${dfErr}` },
+      { row: 'error', col: 'SS', value: r2(ssErr), formula: `SS_error      = SS_total − SS_treatments − SS_subjects = ${r2(ssTotal)} − ${r2(ssBT)} − ${r2(ssBS)} = ${r2(ssErr)}` },
+      { row: 'bt',    col: 'MS', value: r2(msBT),  formula: `MS_treatments = SS_treatments / df_treatments = ${r2(ssBT)} / ${dfBT} = ${r2(msBT)}` },
+      { row: 'bt',    col: 'F',  value: r2(fStat), formula: `F = MS_treatments / MS_error = ${r2(msBT)} / ${r2(msErr)} = ${r2(fStat)}` },
+    ];
+  } else {
+    /* hard */
+    missing = [
+      { row: 'bt',    col: 'SS',  value: r2(ssBT),   formula: `SS_treatments = MS_treatments × df_treatments = ${r2(msBT)} × ${dfBT} = ${r2(ssBT)}` },
+      { row: 'bs',    col: 'SS',  value: r2(ssBS),   formula: `SS_subjects   = MS_subjects × df_subjects = ${r2(msBS)} × ${dfBS} = ${r2(ssBS)}` },
+      { row: 'error', col: 'SS',  value: r2(ssErr),  formula: `SS_error      = MS_error × df_error = ${r2(msErr)} × ${dfErr} = ${r2(ssErr)}` },
+      { row: 'total', col: 'SS',  value: r2(ssTotal),formula: `SS_total      = SS_treatments + SS_subjects + SS_error = ${r2(ssBT)} + ${r2(ssBS)} + ${r2(ssErr)} = ${r2(ssTotal)}` },
+      { row: 'total', col: 'df',  value: dfTotal,    formula: `df_total      = df_treatments + df_subjects + df_error = ${dfBT} + ${dfBS} + ${dfErr} = ${dfTotal}` },
+      { row: 'error', col: 'MS',  value: r2(msErr),  formula: `MS_error      = MS_treatments / F = ${r2(msBT)} / ${r2(fStat)} = ${r2(msErr)}` },
+    ];
+  }
+
+  const masked = new Set(missing.map(c => `${c.row}:${c.col}`));
+  return { missing, masked };
+}
+
+/* ── Student table HTML (cells marked "?" for masked positions) ── */
+
+function renderRmaAnovaStudentTable(full: RmaAnovaFullTable, masked: Set<string>): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const cell = (row: string, col: string, val: number | string) =>
+    masked.has(`${row}:${col}`) ? '<td>?</td>' : `<td>${typeof val === 'number' ? r2(val) : val}</td>`;
+
+  return `<table class="stat-table" style="margin-top:0.75rem;">
+<thead><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr></thead>
+<tbody>
+<tr><td>Between Treatments</td>${cell('bt','SS',full.ssBT)}${cell('bt','df',full.dfBT)}${cell('bt','MS',full.msBT)}${cell('bt','F',full.fStat)}</tr>
+<tr><td>Between Subjects</td>${cell('bs','SS',full.ssBS)}${cell('bs','df',full.dfBS)}${cell('bs','MS',full.msBS)}<td>—</td></tr>
+<tr><td>Error</td>${cell('error','SS',full.ssErr)}${cell('error','df',full.dfErr)}${cell('error','MS',full.msErr)}<td>—</td></tr>
+<tr><td>Total</td>${cell('total','SS',full.ssTotal)}${cell('total','df',full.dfTotal)}<td>—</td><td>—</td></tr>
+</tbody></table>`;
+}
+
+/* ── Full (completed) table HTML for instructor key ── */
+
+function renderRmaAnovaFullTable(full: RmaAnovaFullTable): string {
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  return `<table class="stat-table" style="margin-top:0.75rem;">
+<thead><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th></tr></thead>
+<tbody>
+<tr><td>Between Treatments</td><td>${r2(full.ssBT)}</td><td>${full.dfBT}</td><td>${r2(full.msBT)}</td><td>${r2(full.fStat)}</td></tr>
+<tr><td>Between Subjects</td><td>${r2(full.ssBS)}</td><td>${full.dfBS}</td><td>${r2(full.msBS)}</td><td>—</td></tr>
+<tr><td>Error</td><td>${r2(full.ssErr)}</td><td>${full.dfErr}</td><td>${r2(full.msErr)}</td><td>—</td></tr>
+<tr><td>Total</td><td>${r2(full.ssTotal)}</td><td>${full.dfTotal}</td><td>—</td><td>—</td></tr>
+</tbody></table>`;
+}
+
+/* ── Main RM ANOVA Practice Problem Generator ── */
+
+export function generateRmaAnovaProblem(): void {
+  if (!state.lastResult || state.lastResult.type !== 'rma_anova') return;
+
+  const variable   = (document.getElementById('rma-pg-variable')   as HTMLInputElement).value.trim() || 'the outcome variable';
+  const difficulty = (document.getElementById('rma-pg-difficulty') as HTMLSelectElement).value as AnovaDifficulty;
+  const alpha      = parseFloat(gv('rma-alpha'));
+
+  const rmaResult = state.lastResult as { table: TableRow[]; decision: string };
+  const full = buildRmaAnovaFullTable(rmaResult.table, alpha);
+  if (!full) return;
+
+  const { missing, masked } = maskRmaAnovaTable(full, difficulty);
+
+  const studentPrompt =
+    `A researcher conducted a one-way repeated-measures ANOVA to test whether mean ${variable} differs ` +
+    `across ${full.nConditions} conditions (N = ${full.nSubjects} subjects). ` +
+    `The partially completed ANOVA summary table is shown below. ` +
+    `Fill in the missing values (marked "?") and determine whether the result is significant at α = ${alpha}.`;
+
+  const r2   = (n: number) => Math.round(n * 100) / 100;
+  const pStr = fmtP(full.pValue);
+  const isRej = full.pValue < alpha;
+
+  const decisionStatement = isRej
+    ? `Reject H₀: there is sufficient evidence that mean ${variable} differs across conditions ` +
+      `(F(${full.dfBT}, ${full.dfErr}) = ${r2(full.fStat)}, p ${pStr}).`
+    : `Fail to reject H₀: there is insufficient evidence that mean ${variable} differs across conditions ` +
+      `(F(${full.dfBT}, ${full.dfErr}) = ${r2(full.fStat)}, p ${pStr}).`;
+
+  const studentTableHTML = renderRmaAnovaStudentTable(full, masked);
+
+  const problemHTML = `
+<div class="problem-box">
+  <p>${studentPrompt}</p>
+  ${studentTableHTML}
+  <div class="problem-questions" style="margin-top:1rem;">
+    <ol>
+      <li>Fill in all missing values (marked "?") in the ANOVA table above.</li>
+      <li>State the null and alternative hypotheses.</li>
+      <li>Determine whether the result is statistically significant at α = ${alpha}.</li>
+      <li>Write a one-sentence interpretation of the finding.</li>
+    </ol>
+  </div>
+</div>`;
+
+  const missingListHTML = missing.map(c =>
+    `<li style="margin-bottom:0.3rem;"><code>${c.formula}</code></li>`
+  ).join('');
+
+  const keyHTML = `
+<div class="key-box">
+  <h4>Instructor Key</h4>
+
+  <div class="key-section">
+    <strong>1. Completed ANOVA Table</strong>
+    ${renderRmaAnovaFullTable(full)}
+    <p style="margin:0.5rem 0 0;font-size:0.85rem;color:#666;">Note: Between Subjects partitions individual differences from error; it is not tested with an F ratio.</p>
+  </div>
+
+  <div class="key-section">
+    <strong>2. Missing Values (step-by-step)</strong>
+    <ol style="margin:0.5rem 0 0 1.2rem;padding:0;">
+      ${missingListHTML}
+    </ol>
+  </div>
+
+  <div class="key-section">
+    <strong>3. Hypotheses</strong>
+    <p>H₀: μ₁ = μ₂ = … = μ<sub>${full.nConditions}</sub> (all condition means are equal)</p>
+    <p>H₁: At least one condition mean differs from the others</p>
+  </div>
+
+  <div class="key-section">
+    <strong>4. Decision (α = ${alpha})</strong>
+    <p>F(${full.dfBT}, ${full.dfErr}) = ${r2(full.fStat)}, p ${pStr}</p>
+    <p><span class="${isRej ? 'val-reject' : 'val-fail'}">${isRej ? 'Reject H₀' : 'Fail to Reject H₀'}</span></p>
+  </div>
+
+  <div class="key-section">
+    <strong>5. Interpretation</strong>
+    <p>${decisionStatement}</p>
+  </div>
+</div>`;
+
+  state.lastRmaAnovaPracticeData = {
+    full, difficulty, variable, missingCells: missing,
+    studentPrompt, decisionStatement,
+  };
+
+  (document.getElementById('rma-pg-problem-text') as HTMLElement).innerHTML   = problemHTML;
+  (document.getElementById('rma-pg-instructor-key') as HTMLElement).innerHTML = keyHTML;
+  (document.getElementById('rma-pg-output') as HTMLElement).style.display     = 'block';
+
+  (document.getElementById('rma-pg-show-key') as HTMLInputElement).checked        = false;
+  (document.getElementById('rma-pg-instructor-key') as HTMLElement).style.display = 'none';
+
+  (document.getElementById('rma-pg-output') as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ── RM ANOVA instructor key toggle ── */
+
+export function toggleRmaAnovaKey(): void {
+  const show = (document.getElementById('rma-pg-show-key') as HTMLInputElement).checked;
+  (document.getElementById('rma-pg-instructor-key') as HTMLElement).style.display = show ? 'block' : 'none';
+}
+
+/* ── RM ANOVA Practice Excel export ── */
+
+export function downloadRmaAnovaPracticeExcel(): void {
+  const d = state.lastRmaAnovaPracticeData;
+  if (!d) return;
+
+  const { full, missingCells, studentPrompt, decisionStatement } = d;
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+  const pStr = fmtP(full.pValue);
+
+  const masked = new Set(missingCells.map(c => `${c.row}:${c.col}`));
+  const mc = (row: string, col: string, val: number | null) =>
+    masked.has(`${row}:${col}`) ? '?' : val !== null ? r2(val) : '—';
+
+  const rows: (string | number | null)[][] = [
+    ['STUDENT PROBLEM — One-Way RM ANOVA Table Practice'],
+    [],
+    ['Scenario'], [studentPrompt], [],
+    ['Questions'],
+    ['1.', 'Fill in all missing values (marked "?") in the ANOVA table below.'],
+    ['2.', 'State the null and alternative hypotheses.'],
+    ['3.', `Determine whether the result is statistically significant at α = ${full.alpha}.`],
+    ['4.', 'Write a one-sentence interpretation of the finding.'],
+    [],
+    ['ANOVA Table (Student Version)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Between Treatments', mc('bt','SS',full.ssBT), mc('bt','df',full.dfBT), mc('bt','MS',full.msBT), mc('bt','F',full.fStat)],
+    ['Between Subjects',   mc('bs','SS',full.ssBS), mc('bs','df',full.dfBS), mc('bs','MS',full.msBS), '—'],
+    ['Error',              mc('error','SS',full.ssErr), mc('error','df',full.dfErr), mc('error','MS',full.msErr), '—'],
+    ['Total',              mc('total','SS',full.ssTotal), mc('total','df',full.dfTotal), '—', '—'],
+    [],
+    [],
+    ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+    [],
+    ['ANOVA Table (Completed)'],
+    ['Source', 'SS', 'df', 'MS', 'F'],
+    ['Between Treatments', r2(full.ssBT), full.dfBT, r2(full.msBT), r2(full.fStat)],
+    ['Between Subjects',   r2(full.ssBS), full.dfBS, r2(full.msBS), '—'],
+    ['Error',              r2(full.ssErr), full.dfErr, r2(full.msErr), '—'],
+    ['Total',              r2(full.ssTotal), full.dfTotal, '—', '—'],
+    [],
+    ['Missing Values (step-by-step)'],
+    ...missingCells.map((c, i) => [`${i + 1}.`, c.formula]),
+    [],
+    ['Hypotheses'],
+    ['H₀:', `μ₁ = μ₂ = … = μ${full.nConditions}  (all condition means are equal)`],
+    ['H₁:', 'At least one condition mean differs from the others'],
+    [],
+    ['Decision'],
+    [`F(${full.dfBT}, ${full.dfErr}) = ${r2(full.fStat)}, p ${pStr}`],
+    [decisionStatement],
+    [],
+    ['Note: Between Subjects partitions individual differences from error; it is not tested with an F ratio.'],
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{ wch: 20 }, { wch: 85 }];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'RM ANOVA Practice');
+  XLSX.writeFile(wb, `statteacher_rma_anova_practice_${Date.now()}.xlsx`);
 }

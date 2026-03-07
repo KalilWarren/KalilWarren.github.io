@@ -6,6 +6,7 @@ import type {
   IndTTestResult,
   RepTTestResult,
   AnovaResult,
+  RmaAnovaResult,
   PearsonResult,
   RegressionResult,
 } from './types.ts';
@@ -99,6 +100,27 @@ _ds, _tbl = generate_Independent_ANOVA(
 )
 _to_json({'type':'anova','dataset':_ds.to_dict(orient='records'),'table':_tbl.to_dict(orient='records')})
 `) as AnovaResult;
+}
+
+export function runRMANOVA(): RmaAnovaResult {
+  const meansRaw  = gv('rma-condition-means').replace(/"/g, '').replace(/\n/g, '');
+  const labelsRaw = gv('rma-labels').trim().replace(/"/g, '');
+  return py(`
+_s = ${seed('rma-seed')}
+_means = [float(x.strip()) for x in "${meansRaw}".split(",") if x.strip()]
+_labels_str = "${labelsRaw}"
+_labels = [x.strip() for x in _labels_str.split(",") if x.strip()] if _labels_str else None
+_wide, _tbl, _dec = generate_one_way_repeated_measures_anova(
+    n_subjects=${gv('rma-n-subjects')},
+    condition_means=_means,
+    subject_sd=${gv('rma-subject-sd')},
+    error_sd=${gv('rma-error-sd')},
+    alpha=${gv('rma-alpha')},
+    labels=_labels,
+    seed=_s
+)
+_to_json({'type':'rma_anova','dataset':_wide.to_dict(orient='records'),'table':_tbl.to_dict(orient='records'),'decision':_dec})
+`) as RmaAnovaResult;
 }
 
 export function runPearson(): PearsonResult {

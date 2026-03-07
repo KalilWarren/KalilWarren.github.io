@@ -921,6 +921,137 @@ def generate_Independent_ANOVA(factors_dictionary={"A":3, "B":2},
 
     return "ANOVA Aborted: There's a problem with your factors dictionary."
 
+def generate_one_way_repeated_measures_anova(
+    data=None,
+    n_subjects=12,
+    condition_means=None,
+    subject_sd=4,
+    error_sd=2,
+    seed=None,
+    labels=None,
+    alpha=0.05
+):
+    """
+    Generate a one-way repeated-measures ANOVA practice problem.
+
+    If no data matrix is provided, generates scores for each subject across
+    conditions by summing a fixed condition mean, a random subject effect, and
+    random within-cell error. Partitions SS_Total into SS_Between_Treatments,
+    SS_Between_Subjects, and SS_Error, then computes MS and F for the treatment
+    effect.
+
+    Parameters
+    ----------
+    data : array-like or None, optional
+        Pre-existing data matrix (rows = subjects, columns = conditions).
+        If None, data is generated from the specified parameters. Default is None.
+    n_subjects : int, optional
+        Number of subjects. Default is 12.
+    condition_means : list of float or None, optional
+        Population mean for each condition. If None, defaults to [10, 15, 20].
+    subject_sd : float, optional
+        Standard deviation of random subject effects. Default is 4.
+    error_sd : float, optional
+        Standard deviation of random within-cell error. Default is 2.
+    seed : int or None, optional
+        Random seed for reproducibility. Default is None.
+    labels : list of str or None, optional
+        Condition labels. If None, defaults to ["C1", "C2", ...]. Default is None.
+    alpha : float, optional
+        Significance level. Default is 0.05.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Wide-format dataset with a "subject" column and one column per condition,
+        values rounded to 3 decimal places.
+    pandas.DataFrame
+        ANOVA summary table with columns: Source, SS, df, MS, F, p-value.
+        Rows: Between Treatments, Between Subjects, Error, Total.
+    str
+        Significance decision: "Reject Null" or "Fail to Reject Null".
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    # STEP 1: Get or generate data
+    if data is None:
+        if condition_means is None:
+            condition_means = [10, 15, 20]
+
+        condition_means = np.asarray(condition_means, dtype=float)
+        n_conditions = len(condition_means)
+
+        if labels is None:
+            labels = [f"C{i+1}" for i in range(n_conditions)]
+
+        if len(labels) != n_conditions:
+            raise ValueError("labels must match the number of conditions.")
+
+        subject_effects = np.random.normal(loc=0, scale=subject_sd, size=n_subjects)
+        errors = np.random.normal(loc=0, scale=error_sd, size=(n_subjects, n_conditions))
+        data = condition_means + subject_effects[:, None] + errors
+
+    else:
+        data = np.asarray(data, dtype=float)
+
+        if data.ndim != 2:
+            raise ValueError("data must be a 2D array: rows=subjects, columns=conditions")
+
+        n_subjects, n_conditions = data.shape
+
+        if labels is None:
+            labels = [f"C{i+1}" for i in range(n_conditions)]
+
+        if len(labels) != n_conditions:
+            raise ValueError("labels must match the number of columns in data.")
+
+    # STEP 2: Build wide-format DataFrame
+    wide_df = pd.DataFrame(np.round(data, 3), columns=labels)
+    wide_df.insert(0, "subject", np.arange(1, n_subjects + 1))
+
+    # STEP 3: ANOVA calculations
+    grand_mean = np.mean(data)
+    condition_means_observed = np.mean(data, axis=0)
+    subject_means = np.mean(data, axis=1)
+
+    ss_total = np.sum((data - grand_mean) ** 2)
+    ss_between_treatments = n_subjects * np.sum((condition_means_observed - grand_mean) ** 2)
+    ss_between_subjects = n_conditions * np.sum((subject_means - grand_mean) ** 2)
+    ss_error = ss_total - ss_between_treatments - ss_between_subjects
+
+    df_between_treatments = n_conditions - 1
+    df_between_subjects = n_subjects - 1
+    df_error = (n_subjects - 1) * (n_conditions - 1)
+    df_total = n_subjects * n_conditions - 1
+
+    ms_between_treatments = ss_between_treatments / df_between_treatments
+    ms_between_subjects = ss_between_subjects / df_between_subjects
+    ms_error = ss_error / df_error
+
+    F_value = ms_between_treatments / ms_error
+    p_value = 1 - f.cdf(F_value, df_between_treatments, df_error)
+    F_critical = _f_critical(df_between_treatments, df_error, alpha)
+
+    if F_value > F_critical:
+        decision = "Reject Null"
+    else:
+        decision = "Fail to Reject Null"
+
+    # STEP 4: ANOVA table
+    anova_table = pd.DataFrame({
+        "Source":  ["Between Treatments", "Between Subjects", "Error", "Total"],
+        "SS":      [ss_between_treatments, ss_between_subjects, ss_error, ss_total],
+        "df":      [df_between_treatments, df_between_subjects, df_error, df_total],
+        "MS":      [ms_between_treatments, ms_between_subjects, ms_error, np.nan],
+        "F":       [F_value, np.nan, np.nan, np.nan],
+        "p-value": [p_value, np.nan, np.nan, np.nan]
+    }).round(3)
+
+    return wide_df, anova_table, decision
+
+
+
 def generate_pearson_correlation(x_dataset=None, y_dataset=None,
                                  x_mean=10, x_std=1, y_mean=20, y_std=3,
                                  tx_effect_switch=True, tx_effect=10, noise_sd=3,

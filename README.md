@@ -43,7 +43,12 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 │       ├── ztest.ts        — Single-sample Z-test problem generator and grader
 │       ├── ttest.ts        — Single-sample t-test problem generator and grader
 │       ├── indtest.ts      — Independent-measures t-test problem generator and grader
-│       └── reptest.ts      — Repeated-measures t-test problem generator and grader
+│       ├── reptest.ts      — Repeated-measures t-test problem generator and grader
+│       ├── anovatest.ts    — One-way independent ANOVA problem generator and grader
+│       ├── twowaytest.ts   — Two-factor independent ANOVA problem generator and grader
+│       ├── rmatest.ts      — One-way repeated-measures ANOVA problem generator and grader
+│       ├── pearsontest.ts  — Pearson correlation problem generator and grader
+│       └── regtest.ts      — Simple linear regression problem generator and grader
 ├── package.json            — npm scripts and dev dependencies
 ├── tsconfig.json           — TypeScript compiler configuration
 ├── vite.config.ts          — Vite multi-page build configuration
@@ -94,8 +99,13 @@ Students select one or more test types, click **New Problem**, work through each
 | **Single-Sample t-Test** | μ₀, n, x̄, s, α, tail | Hypotheses, t statistic, df, critical value, decision, effect size |
 | **Independent-Measures t-Test** | n₁, M₁, SS₁, n₂, M₂, SS₂, α, tail | Hypotheses, t statistic, df, critical value, decision, effect size |
 | **Repeated-Measures t-Test** | n, M_D, SD_D, α, tail | Hypotheses, t statistic, df, critical value, effect size, decision |
+| **One-Way Independent ANOVA** | Partial ANOVA table, α | Missing SS/df/MS/F cells, hypotheses, F critical, significance decision, η² |
+| **Two-Factor Independent ANOVA** | Partial two-way ANOVA table, α | Missing ANOVA table cells for A/B/A×B/Error/Total, hypotheses for each effect, F critical values, significance decisions, η² for each effect |
+| **One-Way Repeated-Measures ANOVA** | Partial RM ANOVA table (Between Treatments / Between Subjects / Error / Total), α | Missing SS/df/MS/F cells, hypotheses for treatment effect, F critical (df_BT, df_Error), significance decision, η² |
+| **Pearson Correlation** | r, n, α, tail | Hypotheses, t statistic, df, critical value, r², significance decision |
+| **Simple Linear Regression** | Partial regression ANOVA table, M_X, M_Y, SS_X, SS_Y, r, α | Missing ANOVA table cells, regression coefficients (b and a), F critical, significance decision, R² |
 
-Effect size questions rotate randomly among Cohen's d, R², and confidence intervals (where applicable). The full solution table always shows all effect sizes regardless of which one was asked.
+Effect size questions for t-tests rotate randomly among Cohen's d, R², and confidence intervals (where applicable). The full solution key always shows all effect sizes regardless of which one was asked. For ANOVA and regression problems, difficulty controls which ANOVA table cells are hidden — the underlying data are identical across difficulty levels.
 
 ### Problem Design
 
@@ -323,6 +333,9 @@ There are two generator formats:
 | Two-Way ANOVA | Easy | All SS and df shown; MS and F values hidden |
 | | Moderate | Main SS terms, df_total shown; interaction/error SS, all MS, F hidden |
 | | Hard | df values and F shown; all SS and MS hidden |
+| One-Way RM ANOVA | Easy | All SS and df shown; MS_BT, MS_BS, MS_Error, and F hidden |
+| | Moderate | SS_BT, SS_BS, SS_Total shown; SS_Error, all df, MS_BT, and F hidden |
+| | Hard | All df and MS values shown; all SS values and df_Total hidden |
 | Simple Linear Regression | Easy | All SS and df shown; MS_regression, MS_residual, F hidden |
 | | Moderate | SS_regression, df_regression, df_residual, SS_total, df_total shown; SS_residual, all MS, F hidden |
 | | Hard | df_regression, MS_regression, F, df_residual shown; all SS (except via F/MS), MS_residual, df_total hidden |

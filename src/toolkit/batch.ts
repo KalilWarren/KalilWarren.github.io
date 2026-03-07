@@ -5,6 +5,7 @@ import {
   runIndependentTTest,
   runRepeatedTTest,
   runANOVA,
+  runRMANOVA,
   runPearson,
   runRegression,
 } from './runners.ts';
@@ -14,6 +15,7 @@ import {
   generateTwoWayANOVAProblem,
   generatePearsonProblem,
   generateRegressionTableProblem,
+  generateRmaAnovaProblem,
 } from './problems.ts';
 import { gv } from './ui.ts';
 import { fPValue } from './stats.ts';
@@ -32,6 +34,7 @@ const SEED_IDS: Record<TestType, string[]> = {
   independent_t_test: ['ind-seed1', 'ind-seed2'],
   repeated_t_test:    ['rep-seed'],
   anova:              ['anova-seed'],
+  rma_anova:          ['rma-seed'],
   pearson:            ['pear-seed'],
   regression:         ['reg-seed'],
 };
@@ -78,6 +81,12 @@ const SWEEPABLE_PARAMS: Record<TestType, Array<{ label: string; id: string }>> =
     { label: 'Within-Cell SD',      id: 'anova-std'    },
     { label: 'Effect Size (SD)',    id: 'anova-effect' },
     { label: 'α (Alpha)',           id: 'anova-alpha'  },
+  ],
+  rma_anova: [
+    { label: 'n (Subjects)',        id: 'rma-n-subjects' },
+    { label: 'Subject SD',          id: 'rma-subject-sd' },
+    { label: 'Error SD',            id: 'rma-error-sd'   },
+    { label: 'α (Alpha)',           id: 'rma-alpha'      },
   ],
   pearson: [
     { label: 'X Mean',              id: 'pear-x-mean'    },
@@ -206,6 +215,7 @@ function runTest(testType: TestType): TestResult {
     case 'independent_t_test': return runIndependentTTest();
     case 'repeated_t_test':    return runRepeatedTTest();
     case 'anova':              return runANOVA();
+    case 'rma_anova':          return runRMANOVA();
     case 'pearson':            return runPearson();
     case 'regression':         return runRegression();
   }
@@ -289,6 +299,12 @@ function buildDatasetRows(testType: TestType): (string | number)[][] {
       const keys = Object.keys(r2.dataset[0]);
       return [keys, ...r2.dataset.map(row => keys.map(k => row[k] ?? ''))];
     }
+    case 'rma_anova': {
+      const r2 = r as { dataset: Record<string, string | number | null>[] };
+      if (!r2.dataset.length) return [[]];
+      const keys = Object.keys(r2.dataset[0]);
+      return [keys, ...r2.dataset.map(row => keys.map(k => row[k] ?? ''))];
+    }
     case 'pearson': {
       const r2 = r as { x_data: number[]; y_data: number[] };
       return [
@@ -319,6 +335,8 @@ function buildParamsUsed(testType: TestType): string {
       return `μ₀=${gv('rep-pop-mean')}, σ=${gv('rep-pop-std')}, n=${gv('rep-n')}, tx=${gv('rep-tx-effect')}, noise=${gv('rep-noise-sd')}, α=${gv('rep-alpha')}`;
     case 'anova':
       return `factors=${gv('anova-factors')}, n=${gv('anova-n')}, mean=${gv('anova-mean')}, std=${gv('anova-std')}, effect=${gv('anova-effect')}, α=${gv('anova-alpha')}`;
+    case 'rma_anova':
+      return `n_subjects=${gv('rma-n-subjects')}, condition_means=${gv('rma-condition-means')}, subject_sd=${gv('rma-subject-sd')}, error_sd=${gv('rma-error-sd')}, α=${gv('rma-alpha')}`;
     case 'pearson':
       return `x_mean=${gv('pear-x-mean')}, x_std=${gv('pear-x-std')}, y_mean=${gv('pear-y-mean')}, y_std=${gv('pear-y-std')}, n=${gv('pear-n')}, ρ₀=${gv('pear-ro')}, α=${gv('pear-alpha')}`;
     case 'regression':
@@ -556,6 +574,59 @@ function buildPromptAndKey(testType: TestType): {
         instructorKey: d.interp,
         decision:      decStr,
         effectSize:    `d = ${d.cohenD}`,
+      };
+    }
+
+    case 'rma_anova': {
+      const d = state.lastRmaAnovaPracticeData;
+      if (!d) return none;
+      const { full, missingCells, studentPrompt, decisionStatement } = d;
+      const r2f = (n: number) => Math.round(n * 100) / 100;
+      const pStr = fmtPLocal(full.pValue);
+      const masked = new Set(missingCells.map(c => `${c.row}:${c.col}`));
+      const mc = (row: string, col: string, val: number | null) =>
+        masked.has(`${row}:${col}`) ? '?' : val !== null ? r2f(val) : '—';
+      return {
+        problemRows: [
+          ['STUDENT PROBLEM — One-Way RM ANOVA Table Practice'],
+          [],
+          ['Scenario'], [studentPrompt], [],
+          ['Questions'],
+          ['1.', 'Fill in all missing values (marked "?") in the ANOVA table below.'],
+          ['2.', 'State the null and alternative hypotheses.'],
+          ['3.', `Determine whether the result is significant at α = ${full.alpha}.`],
+          ['4.', 'Write a one-sentence interpretation.'],
+          [],
+          ['ANOVA Table (Student Version)'],
+          ['Source', 'SS', 'df', 'MS', 'F'],
+          ['Between Treatments', mc('bt','SS',full.ssBT),    mc('bt','df',full.dfBT),    mc('bt','MS',full.msBT),    mc('bt','F',full.fStat)],
+          ['Between Subjects',   mc('bs','SS',full.ssBS),    mc('bs','df',full.dfBS),    mc('bs','MS',full.msBS),    '—'],
+          ['Error',              mc('error','SS',full.ssErr), mc('error','df',full.dfErr), mc('error','MS',full.msErr), '—'],
+          ['Total',              mc('total','SS',full.ssTotal), mc('total','df',full.dfTotal), '—', '—'],
+          [], [],
+          ['━━━━━━  INSTRUCTOR KEY  ━━━━━━'],
+          [],
+          ['ANOVA Table (Completed)'],
+          ['Source', 'SS', 'df', 'MS', 'F'],
+          ['Between Treatments', r2f(full.ssBT),    full.dfBT,   r2f(full.msBT),  r2f(full.fStat)],
+          ['Between Subjects',   r2f(full.ssBS),    full.dfBS,   r2f(full.msBS),  '—'],
+          ['Error',              r2f(full.ssErr),   full.dfErr,  r2f(full.msErr), '—'],
+          ['Total',              r2f(full.ssTotal), full.dfTotal, '—', '—'],
+          [],
+          ['Missing Values (step-by-step)'],
+          ...missingCells.map((c, i) => [`${i + 1}.`, c.formula] as (string | number | null)[]),
+          [],
+          ['Hypotheses'],
+          ['H₀:', `μ₁ = μ₂ = … = μ${full.nConditions}  (all condition means are equal)`],
+          ['H₁:', 'At least one condition mean differs from the others'],
+          [],
+          ['Decision'],
+          [`F(${full.dfBT}, ${full.dfErr}) = ${r2f(full.fStat)}, p ${pStr}`],
+          [decisionStatement],
+        ],
+        instructorKey: decisionStatement,
+        decision:      decisionStatement,
+        effectSize:    '—',
       };
     }
 
@@ -949,6 +1020,8 @@ export async function generateBatch(
         generatePearsonProblem();
       } else if (testType === 'regression') {
         generateRegressionTableProblem();
+      } else if (testType === 'rma_anova') {
+        generateRmaAnovaProblem();
       } else {
         generateStudentProblem();
       }

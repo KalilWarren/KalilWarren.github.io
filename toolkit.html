@@ -439,6 +439,7 @@
           <option value="independent_t_test">Independent-Samples t-Test</option>
           <option value="repeated_t_test">Repeated-Measures t-Test</option>
           <option value="anova">Independent ANOVA (One-Way / Factorial)</option>
+          <option value="rma_anova">Repeated-Measures ANOVA (One-Way)</option>
           <option value="pearson">Pearson Correlation</option>
           <option value="regression">Simple Linear Regression</option>
         </select>
@@ -672,6 +673,41 @@
           <div class="form-group">
             <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
             <input type="number" id="anova-seed" placeholder="Leave blank for random" step="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REPEATED-MEASURES ANOVA ── -->
+      <div class="test-section" id="params-rma_anova">
+        <p class="section-label">Repeated-Measures ANOVA Parameters</p>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Number of Subjects (n) <button type="button" class="tip-icon" data-tip="Number of subjects measured across all conditions. Each subject contributes one observation per condition." aria-label="More info">ⓘ</button></label>
+            <input type="number" id="rma-n-subjects" value="12" min="3" step="1" />
+          </div>
+          <div class="form-group">
+            <label>Condition Means <button type="button" class="tip-icon" data-tip="Comma-separated population means for each condition (e.g., 50, 55, 60). Number of values determines number of conditions." aria-label="More info">ⓘ</button></label>
+            <input type="text" id="rma-condition-means" value="50, 55, 60" placeholder="e.g. 50, 55, 60" />
+          </div>
+          <div class="form-group">
+            <label>Subject SD <button type="button" class="tip-icon" data-tip="Standard deviation of individual subject baseline effects. Larger values produce more between-subjects variability." aria-label="More info">ⓘ</button></label>
+            <input type="number" id="rma-subject-sd" value="4" step="any" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Error SD <button type="button" class="tip-icon" data-tip="Standard deviation of the random within-cell error term. Larger values make condition differences harder to detect." aria-label="More info">ⓘ</button></label>
+            <input type="number" id="rma-error-sd" value="2" step="any" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <input type="number" id="rma-alpha" value="0.05" step="any" min="0.001" max="0.5" />
+          </div>
+          <div class="form-group">
+            <label>Condition Labels <span style="font-weight:400;">(optional)</span> <button type="button" class="tip-icon" data-tip="Comma-separated labels for each condition column (e.g., Pre, Mid, Post). Must match number of condition means." aria-label="More info">ⓘ</button></label>
+            <input type="text" id="rma-labels" placeholder="e.g. Pre, Mid, Post" />
+          </div>
+          <div class="form-group">
+            <label>Random Seed <span style="font-weight:400;">(optional)</span></label>
+            <input type="number" id="rma-seed" placeholder="Leave blank for random" step="1" />
           </div>
         </div>
       </div>
@@ -931,6 +967,34 @@
         <p id="anova-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
         <button class="btn-generate" id="anova-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
         <button class="btn-download" id="anova-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+      </div>
+
+      <!-- ── Batch Dataset Section: rma_anova ── -->
+      <div class="test-section" id="batch-rma_anova">
+        <p class="section-label">Batch Dataset Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div class="form-group" style="max-width:10rem;">
+          <label for="rma-batch-count">Number of datasets<button type="button" class="tip-icon" data-tip="Number of datasets to generate in this batch. Each dataset uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+          <input type="number" id="rma-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+        </div>
+        <!-- ── Parameter Sweep ── -->
+        <details id="rma-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="rma-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="rma-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+        <p id="rma-batch-status" style="display:none; margin-top:0.75rem; font-size:0.88rem; color:#555;"></p>
+        <button class="btn-generate" id="rma-batch-gen-btn" style="margin-top:0.75rem;">Generate Batch Datasets<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+        <button class="btn-download" id="rma-batch-dl-btn" style="display:none; margin-top:0.5rem;">&#x2B07; Download Datasets (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
       </div>
 
       <!-- ── Batch Dataset Section: pearson ── -->
@@ -1270,6 +1334,89 @@
             <div id="ap2-sweep-rows" style="margin-bottom:0.5rem;"></div>
             <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
               <button type="button" id="ap2-sweep-add-btn"
+                      style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
+                + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
+              </button>
+              <span style="font-size:0.79rem; color:#999;">Batch count = longest list/range length when sweep is active.</span>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ===== RM ANOVA TABLE PRACTICE PROBLEM CARD ===== -->
+    <div class="card" id="rma-practice-card" style="display:none;">
+      <h2>
+        RM ANOVA Table Practice Problem<button type="button" class="tip-icon" data-tip="Generates a student-facing problem statement (and optional instructor key) from the currently generated results." aria-label="More info">ⓘ</button>
+        <span class="tag" style="font-size:0.72rem;vertical-align:middle;margin-left:0.5rem;font-weight:400;">
+          Experimental
+        </span>
+      </h2>
+      <p>
+        Fill in the details below to generate a student-facing one-way repeated-measures ANOVA table problem
+        with blanked-out cells based on the selected difficulty.
+      </p>
+
+      <div class="form-grid-2" style="margin-top:1rem;">
+        <div class="form-group">
+          <label>Outcome Variable</label>
+          <input type="text" id="rma-pg-variable" placeholder="e.g., reaction time" />
+          <p class="hint">Dependent variable being measured</p>
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="rma-pg-difficulty">
+            <option value="easy">Easy — compute MS and F</option>
+            <option value="moderate" selected>Moderate — derive SS, df, MS, F</option>
+            <option value="hard">Hard — back-solve from F and MS</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn-generate" id="generate-rma-problem-btn" style="margin-top:0; flex:1;">
+          Generate RM ANOVA Table Problem
+        </button>
+        <button type="button" class="tip-icon" data-tip="Creates a printable student prompt based on the current test output. Generate results first." aria-label="More info">ⓘ</button>
+      </div>
+
+      <div id="rma-pg-output" style="display:none; margin-top:1.75rem;">
+        <p class="hint" style="font-size:0.82rem; color:#888; margin:0 0 0.5rem 0;"><button type="button" class="tip-icon" data-tip="Cells marked with '?' are intentionally missing so students can fill them in." aria-label="More info">ⓘ</button> Cells marked with <strong>?</strong> are intentionally missing for students to fill in.</p>
+        <div id="rma-pg-problem-text"></div>
+
+        <div class="pg-key-toggle">
+          <input type="checkbox" id="rma-pg-show-key" />
+          <label for="rma-pg-show-key">Show Instructor Key<button type="button" class="tip-icon" data-tip="Shows the answer key with formulas, computed values, and a decision/interpretation." aria-label="More info">ⓘ</button></label>
+        </div>
+
+        <div id="rma-pg-instructor-key" style="display:none; margin-top:1rem;"></div>
+
+        <div class="download-area" style="margin-top:1.25rem;">
+          <button class="btn-download" id="download-rma-excel-btn">&#x2B07; Download Problem + Key (Excel)</button>
+        </div>
+      </div>
+
+      <!-- ── Batch Problem Generation ── -->
+      <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
+        <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+          <div class="form-group" style="margin:0; min-width:160px;">
+            <label for="rma-pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
+            <input type="number" id="rma-pg-batch-count" min="1" max="20" value="5" style="width:5rem;" />
+          </div>
+          <button class="btn-generate" id="rma-pg-batch-gen-btn" style="margin:0;">Generate Batch<span class="tip-icon" data-tip="Generates the full batch and stores it for export. Re-run to create a new batch." aria-label="More info">ⓘ</span></button>
+          <button class="btn-download" id="rma-pg-batch-dl-btn" style="display:none; margin:0;">&#x2B07; Download Batch (Excel)<span class="tip-icon" data-tip="Downloads a single Excel workbook containing all datasets and/or problems generated in the current batch." aria-label="More info">ⓘ</span></button>
+        </div>
+        <p id="rma-pg-batch-status" style="display:none; margin-top:0.6rem; font-size:0.88rem; color:#555;"></p>
+        <!-- ── Parameter Sweep ── -->
+        <details id="rma-pg-sweep-panel" style="margin-top:0.75rem;">
+          <summary style="cursor:pointer; font-size:0.87rem; color:#666; user-select:none;">
+            Parameter Sweep <span style="font-weight:normal; color:#aaa;">(optional)</span> <button type="button" class="tip-icon" data-tip="Systematically vary one or more parameters across the batch. Each item uses the next value from each swept parameter (zipped, not crossed)." aria-label="More info">ⓘ</button>
+          </summary>
+          <div style="margin-top:0.6rem; padding:0.6rem 0.75rem; background:#f9f7f4; border-radius:6px; border:1px solid #e5e0d8;">
+            <div id="rma-pg-sweep-rows" style="margin-bottom:0.5rem;"></div>
+            <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+              <button type="button" id="rma-pg-sweep-add-btn"
                       style="font-size:0.83rem; padding:0.25rem 0.6rem; border:1px solid #bbb; border-radius:4px; background:#fff; cursor:pointer; color:#555;">
                 + Add Parameter<span class="tip-icon" data-tip="Add a parameter to vary across the batch. List mode: enter comma-separated values. Range mode: set start, end, and step." aria-label="More info">ⓘ</span>
               </button>

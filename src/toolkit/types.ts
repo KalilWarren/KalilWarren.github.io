@@ -6,6 +6,7 @@ export type TestType =
   | 'independent_t_test'
   | 'repeated_t_test'
   | 'anova'
+  | 'rma_anova'
   | 'pearson'
   | 'regression';
 
@@ -60,6 +61,13 @@ export interface AnovaResult {
   table: TableRow[];
 }
 
+export interface RmaAnovaResult {
+  type: 'rma_anova';
+  dataset: TableRow[];   /* wide-format: subject + one col per condition */
+  table: TableRow[];     /* ANOVA summary: Source, SS, df, MS, F, p-value */
+  decision: string;
+}
+
 export interface PearsonResult {
   type: 'pearson';
   x_data: number[];
@@ -81,6 +89,7 @@ export type TestResult =
   | IndTTestResult
   | RepTTestResult
   | AnovaResult
+  | RmaAnovaResult
   | PearsonResult
   | RegressionResult;
 
@@ -357,6 +366,34 @@ export interface TwoWayAnovaPracticeData {
   missingCells: TwoWayAnovaMissingCell[];
   studentPrompt: string;
   decisionStatements: string[];   /* one entry per effect: A, B, A×B */
+}
+
+/* ── Repeated-Measures ANOVA Table Practice Problem ── */
+
+export interface RmaAnovaFullTable {
+  ssBT: number; dfBT: number; msBT: number;
+  fStat: number; pValue: number;
+  ssBS: number; dfBS: number; msBS: number;
+  ssErr: number; dfErr: number; msErr: number;
+  ssTotal: number; dfTotal: number;
+  nSubjects: number; nConditions: number;
+  alpha: number;
+}
+
+export interface RmaAnovaMissingCell {
+  row:     'bt' | 'bs' | 'error' | 'total';
+  col:     'SS' | 'df' | 'MS' | 'F';
+  value:   number;
+  formula: string;
+}
+
+export interface RmaAnovaPracticeData {
+  full:              RmaAnovaFullTable;
+  difficulty:        AnovaDifficulty;
+  variable:          string;
+  missingCells:      RmaAnovaMissingCell[];
+  studentPrompt:     string;
+  decisionStatement: string;
 }
 
 /* ── Batch Generation ── */

@@ -422,6 +422,10 @@
         Two-Way Independent ANOVA <span class="sp-sel-sub">(2 factors)</span>
       </label>
       <label class="sp-type-pill">
+        <input type="checkbox" id="sel-rmatest" checked />
+        One-Way RM ANOVA <span class="sp-sel-sub">(repeated measures)</span>
+      </label>
+      <label class="sp-type-pill">
         <input type="checkbox" id="sel-peartest" checked />
         Pearson Correlation <span class="sp-sel-sub">(r test)</span>
       </label>
@@ -1031,6 +1035,83 @@
         </details>
 
       </div><!-- end twa-section -->
+
+      <!-- ══ One-Way Repeated-Measures ANOVA section ══ -->
+      <div id="rma-section" style="display:none;">
+
+        <!-- Problem text + interactive table -->
+        <div class="sp-problem-box">
+          <div id="rmp-problem-text" class="sp-placeholder">
+            Click <strong>New Problem</strong> below to generate a practice problem.
+          </div>
+        </div>
+
+        <!-- Answer form -->
+        <form id="rmp-answer-form" onsubmit="return false;">
+
+          <!-- 1. RM ANOVA table (rendered dynamically into rmp-problem-text above) -->
+
+          <!-- 2. Hypotheses -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">2. State the Hypotheses</div>
+            <div class="sp-radio-group" id="rmp-hyp-options">
+              <span class="sp-placeholder">Generate a problem to see options.</span>
+            </div>
+            <div class="sp-fb-row" id="rmp-fb-hyp"></div>
+          </div>
+
+          <!-- 3. Critical value -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">3. Find the Critical Value</div>
+            <div class="sp-input-row">
+              <label for="rmp-answer-fcrit">F<sub>crit</sub>(df<sub>BT</sub>, df<sub>Error</sub>)</label>
+              <input type="number" step="0.001" id="rmp-answer-fcrit" class="sp-num-input"
+                     placeholder="e.g. 3.354" />
+            </div>
+            <div class="sp-fb-row" id="rmp-fb-fcrit"></div>
+          </div>
+
+          <!-- 4. Decision -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">4. Determine Statistical Significance</div>
+            <div class="sp-radio-group">
+              <label class="sp-radio-label">
+                <input type="radio" name="rmp-decision-select" value="reject" />
+                Reject H₀ (result is significant)
+              </label>
+              <label class="sp-radio-label">
+                <input type="radio" name="rmp-decision-select" value="fail" />
+                Fail to reject H₀ (result is not significant)
+              </label>
+            </div>
+            <div class="sp-fb-row" id="rmp-fb-decision"></div>
+          </div>
+
+          <!-- 5. Effect size η² -->
+          <div class="sp-field-block">
+            <div class="sp-section-label">5. Compute η² (Effect Size)</div>
+            <div class="sp-input-row">
+              <label for="rmp-answer-eta2">η² = SS<sub>BT</sub> / SS<sub>Total</sub></label>
+              <input type="number" step="0.01" id="rmp-answer-eta2" class="sp-num-input"
+                     placeholder="e.g. 0.42" />
+            </div>
+            <div class="sp-fb-row" id="rmp-fb-eta2"></div>
+          </div>
+
+        </form>
+
+        <!-- Feedback section -->
+        <div id="rmp-feedback-section">
+          <div id="rmp-fb-banner" class="sp-banner" style="display:none;"></div>
+        </div>
+
+        <!-- Full solution -->
+        <details id="rmp-solution-toggle">
+          <summary>Show Full Solution</summary>
+          <div id="rmp-solution-body"></div>
+        </details>
+
+      </div><!-- end rma-section -->
 
       <!-- ══ Pearson Correlation section ══ -->
       <div id="pear-section" style="display:none;">

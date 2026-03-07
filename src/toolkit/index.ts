@@ -7,6 +7,7 @@ import {
   runIndependentTTest,
   runRepeatedTTest,
   runANOVA,
+  runRMANOVA,
   runPearson,
   runRegression,
 } from './runners.ts';
@@ -35,6 +36,9 @@ import {
   generateRegressionTableProblem,
   toggleRegressionKey,
   downloadRegressionPracticeExcel,
+  generateRmaAnovaProblem,
+  toggleRmaAnovaKey,
+  downloadRmaAnovaPracticeExcel,
 } from './problems.ts';
 
 /* ── Set current year ── */
@@ -63,6 +67,7 @@ async function generateProblem(): Promise<void> {
       case 'independent_t_test': result = runIndependentTTest(); break;
       case 'repeated_t_test':    result = runRepeatedTTest();    break;
       case 'anova':              result = runANOVA();            break;
+      case 'rma_anova':          result = runRMANOVA();          break;
       case 'pearson':            result = runPearson();          break;
       case 'regression':         result = runRegression();       break;
       default:
@@ -150,6 +155,24 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('download-reg-excel-btn')
     ?.addEventListener('click', downloadRegressionPracticeExcel);
 
+  /* RM ANOVA Table Practice Problem */
+  document.getElementById('generate-rma-problem-btn')
+    ?.addEventListener('click', generateRmaAnovaProblem);
+  document.getElementById('rma-pg-show-key')
+    ?.addEventListener('change', toggleRmaAnovaKey);
+  document.getElementById('download-rma-excel-btn')
+    ?.addEventListener('click', downloadRmaAnovaPracticeExcel);
+
+  /* RM ANOVA Batch */
+  document.getElementById('rma-pg-batch-gen-btn')
+    ?.addEventListener('click', () =>
+      generateBatch('rma_anova', 'rma-pg-batch-count',
+                    'rma-pg-batch-status', 'rma-pg-batch-dl-btn', 'rma-pg-sweep-rows'));
+  document.getElementById('rma-pg-batch-dl-btn')
+    ?.addEventListener('click', downloadBatchWorkbook);
+  document.getElementById('rma-pg-sweep-add-btn')
+    ?.addEventListener('click', () => addSweepRow('rma-pg-sweep-rows', 'rma_anova'));
+
   /* ── Dataset Batch (one per param section) ── */
   const datasetBatchEntries: [string, import('./types.ts').TestType][] = [
     ['z',    'z_test'],
@@ -157,6 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ['ind',  'independent_t_test'],
     ['rep',  'repeated_t_test'],
     ['anova','anova'],
+    ['rma',  'rma_anova'],
     ['pear', 'pearson'],
     ['reg',  'regression'],
   ];

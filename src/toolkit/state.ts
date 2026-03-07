@@ -1,4 +1,4 @@
-import type { TestResult, TestContext, ProblemData, AnovaPracticeData, TwoWayAnovaPracticeData, PearsonProblemData, RegPracticeData, TestType, DatasetBatchItem, BatchItem } from './types.ts';
+import type { TestResult, TestContext, ProblemData, AnovaPracticeData, TwoWayAnovaPracticeData, RmaAnovaPracticeData, PearsonProblemData, RegPracticeData, TestType, DatasetBatchItem, BatchItem } from './types.ts';
 
 /* Mutable application state — mutate properties directly; do not reassign the object */
 export const state: {
@@ -14,6 +14,7 @@ export const state: {
   lastPearsonProblemData: PearsonProblemData | null;
   lastAnovaPracticeData: AnovaPracticeData | null;
   lastTwoWayAnovaPracticeData: TwoWayAnovaPracticeData | null;
+  lastRmaAnovaPracticeData: RmaAnovaPracticeData | null;
   lastRegPracticeData: RegPracticeData | null;
   lastDatasetBatch: DatasetBatchItem[] | null;
   lastBatch: BatchItem[] | null;
@@ -30,6 +31,7 @@ export const state: {
   lastPearsonProblemData:        null,
   lastAnovaPracticeData:         null,
   lastTwoWayAnovaPracticeData:   null,
+  lastRmaAnovaPracticeData:      null,
   lastRegPracticeData:           null,
   lastDatasetBatch:              null,
   lastBatch:                     null,

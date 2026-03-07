@@ -1,7 +1,7 @@
 import { state } from './state.ts';
 import { gv, fmt, valClass } from './ui.ts';
 import { tipHTML, STAT_ROW_TIPS, COL_HEADER_TIPS } from './tooltips.ts';
-import type { TestResult, StatRecord, AnovaRow, TableRow } from './types.ts';
+import type { TestResult, StatRecord, AnovaRow, TableRow, RmaAnovaResult } from './types.ts';
 
 /* ── HTML table builders ── */
 
@@ -85,6 +85,27 @@ export function anovaDatasetTable(records: AnovaRow[]): string {
   return h;
 }
 
+export function wideDatasetTable(records: TableRow[], title?: string): string {
+  if (!records || !records.length) return '';
+  const keys = Object.keys(records[0]);
+  const shown = records.slice(0, 30);
+  let h = `<div class="result-block" style="grid-column:1/-1"><div class="tbl-wrap">`;
+  if (title) h += `<h3>${title}</h3>`;
+  if (records.length > 30) {
+    h += `<p class="dataset-note">Showing first 30 of ${records.length} subjects.</p>`;
+  }
+  h += `<table class="stat-table"><thead><tr>`;
+  keys.forEach(k => { h += `<th>${k}</th>`; });
+  h += `</tr></thead><tbody>`;
+  shown.forEach(row => {
+    h += `<tr>`;
+    keys.forEach(k => { h += `<td>${fmt(row[k])}</td>`; });
+    h += `</tr>`;
+  });
+  h += `</tbody></table></div></div>`;
+  return h;
+}
+
 /* ── Main render dispatcher ── */
 
 export function renderResults(r: TestResult): void {
@@ -93,7 +114,7 @@ export function renderResults(r: TestResult): void {
 
   /* Reset student-problem batch UI when a new single result is generated */
   state.lastBatch = null;
-  ['pg', 'ap', 'ap2', 'pear-pg', 'reg-pg'].forEach(pfx => {
+  ['pg', 'ap', 'ap2', 'pear-pg', 'reg-pg', 'rma-pg'].forEach(pfx => {
     const dlBtn = document.getElementById(`${pfx}-batch-dl-btn`);
     if (dlBtn) dlBtn.style.display = 'none';
     const status = document.getElementById(`${pfx}-batch-status`);
@@ -111,6 +132,7 @@ export function renderResults(r: TestResult): void {
   const anova2WayPracticeCard  = document.getElementById('anova-2way-practice-card') as HTMLElement;
   const pearsonProblemCard     = document.getElementById('pearson-problem-card')     as HTMLElement;
   const regPracticeCard        = document.getElementById('reg-practice-card')        as HTMLElement;
+  const rmaPracticeCard        = document.getElementById('rma-practice-card')        as HTMLElement;
 
   if (r.type === 'z_test') {
     state.lastZTestContext = {
@@ -127,6 +149,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
     regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'none';
   } else if (r.type === 't_test') {
     state.lastTTestContext = {
       alpha:     parseFloat(gv('t-alpha')),
@@ -142,6 +165,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
     regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'none';
   } else if (r.type === 'independent_t_test') {
     state.lastIndTTestContext = {
       alpha:     parseFloat(gv('ind-alpha')),
@@ -157,6 +181,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
     regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'none';
   } else if (r.type === 'repeated_t_test') {
     state.lastRmTTestContext = {
       alpha:     parseFloat(gv('rep-alpha')),
@@ -172,6 +197,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
     regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'none';
   } else if (r.type === 'anova') {
     pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
@@ -191,6 +217,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display = isTwoWay ? 'block' : 'none';
 
     regPracticeCard.style.display = 'none';
+    rmaPracticeCard.style.display = 'none';
 
     /* Reset any previous outputs */
     const apOut  = document.getElementById('ap-output')  as HTMLElement;
@@ -208,8 +235,19 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'block';
     regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'none';
     const pearsonOut = document.getElementById('pear-pg-output') as HTMLElement;
     if (pearsonOut) pearsonOut.style.display = 'none';
+  } else if (r.type === 'rma_anova') {
+    pgCard.style.display             = 'none';
+    pgOutput.style.display           = 'none';
+    anovaPracticeCard.style.display      = 'none';
+    anova2WayPracticeCard.style.display  = 'none';
+    pearsonProblemCard.style.display     = 'none';
+    regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'block';
+    const rmaPgOut = document.getElementById('rma-pg-output') as HTMLElement;
+    if (rmaPgOut) rmaPgOut.style.display = 'none';
   } else if (r.type === 'regression') {
     pgCard.style.display   = 'none';
     pgOutput.style.display = 'none';
@@ -217,6 +255,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
     regPracticeCard.style.display        = 'block';
+    rmaPracticeCard.style.display        = 'none';
     const regOut = document.getElementById('reg-pg-output') as HTMLElement;
     if (regOut) regOut.style.display = 'none';
   } else {
@@ -226,6 +265,7 @@ export function renderResults(r: TestResult): void {
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
     regPracticeCard.style.display        = 'none';
+    rmaPracticeCard.style.display        = 'none';
   }
 
   switch (r.type) {
@@ -265,6 +305,21 @@ export function renderResults(r: TestResult): void {
       </div>
       ${recordsTable(r.table, 'ANOVA Summary Table')}`;
       break;
+
+    case 'rma_anova': {
+      const rma = r as RmaAnovaResult;
+      const decClass = rma.decision === 'Reject Null' ? 'val-reject' : 'val-fail';
+      html = `
+        ${wideDatasetTable(rma.dataset, 'Dataset (Wide Format)')}
+        ${recordsTable(rma.table, 'ANOVA Summary Table')}
+        <div class="result-block">
+          <div class="tbl-wrap">
+            <h3>Decision</h3>
+            <p class="${decClass}" style="font-weight:600; padding:0.4rem 0;">${rma.decision}</p>
+          </div>
+        </div>`;
+      break;
+    }
 
     case 'pearson':
       html = `<div class="results-grid">

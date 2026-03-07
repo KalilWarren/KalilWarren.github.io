@@ -47,6 +47,14 @@ import {
 } from './twowaytest.ts';
 
 import {
+  generateProblem as rmaGenerate,
+  gradeAnswers    as rmaGrade,
+  renderProblem   as rmaRenderProblem,
+  renderFeedback  as rmaRenderFeedback,
+  resetUI         as rmaResetUI,
+} from './rmatest.ts';
+
+import {
   generateProblem as pearGenerate,
   gradeAnswers    as pearGrade,
   renderProblem   as pearRenderProblem,
@@ -88,7 +96,7 @@ function renderStreak(): void {
 
 /* ── State ── */
 
-type TestType = 'z' | 't' | 'ind' | 'rep' | 'anova' | 'twa' | 'pear' | 'reg';
+type TestType = 'z' | 't' | 'ind' | 'rep' | 'anova' | 'twa' | 'rma' | 'pear' | 'reg';
 let activeType: TestType | null = null;
 let zCurrentProblem:    ReturnType<typeof zGenerate>    | null = null;
 let tCurrentProblem:    ReturnType<typeof tGenerate>    | null = null;
@@ -96,6 +104,7 @@ let indCurrentProblem:  ReturnType<typeof indGenerate>  | null = null;
 let repCurrentProblem:  ReturnType<typeof repGenerate>  | null = null;
 let anovaCurrentProblem: ReturnType<typeof anovaGenerate> | null = null;
 let twaCurrentProblem:  ReturnType<typeof twaGenerate>  | null = null;
+let rmaCurrentProblem:  ReturnType<typeof rmaGenerate>  | null = null;
 let pearCurrentProblem: ReturnType<typeof pearGenerate> | null = null;
 let regCurrentProblem:  ReturnType<typeof regGenerate>  | null = null;
 
@@ -109,6 +118,7 @@ const indSection  = document.getElementById('ind-section')  as HTMLElement;
 const repSection  = document.getElementById('rep-section')  as HTMLElement;
 const anovaSection = document.getElementById('anova-section') as HTMLElement;
 const twaSection  = document.getElementById('twa-section')  as HTMLElement;
+const rmaSection  = document.getElementById('rma-section')  as HTMLElement;
 const pearSection = document.getElementById('pear-section') as HTMLElement;
 const lrpSection  = document.getElementById('lrp-section')  as HTMLElement;
 const cardTitle   = document.getElementById('card-title')   as HTMLElement;
@@ -119,6 +129,7 @@ const selInd      = document.getElementById('sel-indtest')  as HTMLInputElement;
 const selRep      = document.getElementById('sel-reptest')  as HTMLInputElement;
 const selAnova    = document.getElementById('sel-anovatest') as HTMLInputElement;
 const selTwa      = document.getElementById('sel-twatest')   as HTMLInputElement;
+const selRma      = document.getElementById('sel-rmatest')   as HTMLInputElement;
 const selPear     = document.getElementById('sel-peartest')  as HTMLInputElement;
 const selReg      = document.getElementById('sel-regtest')   as HTMLInputElement;
 const noSelWarn   = document.getElementById('no-sel-warning') as HTMLElement;
@@ -150,6 +161,10 @@ const HEADERS: Record<TestType, { title: string; subtitle: string }> = {
     title:    'Two-Factor Independent ANOVA',
     subtitle: 'Given: a partially completed two-way ANOVA table and α. &nbsp;Fill in missing values, state hypotheses for Factor A, Factor B, and the interaction, find F critical values, determine significance for each effect, and compute η².',
   },
+  rma: {
+    title:    'One-Way Repeated-Measures ANOVA',
+    subtitle: 'Given: a partially completed RM ANOVA table and α. &nbsp;Fill in missing values, state hypotheses for the treatment effect, find F<sub>crit</sub>, determine significance, and compute η².',
+  },
   pear: {
     title:    'Pearson Correlation',
     subtitle: 'Given: r, n, and α. &nbsp;State hypotheses, compute t, df, and the critical value, determine significance, and compute r².',
@@ -174,6 +189,7 @@ function showSection(type: TestType): void {
   repSection.style.display  = type === 'rep'   ? '' : 'none';
   anovaSection.style.display = type === 'anova' ? '' : 'none';
   twaSection.style.display  = type === 'twa'   ? '' : 'none';
+  rmaSection.style.display  = type === 'rma'   ? '' : 'none';
   pearSection.style.display = type === 'pear'  ? '' : 'none';
   lrpSection.style.display  = type === 'reg'   ? '' : 'none';
 }
@@ -188,6 +204,7 @@ function pickType(): TestType | null {
   if (selRep.checked)   pool.push('rep');
   if (selAnova.checked) pool.push('anova');
   if (selTwa.checked)   pool.push('twa');
+  if (selRma.checked)   pool.push('rma');
   if (selPear.checked)  pool.push('pear');
   if (selReg.checked)   pool.push('reg');
   if (pool.length === 0) return null;
@@ -233,6 +250,10 @@ function newProblem(): void {
     twaResetUI();
     twaCurrentProblem = twaGenerate();
     twaRenderProblem(twaCurrentProblem);
+  } else if (type === 'rma') {
+    rmaResetUI();
+    rmaCurrentProblem = rmaGenerate();
+    rmaRenderProblem(rmaCurrentProblem);
   } else if (type === 'pear') {
     pearResetUI();
     pearCurrentProblem = pearGenerate();
@@ -273,6 +294,10 @@ function checkAnswers(): void {
     const grade = twaGrade(twaCurrentProblem);
     twaRenderFeedback(twaCurrentProblem, grade);
     updateStreak(grade.allCorrect);
+  } else if (activeType === 'rma' && rmaCurrentProblem) {
+    const grade = rmaGrade(rmaCurrentProblem);
+    rmaRenderFeedback(rmaCurrentProblem, grade);
+    updateStreak(grade.allCorrect);
   } else if (activeType === 'pear' && pearCurrentProblem) {
     const grade = pearGrade(pearCurrentProblem);
     pearRenderFeedback(pearCurrentProblem, grade);
@@ -290,9 +315,9 @@ newBtn.addEventListener('click', newProblem);
 checkBtn.addEventListener('click', checkAnswers);
 
 // Warn immediately if toggling leaves nothing selected
-[selZ, selT, selInd, selRep, selAnova, selTwa, selPear, selReg].forEach(cb => cb.addEventListener('change', () => {
+[selZ, selT, selInd, selRep, selAnova, selTwa, selRma, selPear, selReg].forEach(cb => cb.addEventListener('change', () => {
   noSelWarn.style.display =
-    (!selZ.checked && !selT.checked && !selInd.checked && !selRep.checked && !selAnova.checked && !selTwa.checked && !selPear.checked && !selReg.checked) ? '' : 'none';
+    (!selZ.checked && !selT.checked && !selInd.checked && !selRep.checked && !selAnova.checked && !selTwa.checked && !selRma.checked && !selPear.checked && !selReg.checked) ? '' : 'none';
 }));
 
 // Auto-generate on load
