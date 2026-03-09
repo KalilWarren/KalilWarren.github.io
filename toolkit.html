@@ -114,6 +114,20 @@
     }
     .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
 
+    .btn-secondary {
+      padding: 0.5rem 0.9rem;
+      background: #fff;
+      border: 1.5px solid var(--navy);
+      border-radius: 4px;
+      color: var(--navy);
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-secondary:hover { background: var(--bg-subtle); }
+
     .spinner-row {
       display: none;
       align-items: center;
@@ -1127,7 +1141,23 @@
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+      <!-- Effect size focus — shown for T / Ind-T / Rep-T; hidden for Z -->
+      <div id="pg-es-row" style="display:none; margin-top:0.75rem;">
+        <div class="form-group" style="max-width:22rem;">
+          <label>Effect Size Question<button type="button" class="tip-icon" data-tip="Choose which effect size students are asked to compute. 'Random' matches the Student Module's rotating format." aria-label="More info">ⓘ</button></label>
+          <select id="pg-es-type">
+            <option value="random" selected>Random (Cohen's d / r² / CI)</option>
+            <option value="cohen_d">Cohen's d</option>
+            <option value="r_squared">r-squared</option>
+            <option value="ci">Confidence Interval</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="pg-rand-scenario-btn" style="white-space:nowrap;">
+          🎲 Random Scenario
+        </button>
         <button class="btn-generate" id="generate-student-btn" style="margin-top:0; flex:1;">
           Generate Student Problem
         </button>
@@ -1459,7 +1489,10 @@
         <p class="hint">Who the sample is drawn from</p>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="pear-pg-rand-scenario-btn" style="white-space:nowrap;">
+          🎲 Random Scenario
+        </button>
         <button class="btn-generate" id="generate-pearson-problem-btn" style="margin-top:0; flex:1;">
           Generate Student Problem
         </button>
@@ -1554,7 +1587,10 @@
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="reg-pg-rand-scenario-btn" style="white-space:nowrap;">
+          🎲 Random Scenario
+        </button>
         <button class="btn-generate" id="generate-reg-problem-btn" style="margin-top:0; flex:1;">
           Generate Regression Table Problem
         </button>

@@ -128,6 +128,7 @@ export function renderResults(r: TestResult): void {
   const popRow           = document.getElementById('pg-pop-row')         as HTMLElement;
   const groupRow         = document.getElementById('pg-group-row')       as HTMLElement;
   const rmRow            = document.getElementById('pg-rm-row')          as HTMLElement;
+  const esRow            = document.getElementById('pg-es-row')          as HTMLElement;
   const anovaPracticeCard      = document.getElementById('anova-practice-card')      as HTMLElement;
   const anova2WayPracticeCard  = document.getElementById('anova-2way-practice-card') as HTMLElement;
   const pearsonProblemCard     = document.getElementById('pearson-problem-card')     as HTMLElement;
@@ -145,6 +146,7 @@ export function renderResults(r: TestResult): void {
     popRow.style.display             = '';
     groupRow.style.display           = 'none';
     rmRow.style.display              = 'none';
+    esRow.style.display              = 'none';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
@@ -161,6 +163,7 @@ export function renderResults(r: TestResult): void {
     popRow.style.display             = '';
     groupRow.style.display           = 'none';
     rmRow.style.display              = 'none';
+    esRow.style.display              = '';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
@@ -177,6 +180,7 @@ export function renderResults(r: TestResult): void {
     popRow.style.display             = 'none';
     groupRow.style.display           = '';
     rmRow.style.display              = 'none';
+    esRow.style.display              = '';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';
@@ -193,6 +197,7 @@ export function renderResults(r: TestResult): void {
     popRow.style.display             = 'none';
     groupRow.style.display           = 'none';
     rmRow.style.display              = '';
+    esRow.style.display              = '';
     anovaPracticeCard.style.display      = 'none';
     anova2WayPracticeCard.style.display  = 'none';
     pearsonProblemCard.style.display     = 'none';

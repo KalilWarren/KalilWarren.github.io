@@ -44,6 +44,7 @@ import {
 /* ── Set current year ── */
 import '../year.ts';
 import { initTooltips } from './tooltips.ts';
+import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, rScenario } from './scenarios.ts';
 
 /* ── Pyodide boot ── */
 window.addEventListener('DOMContentLoaded', initPyodide);
@@ -114,6 +115,49 @@ window.addEventListener('DOMContentLoaded', () => {
   /* Generate student problem */
   document.getElementById('generate-student-btn')
     ?.addEventListener('click', generateStudentProblem);
+
+  /* 🎲 Random scenario — narrative test (Z / T / Ind-T / Rep-T) */
+  document.getElementById('pg-rand-scenario-btn')
+    ?.addEventListener('click', () => {
+      const testType = state.lastResult?.type ?? '';
+      if (testType === 'independent_t_test') {
+        const s = rScenario(IND_T_SCENARIOS);
+        (document.getElementById('pg-variable') as HTMLInputElement).value = s.variable;
+        (document.getElementById('pg-unit')     as HTMLInputElement).value = s.unit;
+        (document.getElementById('pg-group1')   as HTMLInputElement).value = s.group1;
+        (document.getElementById('pg-group2')   as HTMLInputElement).value = s.group2;
+      } else if (testType === 'repeated_t_test') {
+        const s = rScenario(REP_T_SCENARIOS);
+        (document.getElementById('pg-variable') as HTMLInputElement).value = s.variable;
+        (document.getElementById('pg-unit')     as HTMLInputElement).value = s.unit;
+        (document.getElementById('pg-pre')      as HTMLInputElement).value = s.pre;
+        (document.getElementById('pg-post')     as HTMLInputElement).value = s.post;
+      } else {
+        /* Z-test or T-test */
+        const s = rScenario(Z_T_SCENARIOS);
+        (document.getElementById('pg-variable')   as HTMLInputElement).value = s.variable;
+        (document.getElementById('pg-unit')       as HTMLInputElement).value = s.unit;
+        (document.getElementById('pg-population') as HTMLInputElement).value = s.population;
+      }
+    });
+
+  /* 🎲 Random scenario — Pearson problem generator */
+  document.getElementById('pear-pg-rand-scenario-btn')
+    ?.addEventListener('click', () => {
+      const s = rScenario(PEARSON_REG_SCENARIOS);
+      (document.getElementById('pear-pg-varx')       as HTMLInputElement).value = s.variable_x;
+      (document.getElementById('pear-pg-vary')       as HTMLInputElement).value = s.variable_y;
+      (document.getElementById('pear-pg-population') as HTMLInputElement).value = s.population;
+    });
+
+  /* 🎲 Random scenario — Regression problem generator */
+  document.getElementById('reg-pg-rand-scenario-btn')
+    ?.addEventListener('click', () => {
+      const s = rScenario(PEARSON_REG_SCENARIOS);
+      (document.getElementById('reg-pg-varx')       as HTMLInputElement).value = s.variable_x;
+      (document.getElementById('reg-pg-vary')       as HTMLInputElement).value = s.variable_y;
+      (document.getElementById('reg-pg-population') as HTMLInputElement).value = s.population;
+    });
 
   /* Instructor key toggle */
   document.getElementById('pg-show-key')

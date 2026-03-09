@@ -11,6 +11,18 @@ import type {
   TableRow,
 } from './types.ts';
 
+/* ── Effect size type helper ── */
+
+type EffectSizeType = 'cohen_d' | 'r_squared' | 'ci';
+
+function resolveEffectSizeType(): EffectSizeType {
+  const sel = (document.getElementById('pg-es-type') as HTMLSelectElement | null)?.value ?? 'random';
+  if (sel === 'cohen_d' || sel === 'r_squared' || sel === 'ci') return sel;
+  /* random — match student module weights: 60% d, 25% r², 15% CI */
+  const r = Math.random();
+  return r < 0.6 ? 'cohen_d' : r < 0.85 ? 'r_squared' : 'ci';
+}
+
 /* ── Z-Test Problem Generator ── */
 
 export function generateZTestProblem(): void {
@@ -192,6 +204,12 @@ export function generateTTestProblem(): void {
     : (h1op === '>' ? `is significantly greater than ${mu0} ${unit}`
                     : `is significantly less than ${mu0} ${unit}`);
 
+  /* Effect size focus */
+  const esType = resolveEffectSizeType();
+  const esQ3 = esType === 'cohen_d'   ? `Determine the <em>p</em>-value and compute Cohen's <em>d</em>.`
+             : esType === 'r_squared' ? `Determine the <em>p</em>-value and compute <em>r</em>&sup2;.`
+             :                         `Determine the <em>p</em>-value and compute the ${(1 - alpha) * 100 | 0}% confidence interval for μ.`;
+
   /* Student problem text */
   const problemHTML = `
 <div class="problem-box">
@@ -207,7 +225,7 @@ export function generateTTestProblem(): void {
     <ol>
       <li>State the null and alternative hypotheses.</li>
       <li>Compute the <em>t</em> statistic.</li>
-      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>${esQ3}</li>
       <li>State your decision.</li>
       <li>Interpret the result in context.</li>
     </ol>
@@ -226,6 +244,15 @@ export function generateTTestProblem(): void {
     : `There is insufficient evidence at α = ${alpha} to conclude that the mean ${variable}
        in ${pop} ${testPhrasePlain}
        (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+  const esKey3 = esType === 'cohen_d'
+    ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>Cohen's d = (M &minus; μ₀) / s = (${xbar} &minus; ${mu0}) / ${sampleSD} = ${cohenD}</p>`
+    : esType === 'r_squared'
+    ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>`
+    : `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>${(1 - alpha) * 100 | 0}% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
 
   const keyHTML = `
 <div class="key-box">
@@ -251,9 +278,7 @@ export function generateTTestProblem(): void {
 
   <div class="key-section">
     <strong>3. p-value &amp; Effect Size</strong>
-    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-    <p>Cohen's d = (M &minus; μ₀) / s = (${xbar} &minus; ${mu0}) / ${sampleSD} = ${cohenD}</p>
-    <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
+    ${esKey3}
   </div>
 
   <div class="key-section">
@@ -264,7 +289,6 @@ export function generateTTestProblem(): void {
   <div class="key-section">
     <strong>5. Interpretation</strong>
     <p>${interp}</p>
-    <p>95% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
   </div>
 </div>`;
 
@@ -347,8 +371,14 @@ export function generateIndTTestProblem(): void {
         ? `the mean ${variable} in ${group1} is significantly greater than in ${group2}`
         : `the mean ${variable} in ${group1} is significantly less than in ${group2}`);
 
+  /* Effect size focus */
+  const esType = resolveEffectSizeType();
+  const esQ3 = esType === 'cohen_d'   ? `Determine the <em>p</em>-value and compute Cohen's <em>d</em>.`
+             : esType === 'r_squared' ? `Determine the <em>p</em>-value and compute <em>r</em>&sup2;.`
+             :                         `Determine the <em>p</em>-value and compute the ${(1 - alpha) * 100 | 0}% confidence interval for μ₁ − μ₂.`;
+
   /* Student problem text */
-  const problemHTML = `
+  const problemHTMLWithEs = `
 <div class="problem-box">
   <p>A researcher is studying <strong>${variable}</strong> in two groups:
   <strong>${group1}</strong> and <strong>${group2}</strong>.</p>
@@ -363,7 +393,7 @@ export function generateIndTTestProblem(): void {
     <ol>
       <li>State the null and alternative hypotheses.</li>
       <li>Compute the <em>t</em> statistic.</li>
-      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>${esQ3}</li>
       <li>State your decision.</li>
       <li>Interpret the result in context.</li>
     </ol>
@@ -381,6 +411,15 @@ export function generateIndTTestProblem(): void {
     : `There is insufficient evidence at α = ${alpha} to conclude that ${group1} and ${group2}
        ${testPhrasePlain}
        (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+  const esKey3Ind = esType === 'cohen_d'
+    ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>Cohen's d = (M₁ &minus; M₂) / s<sub>p</sub> = ${cohenD}</p>`
+    : esType === 'r_squared'
+    ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>`
+    : `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>${(1 - alpha) * 100 | 0}% CI for (μ₁ − μ₂): [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
 
   const keyHTML = `
 <div class="key-box">
@@ -405,9 +444,7 @@ export function generateIndTTestProblem(): void {
 
   <div class="key-section">
     <strong>3. p-value &amp; Effect Size</strong>
-    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-    <p>Cohen's d = (M₁ &minus; M₂) / s<sub>p</sub> = ${cohenD}</p>
-    <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
+    ${esKey3Ind}
   </div>
 
   <div class="key-section">
@@ -418,7 +455,6 @@ export function generateIndTTestProblem(): void {
   <div class="key-section">
     <strong>5. Interpretation</strong>
     <p>${interp}</p>
-    <p>95% CI for (μ₁ − μ₂): [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
   </div>
 </div>`;
 
@@ -435,7 +471,7 @@ export function generateIndTTestProblem(): void {
     interp: interp.replace(/\s+/g, ' ').trim(),
   };
 
-  (document.getElementById('pg-problem-text') as HTMLElement).innerHTML   = problemHTML;
+  (document.getElementById('pg-problem-text') as HTMLElement).innerHTML   = problemHTMLWithEs;
   (document.getElementById('pg-instructor-key') as HTMLElement).innerHTML = keyHTML;
   (document.getElementById('pg-output') as HTMLElement).style.display     = 'block';
 
@@ -494,6 +530,12 @@ export function generateRmTTestProblem(): void {
         ? `${variable} scores were significantly higher at ${pre} than at ${post}`
         : `${variable} scores significantly increased from ${pre} to ${post}`);
 
+  /* Effect size focus */
+  const esType = resolveEffectSizeType();
+  const esQ3 = esType === 'cohen_d'   ? `Determine the <em>p</em>-value and compute Cohen's <em>d</em>.`
+             : esType === 'r_squared' ? `Determine the <em>p</em>-value and compute <em>r</em>&sup2;.`
+             :                         `Determine the <em>p</em>-value and compute the ${(1 - alpha) * 100 | 0}% confidence interval for μ<sub>D</sub>.`;
+
   /* Student problem text */
   const problemHTML = `
 <div class="problem-box">
@@ -507,7 +549,7 @@ export function generateRmTTestProblem(): void {
     <ol>
       <li>State the null and alternative hypotheses.</li>
       <li>Compute the <em>t</em> statistic.</li>
-      <li>Determine the <em>p</em>-value and compute Cohen's <em>d</em>.</li>
+      <li>${esQ3}</li>
       <li>State your decision.</li>
       <li>Interpret the result in context.</li>
     </ol>
@@ -523,6 +565,15 @@ export function generateRmTTestProblem(): void {
        (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`
     : `There is insufficient evidence at α = ${alpha} to conclude that there is ${testPhrasePlain}
        (t(${df}) = ${tScore}, p ${pval.startsWith('<') ? pval : '= ' + pval}, d = ${cohenD}).`;
+
+  const esKey3Rm = esType === 'cohen_d'
+    ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>Cohen's d = M<sub>D</sub> / s<sub>D</sub> = ${meanDiff} / ${sdDiff} = ${cohenD}</p>`
+    : esType === 'r_squared'
+    ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>`
+    : `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
+       <p>${(1 - alpha) * 100 | 0}% CI for μ<sub>D</sub>: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
 
   const keyHTML = `
 <div class="key-box">
@@ -548,9 +599,7 @@ export function generateRmTTestProblem(): void {
 
   <div class="key-section">
     <strong>3. p-value &amp; Effect Size</strong>
-    <p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-    <p>Cohen's d = M<sub>D</sub> / s<sub>D</sub> = ${meanDiff} / ${sdDiff} = ${cohenD}</p>
-    <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>
+    ${esKey3Rm}
   </div>
 
   <div class="key-section">
@@ -561,7 +610,6 @@ export function generateRmTTestProblem(): void {
   <div class="key-section">
     <strong>5. Interpretation</strong>
     <p>${interp}</p>
-    <p>95% CI for μ<sub>D</sub>: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
   </div>
 </div>`;
 
