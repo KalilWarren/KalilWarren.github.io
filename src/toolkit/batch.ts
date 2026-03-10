@@ -478,6 +478,14 @@ function buildPromptAndKey(testType: TestType): {
         `Using α = ${d.alpha} (${d.tailLabel}), test whether the population mean ${d.testPhrasePlain}.`;
       const cohenFml = `(M − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
       const rSqStr   = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
+      const q3T = d.esType === 'r_squared' ? 'Determine the p-value and compute r².'
+                : d.esType === 'ci'        ? `Determine the p-value and compute the ${(1 - d.alpha) * 100 | 0}% confidence interval.`
+                :                           "Determine the p-value and compute Cohen's d.";
+      const esKeyRowsT: (string | number | null)[][] = d.esType === 'r_squared'
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ['r²:', rSqStr]]
+        : d.esType === 'ci'
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${(1 - d.alpha) * 100 | 0}% CI:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
+        : [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ["Cohen's d:", cohenFml]];
       return {
         problemRows: [
           ['STUDENT PROBLEM — One-Sample T-Test'],
@@ -486,7 +494,7 @@ function buildPromptAndKey(testType: TestType): {
           ['Questions'],
           ['1.', 'State the null and alternative hypotheses.'],
           ['2.', 'Compute the t statistic.'],
-          ['3.', "Determine the p-value and compute Cohen's d."],
+          ['3.', q3T],
           ['4.', 'State your decision.'],
           ['5.', 'Interpret the result in context.'],
           [], [],
@@ -503,14 +511,11 @@ function buildPromptAndKey(testType: TestType): {
           ['Critical value:', `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, ${d.tailLabel})`],
           [],
           ['3. p-value & Effect Size'],
-          ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
-          ["Cohen's d:", cohenFml],
-          ['r²:',        rSqStr],
+          ...esKeyRowsT,
           [],
           ['4. Decision'], ['', decStr],
           [],
           ['5. Interpretation'], [d.interp],
-          ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
         ],
         instructorKey: d.interp,
         decision:      decStr,
@@ -531,6 +536,14 @@ function buildPromptAndKey(testType: TestType): {
         `${d.group1}: n = ${d.n1}, M = ${d.m1} ${d.unit}, s = ${d.sd1} ${d.unit}; ` +
         `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, s = ${d.sd2} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether ${d.group1} and ${d.group2} ${d.testPhrasePlain}.`;
+      const q3Ind = d.esType === 'r_squared' ? 'Determine the p-value and compute r².'
+                  : d.esType === 'ci'        ? `Determine the p-value and compute the ${(1 - d.alpha) * 100 | 0}% confidence interval for μ₁ − μ₂.`
+                  :                           "Determine the p-value and compute Cohen's d.";
+      const esKeyRowsInd: (string | number | null)[][] = d.esType === 'r_squared'
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ['r²:', rSqStr]]
+        : d.esType === 'ci'
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${(1 - d.alpha) * 100 | 0}% CI for (μ₁ − μ₂):`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
+        : [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ["Cohen's d:", `${d.cohenD}`]];
       return {
         problemRows: [
           ['STUDENT PROBLEM — Independent-Samples T-Test'],
@@ -539,7 +552,7 @@ function buildPromptAndKey(testType: TestType): {
           ['Questions'],
           ['1.', 'State the null and alternative hypotheses.'],
           ['2.', 'Compute the test statistic.'],
-          ['3.', "Determine the p-value and compute Cohen's d."],
+          ['3.', q3Ind],
           ['4.', 'State your decision.'],
           ['5.', 'Interpret the result in context.'],
           [], [],
@@ -556,14 +569,11 @@ function buildPromptAndKey(testType: TestType): {
           ['Critical value:',  `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, ${d.tailLabel})`],
           [],
           ['3. p-value & Effect Size'],
-          ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
-          ["Cohen's d:", `${d.cohenD}`],
-          ['r²:',        rSqStr],
+          ...esKeyRowsInd,
           [],
           ['4. Decision'], ['', decStr],
           [],
           ['5. Interpretation'], [d.interp],
-          ['95% CI for (μ₁ − μ₂):', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
         ],
         instructorKey: d.interp,
         decision:      decStr,
@@ -583,6 +593,14 @@ function buildPromptAndKey(testType: TestType): {
         `The difference scores (${d.pre} − ${d.post}) have a mean of M_D = ${d.meanDiff} ${d.unit} ` +
         `and a standard deviation of s_D = ${d.sdDiff} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${d.testPhrasePlain}.`;
+      const q3Rm = d.esType === 'r_squared' ? 'Determine the p-value and compute r².'
+                 : d.esType === 'ci'        ? `Determine the p-value and compute the ${(1 - d.alpha) * 100 | 0}% confidence interval for μ_D.`
+                 :                           "Determine the p-value and compute Cohen's d.";
+      const esKeyRowsRm: (string | number | null)[][] = d.esType === 'r_squared'
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ['r²:', rSqStr]]
+        : d.esType === 'ci'
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${(1 - d.alpha) * 100 | 0}% CI for μ_D:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
+        : [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ["Cohen's d:", `M_D / s_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`]];
       return {
         problemRows: [
           ['STUDENT PROBLEM — Repeated-Measures T-Test'],
@@ -591,7 +609,7 @@ function buildPromptAndKey(testType: TestType): {
           ['Questions'],
           ['1.', 'State the null and alternative hypotheses.'],
           ['2.', 'Compute the t statistic.'],
-          ['3.', "Determine the p-value and compute Cohen's d."],
+          ['3.', q3Rm],
           ['4.', 'State your decision.'],
           ['5.', 'Interpret the result in context.'],
           [], [],
@@ -608,14 +626,11 @@ function buildPromptAndKey(testType: TestType): {
           ['Critical value:', `t_crit = ±${d.tCrit}  (df = ${d.df}, α = ${d.alpha}, ${d.tailLabel})`],
           [],
           ['3. p-value & Effect Size'],
-          ['p-value:',   `p ${pvalStr}  →  p ${d.pCompare}`],
-          ["Cohen's d:", `M_D / s_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`],
-          ['r²:',        rSqStr],
+          ...esKeyRowsRm,
           [],
           ['4. Decision'], ['', decStr],
           [],
           ['5. Interpretation'], [d.interp],
-          ['95% CI for μ_D:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
         ],
         instructorKey: d.interp,
         decision:      decStr,

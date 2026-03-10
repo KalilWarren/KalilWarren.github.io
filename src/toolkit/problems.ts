@@ -294,6 +294,7 @@ export function generateTTestProblem(): void {
 
   state.lastProblemData = {
     testType: 't_test',
+    esType,
     variable, pop, unit, mu0,
     sampleSD: sampleSD ?? '', n: n ?? '', xbar: xbar ?? '', se: se ?? '',
     tScore: tScore ?? '', tCrit: tCrit ?? '', df, cohenD: cohenD ?? '',
@@ -460,6 +461,7 @@ export function generateIndTTestProblem(): void {
 
   state.lastProblemData = {
     testType: 'independent_t_test',
+    esType,
     variable, group1, group2, unit,
     n1: n1 ?? '', m1: m1 ?? '', sd1: sd1 ?? '', ss1: ss1 ?? '', df1: df1 ?? '',
     n2: n2 ?? '', m2: m2 ?? '', sd2: sd2 ?? '', ss2: ss2 ?? '', df2: df2 ?? '',
@@ -615,6 +617,7 @@ export function generateRmTTestProblem(): void {
 
   state.lastProblemData = {
     testType: 'repeated_t_test',
+    esType,
     variable, pre, post, unit,
     n: n ?? '', sdDiff: sdDiff ?? '', meanDiff: meanDiff ?? '', se: se ?? '',
     tScore: tScore ?? '', tCrit: tCrit ?? '', df, cohenD: cohenD ?? '',

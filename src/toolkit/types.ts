@@ -131,6 +131,7 @@ export interface ZProblemData {
 
 export interface TProblemData {
   testType: 't_test';
+  esType: string;
   variable: string;
   pop: string;
   unit: string;
@@ -162,6 +163,7 @@ export interface TProblemData {
 
 export interface IndTProblemData {
   testType: 'independent_t_test';
+  esType: string;
   variable: string;
   group1: string;
   group2: string;
@@ -201,6 +203,7 @@ export interface IndTProblemData {
 
 export interface RmTProblemData {
   testType: 'repeated_t_test';
+  esType: string;
   variable: string;
   pre: string;
   post: string;
