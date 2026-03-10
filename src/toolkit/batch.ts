@@ -19,7 +19,7 @@ import {
 } from './problems.ts';
 import { gv } from './ui.ts';
 import { fPValue } from './stats.ts';
-import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, rScenario } from './scenarios.ts';
+import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, ANOVA_SCENARIOS, rScenario } from './scenarios.ts';
 import type {
   TestType,
   DatasetBatchItem,
@@ -138,9 +138,11 @@ function inp(id: string): HTMLInputElement {
   return document.getElementById(id) as HTMLInputElement;
 }
 
-function applyRandomScenario(testType: TestType): void {
+function applyRandomScenario(testType: TestType, varInputId?: string): void {
   const set = (id: string, val: string) => { inp(id).value = val; };
-  if (testType === 'independent_t_test') {
+  if (testType === 'anova' || testType === 'rma_anova') {
+    if (varInputId) set(varInputId, rScenario(ANOVA_SCENARIOS).variable);
+  } else if (testType === 'independent_t_test') {
     const s = rScenario(IND_T_SCENARIOS);
     set('pg-variable', s.variable); set('pg-unit', s.unit);
     set('pg-group1', s.group1);     set('pg-group2', s.group2);
@@ -1025,6 +1027,8 @@ export async function generateBatch(
   statusId:     string,
   dlBtnId:      string,
   sweepRowsId:  string,
+  randCfg?:       { checkboxId: string; varInputId: string },
+  difficultyCfg?: { diffSelectId: string; batchSelectId: string },
 ): Promise<void> {
   const overrides = parseSweepRows(sweepRowsId);
   const count = overrides.length > 0
@@ -1040,11 +1044,11 @@ export async function generateBatch(
   overrides.forEach(o => { savedOverrides[o.id] = inp(o.id).value; });
 
   /* Scenario randomization setup */
-  const randScenarioCbId = RAND_SCENARIO_CHECKBOX[testType];
+  const randScenarioCbId = randCfg?.checkboxId ?? RAND_SCENARIO_CHECKBOX[testType];
   const randScenario = randScenarioCbId
     ? (document.getElementById(randScenarioCbId) as HTMLInputElement | null)?.checked ?? false
     : false;
-  const scenarioIds = SCENARIO_INPUT_IDS[testType] ?? [];
+  const scenarioIds = randCfg ? [randCfg.varInputId] : (SCENARIO_INPUT_IDS[testType] ?? []);
   const savedScenario: Record<string, string> = {};
   if (randScenario) scenarioIds.forEach(id => { savedScenario[id] = inp(id).value; });
 
@@ -1060,6 +1064,16 @@ export async function generateBatch(
   const esCycle = batchEsVal === 'cycle';
   const ES_CYCLE_ORDER = ['cohen_d', 'r_squared', 'ci'] as const;
 
+  /* Difficulty batch control (ANOVA / RM-ANOVA only) */
+  const diffEl = difficultyCfg
+    ? document.getElementById(difficultyCfg.diffSelectId) as HTMLSelectElement | null
+    : null;
+  const savedDiff = diffEl?.value ?? null;
+  const batchDiffVal = difficultyCfg
+    ? (document.getElementById(difficultyCfg.batchSelectId) as HTMLSelectElement | null)?.value ?? 'random'
+    : null;
+  const DIFF_CYCLE_ORDER = ['easy', 'moderate', 'hard'] as const;
+
   state.lastBatch = null;
   dlBtn.style.display = 'none';
   statusEl.style.display = 'block';
@@ -1071,9 +1085,18 @@ export async function generateBatch(
   try {
     for (let i = 0; i < count; i++) {
       applySweepOverrides(overrides, i);
-      if (randScenario) applyRandomScenario(testType);
+      if (randScenario) applyRandomScenario(testType, randCfg?.varInputId);
       if (esEl && batchEsVal !== null) {
         esEl.value = esCycle ? ES_CYCLE_ORDER[i % 3] : batchEsVal;
+      }
+      if (diffEl && batchDiffVal) {
+        if (batchDiffVal === 'random') {
+          diffEl.value = DIFF_CYCLE_ORDER[Math.floor(Math.random() * 3)];
+        } else if (batchDiffVal === 'cycle') {
+          diffEl.value = DIFF_CYCLE_ORDER[i % 3];
+        } else {
+          diffEl.value = batchDiffVal;
+        }
       }
       statusEl.textContent = `Generating problem ${i + 1} of ${count}…`;
       await new Promise<void>(r => setTimeout(r, 0));
@@ -1147,6 +1170,8 @@ export async function generateBatch(
     if (randScenario) scenarioIds.forEach(id => { inp(id).value = savedScenario[id]; });
     /* Restore effect size type */
     if (esEl && savedEsType !== null) esEl.value = savedEsType;
+    /* Restore difficulty */
+    if (diffEl && savedDiff !== null) diffEl.value = savedDiff;
     if (genBtn) genBtn.disabled = false;
   }
 }

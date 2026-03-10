@@ -44,7 +44,7 @@ import {
 /* ── Set current year ── */
 import '../year.ts';
 import { initTooltips } from './tooltips.ts';
-import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, rScenario } from './scenarios.ts';
+import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, ANOVA_SCENARIOS, rScenario } from './scenarios.ts';
 
 /* ── Pyodide boot ── */
 window.addEventListener('DOMContentLoaded', initPyodide);
@@ -159,6 +159,24 @@ window.addEventListener('DOMContentLoaded', () => {
       (document.getElementById('reg-pg-population') as HTMLInputElement).value = s.population;
     });
 
+  /* 🎲 Random scenario — One-Way ANOVA problem generator */
+  document.getElementById('ap-rand-scenario-btn')
+    ?.addEventListener('click', () => {
+      (document.getElementById('ap-variable') as HTMLInputElement).value = rScenario(ANOVA_SCENARIOS).variable;
+    });
+
+  /* 🎲 Random scenario — Two-Way ANOVA problem generator */
+  document.getElementById('ap2-rand-scenario-btn')
+    ?.addEventListener('click', () => {
+      (document.getElementById('ap2-variable') as HTMLInputElement).value = rScenario(ANOVA_SCENARIOS).variable;
+    });
+
+  /* 🎲 Random scenario — RM ANOVA problem generator */
+  document.getElementById('rma-pg-rand-scenario-btn')
+    ?.addEventListener('click', () => {
+      (document.getElementById('rma-pg-variable') as HTMLInputElement).value = rScenario(ANOVA_SCENARIOS).variable;
+    });
+
   /* Instructor key toggle */
   document.getElementById('pg-show-key')
     ?.addEventListener('change', toggleInstructorKey);
@@ -211,7 +229,9 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('rma-pg-batch-gen-btn')
     ?.addEventListener('click', () =>
       generateBatch('rma_anova', 'rma-pg-batch-count',
-                    'rma-pg-batch-status', 'rma-pg-batch-dl-btn', 'rma-pg-sweep-rows'));
+                    'rma-pg-batch-status', 'rma-pg-batch-dl-btn', 'rma-pg-sweep-rows',
+                    { checkboxId: 'rma-pg-batch-rand-scenario', varInputId: 'rma-pg-variable' },
+                    { diffSelectId: 'rma-pg-difficulty', batchSelectId: 'rma-pg-batch-difficulty-type' }));
   document.getElementById('rma-pg-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
   document.getElementById('rma-pg-sweep-add-btn')
@@ -262,7 +282,9 @@ window.addEventListener('DOMContentLoaded', () => {
   /* One-Way ANOVA */
   document.getElementById('ap-batch-gen-btn')
     ?.addEventListener('click', () =>
-      generateBatch('anova', 'ap-batch-count', 'ap-batch-status', 'ap-batch-dl-btn', 'ap-sweep-rows'));
+      generateBatch('anova', 'ap-batch-count', 'ap-batch-status', 'ap-batch-dl-btn', 'ap-sweep-rows',
+                    { checkboxId: 'ap-batch-rand-scenario', varInputId: 'ap-variable' },
+                    { diffSelectId: 'ap-difficulty', batchSelectId: 'ap-batch-difficulty-type' }));
   document.getElementById('ap-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
   document.getElementById('ap-sweep-add-btn')
@@ -271,7 +293,9 @@ window.addEventListener('DOMContentLoaded', () => {
   /* Two-Way ANOVA */
   document.getElementById('ap2-batch-gen-btn')
     ?.addEventListener('click', () =>
-      generateBatch('anova', 'ap2-batch-count', 'ap2-batch-status', 'ap2-batch-dl-btn', 'ap2-sweep-rows'));
+      generateBatch('anova', 'ap2-batch-count', 'ap2-batch-status', 'ap2-batch-dl-btn', 'ap2-sweep-rows',
+                    { checkboxId: 'ap2-batch-rand-scenario', varInputId: 'ap2-variable' },
+                    { diffSelectId: 'ap2-difficulty', batchSelectId: 'ap2-batch-difficulty-type' }));
   document.getElementById('ap2-batch-dl-btn')
     ?.addEventListener('click', downloadBatchWorkbook);
   document.getElementById('ap2-sweep-add-btn')

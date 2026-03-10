@@ -1255,7 +1255,8 @@
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="ap-rand-scenario-btn" style="white-space:nowrap;">🎲 Random Scenario</button>
         <button class="btn-generate" id="generate-anova-problem-btn" style="margin-top:0; flex:1;">
           Generate ANOVA Table Problem
         </button>
@@ -1280,6 +1281,22 @@
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
         <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.6rem;">
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; cursor:pointer; white-space:nowrap;">
+            <input type="checkbox" id="ap-batch-rand-scenario" style="margin:0;" />
+            🎲 Randomize scenario per problem
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; white-space:nowrap;">
+            Difficulty:
+            <select id="ap-batch-difficulty-type" style="font-size:0.85rem;">
+              <option value="random" selected>Random</option>
+              <option value="cycle">Cycle (Easy → Moderate → Hard)</option>
+              <option value="easy">Easy</option>
+              <option value="moderate">Moderate</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+        </div>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
             <label for="ap-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
@@ -1337,7 +1354,8 @@
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="ap2-rand-scenario-btn" style="white-space:nowrap;">🎲 Random Scenario</button>
         <button class="btn-generate" id="generate-anova-2way-problem-btn" style="margin-top:0; flex:1;">
           Generate Two-Way ANOVA Table Problem
         </button>
@@ -1362,6 +1380,22 @@
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
         <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.6rem;">
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; cursor:pointer; white-space:nowrap;">
+            <input type="checkbox" id="ap2-batch-rand-scenario" style="margin:0;" />
+            🎲 Randomize scenario per problem
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; white-space:nowrap;">
+            Difficulty:
+            <select id="ap2-batch-difficulty-type" style="font-size:0.85rem;">
+              <option value="random" selected>Random</option>
+              <option value="cycle">Cycle (Easy → Moderate → Hard)</option>
+              <option value="easy">Easy</option>
+              <option value="moderate">Moderate</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+        </div>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
             <label for="ap2-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
@@ -1419,7 +1453,8 @@
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.75rem; flex-wrap:wrap;">
+        <button type="button" class="btn-secondary" id="rma-pg-rand-scenario-btn" style="white-space:nowrap;">🎲 Random Scenario</button>
         <button class="btn-generate" id="generate-rma-problem-btn" style="margin-top:0; flex:1;">
           Generate RM ANOVA Table Problem
         </button>
@@ -1445,6 +1480,22 @@
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
         <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.6rem;">
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; cursor:pointer; white-space:nowrap;">
+            <input type="checkbox" id="rma-pg-batch-rand-scenario" style="margin:0;" />
+            🎲 Randomize scenario per problem
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; white-space:nowrap;">
+            Difficulty:
+            <select id="rma-pg-batch-difficulty-type" style="font-size:0.85rem;">
+              <option value="random" selected>Random</option>
+              <option value="cycle">Cycle (Easy → Moderate → Hard)</option>
+              <option value="easy">Easy</option>
+              <option value="moderate">Moderate</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+        </div>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
             <label for="rma-pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
