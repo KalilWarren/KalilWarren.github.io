@@ -1033,13 +1033,16 @@ export async function generateBatch(
   const savedScenario: Record<string, string> = {};
   if (randScenario) scenarioIds.forEach(id => { savedScenario[id] = inp(id).value; });
 
-  /* Effect size cycle setup (T / Ind-T / Rep-T only) */
+  /* Effect size batch control (T / Ind-T / Rep-T only) */
   const ES_TESTS: TestType[] = ['t_test', 'independent_t_test', 'repeated_t_test'];
   const esEl = ES_TESTS.includes(testType)
     ? document.getElementById('pg-es-type') as HTMLSelectElement | null
     : null;
   const savedEsType = esEl?.value ?? null;
-  const esCycle = esEl?.value === 'cycle';
+  const batchEsVal = ES_TESTS.includes(testType)
+    ? (document.getElementById('pg-batch-es-type') as HTMLSelectElement | null)?.value ?? 'random'
+    : null;
+  const esCycle = batchEsVal === 'cycle';
   const ES_CYCLE_ORDER = ['cohen_d', 'r_squared', 'ci'] as const;
 
   state.lastBatch = null;
@@ -1054,7 +1057,9 @@ export async function generateBatch(
     for (let i = 0; i < count; i++) {
       applySweepOverrides(overrides, i);
       if (randScenario) applyRandomScenario(testType);
-      if (esEl && esCycle) esEl.value = ES_CYCLE_ORDER[i % 3];
+      if (esEl && batchEsVal !== null) {
+        esEl.value = esCycle ? ES_CYCLE_ORDER[i % 3] : batchEsVal;
+      }
       statusEl.textContent = `Generating problem ${i + 1} of ${count}…`;
       await new Promise<void>(r => setTimeout(r, 0));
 
