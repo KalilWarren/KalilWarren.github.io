@@ -37,6 +37,7 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 │   │   ├── stats.ts        — Browser-side p-value math
 │   │   ├── problems.ts     — Student problem generator and Excel export
 │   │   ├── batch.ts        — Batch dataset and problem generation with parameter sweep
+│   │   ├── scenarios.ts    — Shared scenario banks (50 entries each) for all problem generators
 │   │   └── globals.d.ts    — Ambient type declarations for Pyodide and SheetJS
 │   └── student/
 │       ├── index.ts        — Entry point; unified test selector and streak logic
@@ -323,7 +324,13 @@ There are two generator formats:
 | Repeated-Measures t-Test | Narrative hypothesis-test problem |
 | Pearson Correlation | Narrative hypothesis-test problem |
 
+Each narrative generator includes a **🎲 Random Scenario** button that populates the context fields (variable name, population, units, group labels, etc.) with a randomly selected entry from a bank of 50 realistic research scenarios. This allows quick problem variety without manual entry.
+
+For t-test narrative problems, the **Effect Size Question** field controls which effect size measure the student is asked to compute: Cohen's *d*, *r*², or a confidence interval. Selecting *Random* picks one of the three on each generation.
+
 **ANOVA Table Completion Problems** — for designs that produce a summary table. The generator presents a partially blanked ANOVA or regression table; students must fill in the missing cells. Difficulty controls *only* which cells are hidden — the underlying data are identical across levels.
+
+Each ANOVA generator also includes a **🎲 Random Scenario** button that fills the outcome variable field with a randomly selected entry from a bank of 50 realistic outcome variables.
 
 | Test | Difficulty Levels | Cells visible at each level |
 |---|---|---|
@@ -353,6 +360,36 @@ There are two batch modes:
 **Student Problem Batch** — generates N complete student problems with instructor keys. Each problem is written to its own sheet (raw dataset + optional summary table + full problem text + key). An `Instructor_Key` sheet summarizes the decision, effect size, and interpretation for every problem.
 
 Both modes support up to 20 problems per batch (no sweep) or up to 50 when a parameter sweep is active.
+
+#### Per-Problem Scenario Randomization
+
+Every Student Problem Batch panel includes a **🎲 Randomize scenario per problem** checkbox. When enabled, each problem in the batch is assigned a different randomly selected scenario from the appropriate bank (50 entries per test type), so the exported workbook contains problems with varied research contexts rather than repeating the same variable names throughout.
+
+#### Per-Problem Effect Size Control (T-Test Narrative Problems)
+
+The T-test, Independent-Samples t-Test, and Repeated-Measures t-Test batch panels include an **Effect size** select alongside the randomize-scenario checkbox. Options:
+
+| Option | Behavior |
+|---|---|
+| Random | Each problem independently draws a random effect size type (weighted: 60% Cohen's *d*, 25% *r*², 15% CI) |
+| Cycle (d → r² → CI) | Rotates through Cohen's *d*, *r*², and CI in order across problems |
+| Cohen's *d* | All problems ask for Cohen's *d* |
+| *r*² | All problems ask for *r*² |
+| CI | All problems ask for a confidence interval |
+
+The question text and instructor key in the exported Excel file update to match the chosen effect size type for each problem.
+
+#### Per-Problem Difficulty Control (ANOVA Table Completion Problems)
+
+The One-Way ANOVA, Two-Way ANOVA, and RM ANOVA batch panels include a **Difficulty** select alongside the randomize-scenario checkbox. Options:
+
+| Option | Behavior |
+|---|---|
+| Random | Each problem is randomly assigned Easy, Moderate, or Hard (equal probability) |
+| Cycle (Easy → Moderate → Hard) | Rotates through Easy, Moderate, Hard in order across problems |
+| Easy / Moderate / Hard | All problems use the specified difficulty level |
+
+Original difficulty settings are restored after the batch completes.
 
 #### Parameter Sweep
 
