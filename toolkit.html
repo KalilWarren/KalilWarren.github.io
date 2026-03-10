@@ -1147,6 +1147,7 @@
           <label>Effect Size Question<button type="button" class="tip-icon" data-tip="Choose which effect size students are asked to compute. 'Random' matches the Student Module's rotating format." aria-label="More info">ⓘ</button></label>
           <select id="pg-es-type">
             <option value="random" selected>Random (Cohen's d / r² / CI)</option>
+            <option value="cycle">Cycle (d → r² → CI per problem)</option>
             <option value="cohen_d">Cohen's d</option>
             <option value="r_squared">r-squared</option>
             <option value="ci">Confidence Interval</option>
@@ -1182,6 +1183,10 @@
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
         <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; margin-bottom:0.6rem; cursor:pointer;">
+          <input type="checkbox" id="pg-batch-rand-scenario" style="margin:0;" />
+          🎲 Randomize scenario per problem
+        </label>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
             <label for="pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
@@ -1517,6 +1522,10 @@
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
         <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; margin-bottom:0.6rem; cursor:pointer;">
+          <input type="checkbox" id="pear-pg-batch-rand-scenario" style="margin:0;" />
+          🎲 Randomize scenario per problem
+        </label>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
             <label for="pear-pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>
@@ -1615,6 +1624,10 @@
       <!-- ── Batch Problem Generation ── -->
       <div style="margin-top:1.5rem; border-top:1px solid #ddd; padding-top:1rem;">
         <p class="section-label" style="margin-bottom:0.75rem;">Batch Problem Generation<button type="button" class="tip-icon" data-tip="Creates a set of multiple datasets/problems in one run for worksheets, labs, or multiple exam versions." aria-label="More info">ⓘ</button></p>
+        <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; color:#555; margin-bottom:0.6rem; cursor:pointer;">
+          <input type="checkbox" id="reg-pg-batch-rand-scenario" style="margin:0;" />
+          🎲 Randomize scenario per problem
+        </label>
         <div style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
           <div class="form-group" style="margin:0; min-width:160px;">
             <label for="reg-pg-batch-count">Number of problems<button type="button" class="tip-icon" data-tip="Number of problems to generate in this batch. Each problem uses the same settings but different random draws." aria-label="More info">ⓘ</button></label>

@@ -19,6 +19,7 @@ import {
 } from './problems.ts';
 import { gv } from './ui.ts';
 import { fPValue } from './stats.ts';
+import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, rScenario } from './scenarios.ts';
 import type {
   TestType,
   DatasetBatchItem,
@@ -111,10 +112,55 @@ const SWEEPABLE_PARAMS: Record<TestType, Array<{ label: string; id: string }>> =
   ],
 };
 
+/* ── Scenario randomization maps ── */
+
+const RAND_SCENARIO_CHECKBOX: Partial<Record<TestType, string>> = {
+  z_test:             'pg-batch-rand-scenario',
+  t_test:             'pg-batch-rand-scenario',
+  independent_t_test: 'pg-batch-rand-scenario',
+  repeated_t_test:    'pg-batch-rand-scenario',
+  pearson:            'pear-pg-batch-rand-scenario',
+  regression:         'reg-pg-batch-rand-scenario',
+};
+
+const SCENARIO_INPUT_IDS: Partial<Record<TestType, string[]>> = {
+  z_test:             ['pg-variable', 'pg-unit', 'pg-population'],
+  t_test:             ['pg-variable', 'pg-unit', 'pg-population'],
+  independent_t_test: ['pg-variable', 'pg-unit', 'pg-group1', 'pg-group2'],
+  repeated_t_test:    ['pg-variable', 'pg-unit', 'pg-pre', 'pg-post'],
+  pearson:            ['pear-pg-varx', 'pear-pg-vary', 'pear-pg-population'],
+  regression:         ['reg-pg-varx', 'reg-pg-vary', 'reg-pg-population'],
+};
+
 /* ── Helpers ── */
 
 function inp(id: string): HTMLInputElement {
   return document.getElementById(id) as HTMLInputElement;
+}
+
+function applyRandomScenario(testType: TestType): void {
+  const set = (id: string, val: string) => { inp(id).value = val; };
+  if (testType === 'independent_t_test') {
+    const s = rScenario(IND_T_SCENARIOS);
+    set('pg-variable', s.variable); set('pg-unit', s.unit);
+    set('pg-group1', s.group1);     set('pg-group2', s.group2);
+  } else if (testType === 'repeated_t_test') {
+    const s = rScenario(REP_T_SCENARIOS);
+    set('pg-variable', s.variable); set('pg-unit', s.unit);
+    set('pg-pre', s.pre);           set('pg-post', s.post);
+  } else if (testType === 'pearson') {
+    const s = rScenario(PEARSON_REG_SCENARIOS);
+    set('pear-pg-varx', s.variable_x); set('pear-pg-vary', s.variable_y);
+    set('pear-pg-population', s.population);
+  } else if (testType === 'regression') {
+    const s = rScenario(PEARSON_REG_SCENARIOS);
+    set('reg-pg-varx', s.variable_x); set('reg-pg-vary', s.variable_y);
+    set('reg-pg-population', s.population);
+  } else {
+    const s = rScenario(Z_T_SCENARIOS);
+    set('pg-variable', s.variable); set('pg-unit', s.unit);
+    set('pg-population', s.population);
+  }
 }
 
 /** Temporarily clear seed inputs so Python uses None (random), then restore. */
@@ -978,6 +1024,24 @@ export async function generateBatch(
   const savedOverrides: Record<string, string> = {};
   overrides.forEach(o => { savedOverrides[o.id] = inp(o.id).value; });
 
+  /* Scenario randomization setup */
+  const randScenarioCbId = RAND_SCENARIO_CHECKBOX[testType];
+  const randScenario = randScenarioCbId
+    ? (document.getElementById(randScenarioCbId) as HTMLInputElement | null)?.checked ?? false
+    : false;
+  const scenarioIds = SCENARIO_INPUT_IDS[testType] ?? [];
+  const savedScenario: Record<string, string> = {};
+  if (randScenario) scenarioIds.forEach(id => { savedScenario[id] = inp(id).value; });
+
+  /* Effect size cycle setup (T / Ind-T / Rep-T only) */
+  const ES_TESTS: TestType[] = ['t_test', 'independent_t_test', 'repeated_t_test'];
+  const esEl = ES_TESTS.includes(testType)
+    ? document.getElementById('pg-es-type') as HTMLSelectElement | null
+    : null;
+  const savedEsType = esEl?.value ?? null;
+  const esCycle = esEl?.value === 'cycle';
+  const ES_CYCLE_ORDER = ['cohen_d', 'r_squared', 'ci'] as const;
+
   state.lastBatch = null;
   dlBtn.style.display = 'none';
   statusEl.style.display = 'block';
@@ -989,6 +1053,8 @@ export async function generateBatch(
   try {
     for (let i = 0; i < count; i++) {
       applySweepOverrides(overrides, i);
+      if (randScenario) applyRandomScenario(testType);
+      if (esEl && esCycle) esEl.value = ES_CYCLE_ORDER[i % 3];
       statusEl.textContent = `Generating problem ${i + 1} of ${count}…`;
       await new Promise<void>(r => setTimeout(r, 0));
 
@@ -1057,6 +1123,10 @@ export async function generateBatch(
   } finally {
     /* Restore original param values */
     overrides.forEach(o => { inp(o.id).value = savedOverrides[o.id]; });
+    /* Restore scenario fields */
+    if (randScenario) scenarioIds.forEach(id => { inp(id).value = savedScenario[id]; });
+    /* Restore effect size type */
+    if (esEl && savedEsType !== null) esEl.value = savedEsType;
     if (genBtn) genBtn.disabled = false;
   }
 }
