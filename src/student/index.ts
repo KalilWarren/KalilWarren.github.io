@@ -133,6 +133,7 @@ const selRma      = document.getElementById('sel-rmatest')   as HTMLInputElement
 const selPear     = document.getElementById('sel-peartest')  as HTMLInputElement;
 const selReg      = document.getElementById('sel-regtest')   as HTMLInputElement;
 const noSelWarn   = document.getElementById('no-sel-warning') as HTMLElement;
+const placeholder = document.getElementById('sp-placeholder') as HTMLElement;
 
 /* ── Card header ── */
 
@@ -220,6 +221,7 @@ function newProblem(): void {
     return;
   }
   noSelWarn.style.display = 'none';
+  placeholder.style.display = 'none';
 
   activeType = type;
   setHeader(type);
@@ -320,5 +322,3 @@ checkBtn.addEventListener('click', checkAnswers);
     (!selZ.checked && !selT.checked && !selInd.checked && !selRep.checked && !selAnova.checked && !selTwa.checked && !selRma.checked && !selPear.checked && !selReg.checked) ? '' : 'none';
 }));
 
-// Auto-generate on load
-newProblem();

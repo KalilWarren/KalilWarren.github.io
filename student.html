@@ -398,39 +398,39 @@
     <div class="sp-type-selector">
       <span class="sp-selector-label">Practice with:</span>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-ztest" checked />
+        <input type="checkbox" id="sel-ztest" />
         Z-Test <span class="sp-sel-sub">(known σ)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-ttest" checked />
+        <input type="checkbox" id="sel-ttest" />
         t-Test <span class="sp-sel-sub">(unknown σ)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-indtest" checked />
+        <input type="checkbox" id="sel-indtest" />
         Ind. t-Test <span class="sp-sel-sub">(two groups)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-reptest" checked />
+        <input type="checkbox" id="sel-reptest" />
         Rep. t-Test <span class="sp-sel-sub">(paired samples)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-anovatest" checked />
+        <input type="checkbox" id="sel-anovatest" />
         One-Way Independent ANOVA
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-twatest" checked />
+        <input type="checkbox" id="sel-twatest" />
         Two-Way Independent ANOVA <span class="sp-sel-sub">(2 factors)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-rmatest" checked />
+        <input type="checkbox" id="sel-rmatest" />
         One-Way RM ANOVA <span class="sp-sel-sub">(repeated measures)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-peartest" checked />
+        <input type="checkbox" id="sel-peartest" />
         Pearson Correlation <span class="sp-sel-sub">(r test)</span>
       </label>
       <label class="sp-type-pill">
-        <input type="checkbox" id="sel-regtest" checked />
+        <input type="checkbox" id="sel-regtest" />
         Linear Regression <span class="sp-sel-sub">(1 predictor)</span>
       </label>
       <span class="sp-no-sel-warning" id="no-sel-warning">Select at least one test type.</span>
@@ -1303,6 +1303,11 @@
         </details>
 
       </div><!-- end lrp-section -->
+
+      <!-- ══ Placeholder (shown until first problem is generated) ══ -->
+      <div id="sp-placeholder" style="padding:2rem 1rem; text-align:center; color:#666; font-size:0.95rem;">
+        Select one or more test types above, then click <strong>New Problem</strong> to begin.
+      </div>
 
       <!-- ══ Shared button row ══ -->
       <div class="sp-btn-row">
