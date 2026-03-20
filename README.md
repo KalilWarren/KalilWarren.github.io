@@ -38,6 +38,7 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 │   │   ├── problems.ts     — Student problem generator and Excel export
 │   │   ├── batch.ts        — Batch dataset and problem generation with parameter sweep
 │   │   ├── scenarios.ts    — Shared scenario banks (50 entries each) for all problem generators
+│   │   ├── tooltips.ts     — Centralized tooltip dictionary and initTooltips()
 │   │   └── globals.d.ts    — Ambient type declarations for Pyodide and SheetJS
 │   └── student/
 │       ├── index.ts        — Entry point; unified test selector and streak logic
