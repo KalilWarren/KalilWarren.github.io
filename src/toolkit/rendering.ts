@@ -19,9 +19,13 @@ export function recordsTable(
     h += `<th>${k}${hdrTip}</th>`;
   });
   h += `</tr></thead><tbody>`;
+  const hasWithin = records.some(r => (r as Record<string, unknown>)['Source'] === 'Within Treatment');
   records.forEach(row => {
+    const src        = (row as Record<string, unknown>)['Source'];
     const isDecision = (row as StatRecord)['Statistic'] === 'Decision';
-    h += `<tr${isDecision ? ' class="row-decision"' : ''}>`;
+    const isSub      = hasWithin && (src === 'Between Subjects' || src === 'Error');
+    const rowClass   = isDecision ? 'row-decision' : isSub ? 'row-sub' : '';
+    h += `<tr${rowClass ? ` class="${rowClass}"` : ''}>`;
     keys.forEach(k => {
       const raw = (row as Record<string, unknown>)[k];
       const v   = fmt(raw);

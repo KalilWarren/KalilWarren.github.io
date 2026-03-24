@@ -344,14 +344,21 @@ function buildTableHtml(p: RmaProblem): string {
         ${cell('F',    t.F)}
       </tr>
       <tr>
-        <td style="${tdStyle}text-align:left;">Between Subjects</td>
+        <td style="${tdStyle}text-align:left;">Within Treatment</td>
+        <td style="${tdStyle}">${r2(t.SSBS + t.SSE).toFixed(2)}</td>
+        <td style="${tdStyle}">${t.DFBS + t.DFE}</td>
+        ${dashCell()}
+        ${dashCell()}
+      </tr>
+      <tr>
+        <td style="${tdStyle}text-align:left;padding-left:1.5rem;">Between Subjects</td>
         ${cell('SSBS', t.SSBS)}
         ${cell('DFBS', t.DFBS, true)}
         ${cell('MSBS', t.MSBS)}
         ${dashCell()}
       </tr>
       <tr>
-        <td style="${tdStyle}text-align:left;">Error</td>
+        <td style="${tdStyle}text-align:left;padding-left:1.5rem;">Error</td>
         ${cell('SSE', t.SSE)}
         ${cell('DFE', t.DFE, true)}
         ${cell('MSE', t.MSE)}
@@ -565,14 +572,21 @@ function renderSolution(p: RmaProblem): void {
               <td style="${tdS}">${r2(t.F).toFixed(2)}</td>
             </tr>
             <tr>
-              <td style="${tdL}">Between Subjects</td>
+              <td style="${tdL}">Within Treatment</td>
+              <td style="${tdS}">${r2(t.SSBS + t.SSE).toFixed(2)}</td>
+              <td style="${tdS}">${t.DFBS + t.DFE}</td>
+              ${dash}
+              ${dash}
+            </tr>
+            <tr>
+              <td style="${tdL}padding-left:1.5rem;">Between Subjects</td>
               <td style="${tdS}">${r2(t.SSBS).toFixed(2)}</td>
               <td style="${tdS}">${t.DFBS}</td>
               <td style="${tdS}">${r2(t.MSBS).toFixed(2)}</td>
               ${dash}
             </tr>
             <tr>
-              <td style="${tdL}">Error</td>
+              <td style="${tdL}padding-left:1.5rem;">Error</td>
               <td style="${tdS}">${r2(t.SSE).toFixed(2)}</td>
               <td style="${tdS}">${t.DFE}</td>
               <td style="${tdS}">${r2(t.MSE).toFixed(2)}</td>

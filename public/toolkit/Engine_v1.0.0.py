@@ -1039,13 +1039,16 @@ def generate_one_way_repeated_measures_anova(
         decision = "Fail to Reject Null"
 
     # STEP 4: ANOVA table
+    ss_within = ss_between_subjects + ss_error
+    df_within = df_between_subjects + df_error
+
     anova_table = pd.DataFrame({
-        "Source":  ["Between Treatments", "Between Subjects", "Error", "Total"],
-        "SS":      [ss_between_treatments, ss_between_subjects, ss_error, ss_total],
-        "df":      [df_between_treatments, df_between_subjects, df_error, df_total],
-        "MS":      [ms_between_treatments, ms_between_subjects, ms_error, np.nan],
-        "F":       [F_value, np.nan, np.nan, np.nan],
-        "p-value": [p_value, np.nan, np.nan, np.nan]
+        "Source":  ["Between Treatments", "Within Treatment", "Between Subjects", "Error", "Total"],
+        "SS":      [ss_between_treatments, ss_within, ss_between_subjects, ss_error, ss_total],
+        "df":      [df_between_treatments, df_within, df_between_subjects, df_error, df_total],
+        "MS":      [ms_between_treatments, np.nan, ms_between_subjects, ms_error, np.nan],
+        "F":       [F_value, np.nan, np.nan, np.nan, np.nan],
+        "p-value": [p_value, np.nan, np.nan, np.nan, np.nan]
     }).round(3)
 
     return wide_df, anova_table, decision
