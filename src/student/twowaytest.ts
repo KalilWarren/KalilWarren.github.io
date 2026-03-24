@@ -332,7 +332,7 @@ export function generateProblem(): TwoWayProblem {
     return {
       aLevels, bLevels, nPerCell, N, alpha, difficulty,
       table: { SSA, SSB, SSAB, SSE, SST, DFA, DFB, DFAB, DFE, DFT, MSA, MSB, MSAB, MSE, FA, FB, FAB },
-      eta2: { A: r2(SSA / (SSA + SSE)), B: r2(SSB / (SSB + SSE)), AB: r2(SSAB / (SSAB + SSE)) },
+      eta2: { A: r2(SSA / (SST - SSB - SSAB)), B: r2(SSB / (SST - SSA - SSAB)), AB: r2(SSAB / (SST - SSA - SSB)) },
       Fcrit: { A: FcritA, B: FcritB, AB: FcritAB },
       decisions: {
         A:  FA  >= FcritA  ? 'reject' : 'fail',
@@ -632,9 +632,9 @@ export function renderFeedback(p: TwoWayProblem, grade: GradeResult): void {
   setHtml('twp-fb-dec-b',  fbHtml(grade.decB,  `F<sub>B</sub> = ${r2(t.FB).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.B.toFixed(3)}. Reject if F ≥ F<sub>crit</sub>.`));
   setHtml('twp-fb-dec-ab', fbHtml(grade.decAB, `F<sub>A×B</sub> = ${r2(t.FAB).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.AB.toFixed(3)}. Reject if F ≥ F<sub>crit</sub>.`));
 
-  setHtml('twp-fb-eta2-a',  fbHtml(grade.eta2A,  `η²<sub>A</sub> = SS<sub>A</sub> / (SS<sub>A</sub> + SS<sub>within</sub>) = ${r2(t.SSA).toFixed(2)} / (${r2(t.SSA).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.A.toFixed(2)}`));
-  setHtml('twp-fb-eta2-b',  fbHtml(grade.eta2B,  `η²<sub>B</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>within</sub>) = ${r2(t.SSB).toFixed(2)} / (${r2(t.SSB).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.B.toFixed(2)}`));
-  setHtml('twp-fb-eta2-ab', fbHtml(grade.eta2AB, `η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>A×B</sub> + SS<sub>within</sub>) = ${r2(t.SSAB).toFixed(2)} / (${r2(t.SSAB).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.AB.toFixed(2)}`));
+  setHtml('twp-fb-eta2-a',  fbHtml(grade.eta2A,  `η²<sub>A</sub> = SS<sub>A</sub> / (SS<sub>Total</sub> − SS<sub>B</sub> − SS<sub>A×B</sub>) = ${r2(t.SSA).toFixed(2)} / (${r2(t.SST).toFixed(2)} − ${r2(t.SSB).toFixed(2)} − ${r2(t.SSAB).toFixed(2)}) = ${p.eta2.A.toFixed(2)}`));
+  setHtml('twp-fb-eta2-b',  fbHtml(grade.eta2B,  `η²<sub>B</sub> = SS<sub>B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>A×B</sub>) = ${r2(t.SSB).toFixed(2)} / (${r2(t.SST).toFixed(2)} − ${r2(t.SSA).toFixed(2)} − ${r2(t.SSAB).toFixed(2)}) = ${p.eta2.B.toFixed(2)}`));
+  setHtml('twp-fb-eta2-ab', fbHtml(grade.eta2AB, `η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>B</sub>) = ${r2(t.SSAB).toFixed(2)} / (${r2(t.SST).toFixed(2)} − ${r2(t.SSA).toFixed(2)} − ${r2(t.SSB).toFixed(2)}) = ${p.eta2.AB.toFixed(2)}`));
 
   const banner = document.getElementById('twp-fb-banner');
   if (banner) {
@@ -769,9 +769,9 @@ function renderSolution(p: TwoWayProblem): void {
       <tr><td>A × B: F = ${r2(t.FAB).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.AB.toFixed(3)}</td><td><strong>${decStr(p.decisions.AB)}</strong></td></tr>
 
       <tr><th colspan="2">Effect Sizes (η²)</th></tr>
-      <tr><td>η²<sub>A</sub> = SS<sub>A</sub> / (SS<sub>A</sub> + SS<sub>within</sub>)</td><td>${r2(t.SSA).toFixed(2)} / (${r2(t.SSA).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.A.toFixed(2)}</td></tr>
-      <tr><td>η²<sub>B</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>within</sub>)</td><td>${r2(t.SSB).toFixed(2)} / (${r2(t.SSB).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.B.toFixed(2)}</td></tr>
-      <tr><td>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>A×B</sub> + SS<sub>within</sub>)</td><td>${r2(t.SSAB).toFixed(2)} / (${r2(t.SSAB).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.AB.toFixed(2)}</td></tr>
+      <tr><td>η²<sub>A</sub> = SS<sub>A</sub> / (SS<sub>Total</sub> − SS<sub>B</sub> − SS<sub>A×B</sub>)</td><td>${r2(t.SSA).toFixed(2)} / (${r2(t.SST).toFixed(2)} − ${r2(t.SSB).toFixed(2)} − ${r2(t.SSAB).toFixed(2)}) = ${p.eta2.A.toFixed(2)}</td></tr>
+      <tr><td>η²<sub>B</sub> = SS<sub>B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>A×B</sub>)</td><td>${r2(t.SSB).toFixed(2)} / (${r2(t.SST).toFixed(2)} − ${r2(t.SSA).toFixed(2)} − ${r2(t.SSAB).toFixed(2)}) = ${p.eta2.B.toFixed(2)}</td></tr>
+      <tr><td>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>B</sub>)</td><td>${r2(t.SSAB).toFixed(2)} / (${r2(t.SST).toFixed(2)} − ${r2(t.SSA).toFixed(2)} − ${r2(t.SSB).toFixed(2)}) = ${p.eta2.AB.toFixed(2)}</td></tr>
 
       <tr><th colspan="2">Interpretation</th></tr>
       <tr><td>Factor A</td><td>${interp('A')}</td></tr>

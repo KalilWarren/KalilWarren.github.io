@@ -1266,9 +1266,9 @@ function buildFullANOVATableTwoWay(table: TableRow[], alpha: number): TwoWayAnov
     ssE, dfE, msE,
     ssTotal, dfTotal,
     alpha,
-    etaA:  ssA  / (ssA  + ssE),
-    etaB:  ssB  / (ssB  + ssE),
-    etaAB: ssAB / (ssAB + ssE),
+    etaA:  ssA  / (ssTotal - ssB   - ssAB),
+    etaB:  ssB  / (ssTotal - ssA   - ssAB),
+    etaAB: ssAB / (ssTotal - ssA   - ssB),
   };
 }
 
@@ -1544,9 +1544,9 @@ export function generateTwoWayANOVAProblem(): void {
 
   <div class="key-section">
     <strong>5. Effect Size (Partial η²)</strong>
-    <p>η²<sub>${full.factorNameA}</sub> = SS<sub>A</sub> / (SS<sub>A</sub> + SS<sub>within</sub>) = ${r2(full.ssA)} / (${r2(full.ssA)} + ${r2(full.ssE)}) = ${full.etaA.toFixed(3)}</p>
-    <p>η²<sub>${full.factorNameB}</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>within</sub>) = ${r2(full.ssB)} / (${r2(full.ssB)} + ${r2(full.ssE)}) = ${full.etaB.toFixed(3)}</p>
-    <p>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>A×B</sub> + SS<sub>within</sub>) = ${r2(full.ssAB)} / (${r2(full.ssAB)} + ${r2(full.ssE)}) = ${full.etaAB.toFixed(3)}</p>
+    <p>η²<sub>${full.factorNameA}</sub> = SS<sub>A</sub> / (SS<sub>Total</sub> − SS<sub>B</sub> − SS<sub>A×B</sub>) = ${r2(full.ssA)} / (${r2(full.ssTotal)} − ${r2(full.ssB)} − ${r2(full.ssAB)}) = ${full.etaA.toFixed(3)}</p>
+    <p>η²<sub>${full.factorNameB}</sub> = SS<sub>B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>A×B</sub>) = ${r2(full.ssB)} / (${r2(full.ssTotal)} − ${r2(full.ssA)} − ${r2(full.ssAB)}) = ${full.etaB.toFixed(3)}</p>
+    <p>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>B</sub>) = ${r2(full.ssAB)} / (${r2(full.ssTotal)} − ${r2(full.ssA)} − ${r2(full.ssB)}) = ${full.etaAB.toFixed(3)}</p>
   </div>
 </div>`;
 
@@ -1626,9 +1626,9 @@ export function downloadTwoWayAnovaPracticeExcel(): void {
     ...decisionStatements.map(s => [s]),
     [],
     ['Effect Size (Partial η²)'],
-    [`η²_${full.factorNameA} = ${r2(full.ssA)} / (${r2(full.ssA)} + ${r2(full.ssE)}) = ${full.etaA.toFixed(3)}`],
-    [`η²_${full.factorNameB} = ${r2(full.ssB)} / (${r2(full.ssB)} + ${r2(full.ssE)}) = ${full.etaB.toFixed(3)}`],
-    [`η²_A×B = ${r2(full.ssAB)} / (${r2(full.ssAB)} + ${r2(full.ssE)}) = ${full.etaAB.toFixed(3)}`],
+    [`η²_${full.factorNameA} = ${r2(full.ssA)} / (${r2(full.ssTotal)} - ${r2(full.ssB)} - ${r2(full.ssAB)}) = ${full.etaA.toFixed(3)}`],
+    [`η²_${full.factorNameB} = ${r2(full.ssB)} / (${r2(full.ssTotal)} - ${r2(full.ssA)} - ${r2(full.ssAB)}) = ${full.etaB.toFixed(3)}`],
+    [`η²_A×B = ${r2(full.ssAB)} / (${r2(full.ssTotal)} - ${r2(full.ssA)} - ${r2(full.ssB)}) = ${full.etaAB.toFixed(3)}`],
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

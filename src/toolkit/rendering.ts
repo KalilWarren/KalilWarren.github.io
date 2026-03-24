@@ -321,19 +321,20 @@ export function renderResults(r: TestResult): void {
           row => row['Source'] !== 'Between' && row['Source'] !== 'Interaction' &&
                  row['Source'] !== 'Within Treatments' && row['Source'] !== 'Total'
         );
-        const errRow = r.table.find(row => row['Source'] === 'Within Treatments');
-        const intRow = r.table.find(row => row['Source'] === 'Interaction');
-        if (fRows.length === 2 && errRow && intRow) {
+        const errRow   = r.table.find(row => row['Source'] === 'Within Treatments');
+        const intRow   = r.table.find(row => row['Source'] === 'Interaction');
+        const totalRow = r.table.find(row => row['Source'] === 'Total');
+        if (fRows.length === 2 && errRow && intRow && totalRow) {
           const ssA  = Number(fRows[0]['SS']);
           const ssB  = Number(fRows[1]['SS']);
           const ssAB = Number(intRow['SS']);
-          const ssE  = Number(errRow['SS']);
+          const ssT  = Number(totalRow['SS']);
           const f3 = (n: number) => n.toFixed(3);
           etaHtml = `<div class="result-block"><div class="tbl-wrap">
             <h3>Effect Size (Partial η²)</h3>
-            <p>η²<sub>${String(fRows[0]['Source'])}</sub> = SS<sub>A</sub> / (SS<sub>A</sub> + SS<sub>within</sub>) = <strong>${f3(ssA / (ssA + ssE))}</strong></p>
-            <p>η²<sub>${String(fRows[1]['Source'])}</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>within</sub>) = <strong>${f3(ssB / (ssB + ssE))}</strong></p>
-            <p>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>A×B</sub> + SS<sub>within</sub>) = <strong>${f3(ssAB / (ssAB + ssE))}</strong></p>
+            <p>η²<sub>${String(fRows[0]['Source'])}</sub> = SS<sub>A</sub> / (SS<sub>Total</sub> − SS<sub>B</sub> − SS<sub>A×B</sub>) = <strong>${f3(ssA / (ssT - ssB - ssAB))}</strong></p>
+            <p>η²<sub>${String(fRows[1]['Source'])}</sub> = SS<sub>B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>A×B</sub>) = <strong>${f3(ssB / (ssT - ssA - ssAB))}</strong></p>
+            <p>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>Total</sub> − SS<sub>A</sub> − SS<sub>B</sub>) = <strong>${f3(ssAB / (ssT - ssA - ssB))}</strong></p>
           </div></div>`;
         }
       }
