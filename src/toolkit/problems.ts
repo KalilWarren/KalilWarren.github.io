@@ -2279,15 +2279,18 @@ function buildRmaAnovaFullTable(table: TableRow[], alpha: number): RmaAnovaFullT
   const dfBT = r2(btRow['df']);
   const dfBS = r2(bsRow['df']);
 
+  const ssBT  = r2(btRow['SS']);
+  const ssErr = r2(errRow['SS']);
   return {
-    ssBT: r2(btRow['SS']),   dfBT,   msBT: r2(btRow['MS']),
+    ssBT,            dfBT,   msBT: r2(btRow['MS']),
     fStat:  r2(btRow['F']),  pValue: r2(btRow['p-value']),
     ssBS: r2(bsRow['SS']),   dfBS,   msBS: r2(bsRow['MS']),
-    ssErr: r2(errRow['SS']), dfErr:  r2(errRow['df']), msErr: r2(errRow['MS']),
+    ssErr,           dfErr:  r2(errRow['df']), msErr: r2(errRow['MS']),
     ssTotal: r2(totalRow['SS']), dfTotal: r2(totalRow['df']),
     nSubjects:   dfBS + 1,
     nConditions: dfBT + 1,
     alpha,
+    eta2: ssBT / (ssBT + ssErr),
   };
 }
 
@@ -2431,6 +2434,11 @@ export function generateRmaAnovaProblem(): void {
   </div>
 
   <div class="key-section">
+    <strong>Effect Size</strong>
+    <p>η² = SS<sub>BT</sub> / (SS<sub>BT</sub> + SS<sub>Error</sub>) = ${r2(full.ssBT)} / (${r2(full.ssBT)} + ${r2(full.ssErr)}) = ${full.eta2.toFixed(3)}</p>
+  </div>
+
+  <div class="key-section">
     <strong>2. Missing Values (step-by-step)</strong>
     <ol style="margin:0.5rem 0 0 1.2rem;padding:0;">
       ${missingListHTML}
@@ -2532,6 +2540,9 @@ export function downloadRmaAnovaPracticeExcel(): void {
     [decisionStatement],
     [],
     ['Note: Between Subjects partitions individual differences from error; it is not tested with an F ratio.'],
+    [],
+    ['Effect Size'],
+    [`η² = SS_BT / (SS_BT + SS_Error) = ${r2(full.ssBT)} / (${r2(full.ssBT)} + ${r2(full.ssErr)}) = ${full.eta2.toFixed(3)}`],
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

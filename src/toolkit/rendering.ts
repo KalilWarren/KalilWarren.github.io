@@ -328,6 +328,12 @@ export function renderResults(r: TestResult): void {
         ${recordsTable(rma.table, 'ANOVA Summary Table')}
         <div class="result-block">
           <div class="tbl-wrap">
+            <h3>Effect Size</h3>
+            <p style="padding:0.4rem 0;">η² = SS<sub>BT</sub> / (SS<sub>BT</sub> + SS<sub>Error</sub>) = <strong>${rma.eta_squared.toFixed(3)}</strong></p>
+          </div>
+        </div>
+        <div class="result-block">
+          <div class="tbl-wrap">
             <h3>Decision</h3>
             <p class="${decClass}" style="font-weight:600; padding:0.4rem 0;">${rma.decision}</p>
           </div>

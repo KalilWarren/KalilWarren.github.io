@@ -66,6 +66,7 @@ export interface RmaAnovaResult {
   dataset: TableRow[];   /* wide-format: subject + one col per condition */
   table: TableRow[];     /* ANOVA summary: Source, SS, df, MS, F, p-value */
   decision: string;
+  eta_squared: number;
 }
 
 export interface PearsonResult {
@@ -381,6 +382,7 @@ export interface RmaAnovaFullTable {
   ssTotal: number; dfTotal: number;
   nSubjects: number; nConditions: number;
   alpha: number;
+  eta2: number;
 }
 
 export interface RmaAnovaMissingCell {

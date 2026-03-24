@@ -283,7 +283,7 @@ export function generateProblem(): RmaProblem {
 
   const Fcrit        = r3(fInv(alpha, DFBT, DFE));
   const decision_true: 'reject' | 'fail' = F >= Fcrit ? 'reject' : 'fail';
-  const eta2         = r2(SSBT / SST);
+  const eta2         = r2(SSBT / (SSBT + SSE));
 
   return {
     nSubjects, nConditions, N, alpha, difficulty,
@@ -503,7 +503,7 @@ export function renderFeedback(p: RmaProblem, grade: GradeResult): void {
   setHtml('rmp-fb-hyp',      fbHtml(grade.hyp,      'H₀ states all condition means are equal; H₁ states at least one differs.'));
   setHtml('rmp-fb-fcrit',    fbHtml(grade.fcrit,    `F<sub>crit</sub>(${t.DFBT}, ${t.DFE}) at α = ${p.alpha.toFixed(2)} = ${p.Fcrit.toFixed(3)}.`));
   setHtml('rmp-fb-decision', fbHtml(grade.decision, `F = ${r2(t.F).toFixed(2)} vs. F<sub>crit</sub> = ${p.Fcrit.toFixed(3)}. Reject H₀ if F ≥ F<sub>crit</sub>.`));
-  setHtml('rmp-fb-eta2',     fbHtml(grade.eta2,     `η² = SS<sub>BT</sub> / SS<sub>Total</sub> = ${r2(t.SSBT).toFixed(2)} / ${r2(t.SST).toFixed(2)} = ${p.eta2.toFixed(2)}`));
+  setHtml('rmp-fb-eta2',     fbHtml(grade.eta2,     `η² = SS<sub>BT</sub> / (SS<sub>BT</sub> + SS<sub>Error</sub>) = ${r2(t.SSBT).toFixed(2)} / (${r2(t.SSBT).toFixed(2)} + ${r2(t.SSE).toFixed(2)}) = ${p.eta2.toFixed(2)}`));
 
   const banner = document.getElementById('rmp-fb-banner');
   if (banner) {
@@ -615,7 +615,7 @@ function renderSolution(p: RmaProblem): void {
       <tr><td>Result</td><td><strong>${decWord}</strong></td></tr>
 
       <tr><th colspan="2">Effect Size</th></tr>
-      <tr><td>η² = SS<sub>BT</sub> / SS<sub>Total</sub></td><td>${p.eta2.toFixed(2)}</td></tr>
+      <tr><td>η² = SS<sub>BT</sub> / (SS<sub>BT</sub> + SS<sub>Error</sub>)</td><td>${p.eta2.toFixed(2)}</td></tr>
 
       <tr><th colspan="2">Interpretation</th></tr>
       <tr><td colspan="2">${interp}</td></tr>
