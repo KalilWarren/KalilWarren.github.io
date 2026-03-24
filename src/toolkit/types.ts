@@ -354,6 +354,9 @@ export interface TwoWayAnovaFullTable {
   /* Total */
   ssTotal: number; dfTotal: number;
   alpha: number;
+  etaA: number;    /* partial η² for Factor A */
+  etaB: number;    /* partial η² for Factor B */
+  etaAB: number;   /* partial η² for interaction */
 }
 
 export interface TwoWayAnovaMissingCell {

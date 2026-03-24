@@ -220,10 +220,10 @@ export function renderResults(r: TestResult): void {
     /* One-way: first row Source ≠ "Between" */
     const isOneWay = r.table.length > 0 && r.table[0]['Source'] !== 'Between';
 
-    /* Two-way: first row IS "Between" AND exactly 2 factor rows (not Between/Interaction/Within/Total) */
+    /* Two-way: first row IS "Between" AND exactly 2 factor rows (not Between/Interaction/Within Treatments/Total) */
     const factorRows = r.table.filter(
       row => row['Source'] !== 'Between' && row['Source'] !== 'Interaction' &&
-             row['Source'] !== 'Within'  && row['Source'] !== 'Total'
+             row['Source'] !== 'Within Treatments' && row['Source'] !== 'Total'
     );
     const isTwoWay = !isOneWay && factorRows.length === 2;
 
@@ -313,12 +313,36 @@ export function renderResults(r: TestResult): void {
       ${recordsTable(r.results, 'Statistical Results')}`;
       break;
 
-    case 'anova':
+    case 'anova': {
+      const isTwoWay = r.table.length > 0 && r.table[0]['Source'] === 'Between';
+      let etaHtml = '';
+      if (isTwoWay) {
+        const fRows = r.table.filter(
+          row => row['Source'] !== 'Between' && row['Source'] !== 'Interaction' &&
+                 row['Source'] !== 'Within Treatments' && row['Source'] !== 'Total'
+        );
+        const errRow = r.table.find(row => row['Source'] === 'Within Treatments');
+        const intRow = r.table.find(row => row['Source'] === 'Interaction');
+        if (fRows.length === 2 && errRow && intRow) {
+          const ssA  = Number(fRows[0]['SS']);
+          const ssB  = Number(fRows[1]['SS']);
+          const ssAB = Number(intRow['SS']);
+          const ssE  = Number(errRow['SS']);
+          const f3 = (n: number) => n.toFixed(3);
+          etaHtml = `<div class="result-block"><div class="tbl-wrap">
+            <h3>Effect Size (Partial η²)</h3>
+            <p>η²<sub>${String(fRows[0]['Source'])}</sub> = SS<sub>A</sub> / (SS<sub>A</sub> + SS<sub>within</sub>) = <strong>${f3(ssA / (ssA + ssE))}</strong></p>
+            <p>η²<sub>${String(fRows[1]['Source'])}</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>within</sub>) = <strong>${f3(ssB / (ssB + ssE))}</strong></p>
+            <p>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>A×B</sub> + SS<sub>within</sub>) = <strong>${f3(ssAB / (ssAB + ssE))}</strong></p>
+          </div></div>`;
+        }
+      }
       html = `<div class="results-grid">
         ${anovaDatasetTable(r.dataset)}
       </div>
-      ${recordsTable(r.table, 'ANOVA Summary Table')}`;
+      ${recordsTable(r.table, 'ANOVA Summary Table')}${etaHtml}`;
       break;
+    }
 
     case 'rma_anova': {
       const rma = r as RmaAnovaResult;

@@ -1216,13 +1216,13 @@ export function downloadAnovaPracticeExcel(): void {
 /* ── Build a typed full-table object from the engine's two-way TableRow array ── */
 
 function buildFullANOVATableTwoWay(table: TableRow[], alpha: number): TwoWayAnovaFullTable | null {
-  /* Factor rows = rows that are not Between / Interaction / Within / Total */
+  /* Factor rows = rows that are not Between / Interaction / Within Treatments / Total */
   const factorRows = table.filter(
     r => r['Source'] !== 'Between' && r['Source'] !== 'Interaction' &&
-         r['Source'] !== 'Within'  && r['Source'] !== 'Total'
+         r['Source'] !== 'Within Treatments' && r['Source'] !== 'Total'
   );
   const intRow    = table.find(r => r['Source'] === 'Interaction');
-  const withinRow = table.find(r => r['Source'] === 'Within');
+  const withinRow = table.find(r => r['Source'] === 'Within Treatments');
   const totalRow  = table.find(r => r['Source'] === 'Total');
 
   if (factorRows.length !== 2 || !intRow || !withinRow || !totalRow) return null;
@@ -1266,6 +1266,9 @@ function buildFullANOVATableTwoWay(table: TableRow[], alpha: number): TwoWayAnov
     ssE, dfE, msE,
     ssTotal, dfTotal,
     alpha,
+    etaA:  ssA  / (ssA  + ssE),
+    etaB:  ssB  / (ssB  + ssE),
+    etaAB: ssAB / (ssAB + ssE),
   };
 }
 
@@ -1287,7 +1290,7 @@ function maskANOVATableTwoWay(
       { row: 'A',     col: 'MS', value: r2(msA),  formula: `MS_A = SS_A / df_A = ${r2(ssA)} / ${dfA} = ${r2(msA)}` },
       { row: 'B',     col: 'MS', value: r2(msB),  formula: `MS_B = SS_B / df_B = ${r2(ssB)} / ${dfB} = ${r2(msB)}` },
       { row: 'AxB',   col: 'MS', value: r2(msAB), formula: `MS_A×B = SS_A×B / df_A×B = ${r2(ssAB)} / ${dfAB} = ${r2(msAB)}` },
-      { row: 'error', col: 'MS', value: r2(msE),  formula: `MS_error = SS_error / df_error = ${r2(ssE)} / ${dfE} = ${r2(msE)}` },
+      { row: 'error', col: 'MS', value: r2(msE),  formula: `MS_within = SS_within / df_within = ${r2(ssE)} / ${dfE} = ${r2(msE)}` },
       { row: 'A',     col: 'F',  value: r2(fA),   formula: `F_A = MS_A / MS_error = ${r2(msA)} / ${r2(msE)} = ${r2(fA)}` },
       { row: 'B',     col: 'F',  value: r2(fB),   formula: `F_B = MS_B / MS_error = ${r2(msB)} / ${r2(msE)} = ${r2(fB)}` },
       { row: 'AxB',   col: 'F',  value: r2(fAB),  formula: `F_A×B = MS_A×B / MS_error = ${r2(msAB)} / ${r2(msE)} = ${r2(fAB)}` },
@@ -1299,8 +1302,8 @@ function maskANOVATableTwoWay(
       { row: 'A',     col: 'df', value: dfA,        formula: `df_A = k_A − 1 = ${kA} − 1 = ${dfA}` },
       { row: 'B',     col: 'df', value: dfB,         formula: `df_B = k_B − 1 = ${kB} − 1 = ${dfB}` },
       { row: 'AxB',   col: 'df', value: dfAB,        formula: `df_A×B = df_A × df_B = ${dfA} × ${dfB} = ${dfAB}` },
-      { row: 'error', col: 'df', value: dfE,          formula: `df_error = df_T − df_A − df_B − df_A×B = ${dfTotal} − ${dfA} − ${dfB} − ${dfAB} = ${dfE}` },
-      { row: 'error', col: 'SS', value: r2(ssE),     formula: `SS_error = SS_T − SS_A − SS_B − SS_A×B = ${r2(ssTotal)} − ${r2(ssA)} − ${r2(ssB)} − ${r2(ssAB)} = ${r2(ssE)}` },
+      { row: 'error', col: 'df', value: dfE,          formula: `df_within = df_T − df_A − df_B − df_A×B = ${dfTotal} − ${dfA} − ${dfB} − ${dfAB} = ${dfE}` },
+      { row: 'error', col: 'SS', value: r2(ssE),     formula: `SS_within = SS_T − SS_A − SS_B − SS_A×B = ${r2(ssTotal)} − ${r2(ssA)} − ${r2(ssB)} − ${r2(ssAB)} = ${r2(ssE)}` },
       { row: 'A',     col: 'MS', value: r2(msA),     formula: `MS_A = SS_A / df_A = ${r2(ssA)} / ${dfA} = ${r2(msA)}` },
       { row: 'B',     col: 'MS', value: r2(msB),     formula: `MS_B = SS_B / df_B = ${r2(ssB)} / ${dfB} = ${r2(msB)}` },
       { row: 'AxB',   col: 'MS', value: r2(msAB),    formula: `MS_A×B = SS_A×B / df_A×B = ${r2(ssAB)} / ${dfAB} = ${r2(msAB)}` },
@@ -1314,11 +1317,11 @@ function maskANOVATableTwoWay(
        Hide: MS_E, SS_A, SS_B, SS_AB, SS_E, SS_T, df_T
        Students back-solve: MS_E = MS_A/F_A, then SS from MS×df, df_T and SS_T by addition */
     missing = [
-      { row: 'error', col: 'MS',  value: r2(msE),    formula: `MS_error = MS_A / F_A = ${r2(msA)} / ${r2(fA)} = ${r2(msE)}` },
+      { row: 'error', col: 'MS',  value: r2(msE),    formula: `MS_within = MS_A / F_A = ${r2(msA)} / ${r2(fA)} = ${r2(msE)}` },
       { row: 'A',     col: 'SS',  value: r2(ssA),    formula: `SS_A = MS_A × df_A = ${r2(msA)} × ${dfA} = ${r2(ssA)}` },
       { row: 'B',     col: 'SS',  value: r2(ssB),    formula: `SS_B = MS_B × df_B = ${r2(msB)} × ${dfB} = ${r2(ssB)}` },
       { row: 'AxB',   col: 'SS',  value: r2(ssAB),   formula: `SS_A×B = MS_A×B × df_A×B = ${r2(msAB)} × ${dfAB} = ${r2(ssAB)}` },
-      { row: 'error', col: 'SS',  value: r2(ssE),    formula: `SS_error = MS_error × df_error = ${r2(msE)} × ${dfE} = ${r2(ssE)}` },
+      { row: 'error', col: 'SS',  value: r2(ssE),    formula: `SS_within = MS_within × df_within = ${r2(msE)} × ${dfE} = ${r2(ssE)}` },
       { row: 'total', col: 'SS',  value: r2(ssTotal),formula: `SS_T = SS_A + SS_B + SS_A×B + SS_error = ${r2(ssA)} + ${r2(ssB)} + ${r2(ssAB)} + ${r2(ssE)} = ${r2(ssTotal)}` },
       { row: 'total', col: 'df',  value: dfTotal,     formula: `df_T = df_A + df_B + df_A×B + df_error = ${dfA} + ${dfB} + ${dfAB} + ${dfE} = ${dfTotal}` },
     ];
@@ -1369,7 +1372,7 @@ function renderTwoWayAnovaStudentTable(full: TwoWayAnovaFullTable, masked: Set<s
         ${cell('AxB','MS',full.msAB)} ${cell('AxB','F',full.fAB)}
       </tr>
       <tr>
-        <td>Error</td>
+        <td>Within Treatments</td>
         ${cell('error','SS',full.ssE)} ${cell('error','df',full.dfE)}
         ${cell('error','MS',full.msE)}
         ${BLANK}
@@ -1418,7 +1421,7 @@ function renderTwoWayAnovaFullTable(full: TwoWayAnovaFullTable): string {
         <td>${r2(full.msAB)}</td><td>${r2(full.fAB)}</td>
       </tr>
       <tr>
-        <td>Error</td>
+        <td>Within Treatments</td>
         <td>${r2(full.ssE)}</td><td>${full.dfE}</td>
         <td>${r2(full.msE)}</td>${BLANK}
       </tr>
@@ -1440,7 +1443,7 @@ export function generateTwoWayANOVAProblem(): void {
   if (state.lastResult.table.length === 0 || state.lastResult.table[0]['Source'] !== 'Between') return;
   const factorRows = state.lastResult.table.filter(
     r => r['Source'] !== 'Between' && r['Source'] !== 'Interaction' &&
-         r['Source'] !== 'Within'  && r['Source'] !== 'Total'
+         r['Source'] !== 'Within Treatments' && r['Source'] !== 'Total'
   );
   if (factorRows.length !== 2) return;
 
@@ -1538,6 +1541,13 @@ export function generateTwoWayANOVAProblem(): void {
     <strong>4. Decisions (α = ${alpha})</strong>
     ${decisionsHTML}
   </div>
+
+  <div class="key-section">
+    <strong>5. Effect Size (Partial η²)</strong>
+    <p>η²<sub>${full.factorNameA}</sub> = SS<sub>A</sub> / (SS<sub>A</sub> + SS<sub>within</sub>) = ${r2(full.ssA)} / (${r2(full.ssA)} + ${r2(full.ssE)}) = ${full.etaA.toFixed(3)}</p>
+    <p>η²<sub>${full.factorNameB}</sub> = SS<sub>B</sub> / (SS<sub>B</sub> + SS<sub>within</sub>) = ${r2(full.ssB)} / (${r2(full.ssB)} + ${r2(full.ssE)}) = ${full.etaB.toFixed(3)}</p>
+    <p>η²<sub>A×B</sub> = SS<sub>A×B</sub> / (SS<sub>A×B</sub> + SS<sub>within</sub>) = ${r2(full.ssAB)} / (${r2(full.ssAB)} + ${r2(full.ssE)}) = ${full.etaAB.toFixed(3)}</p>
+  </div>
 </div>`;
 
   state.lastTwoWayAnovaPracticeData = {
@@ -1594,7 +1604,7 @@ export function downloadTwoWayAnovaPracticeExcel(): void {
     [full.factorNameA,  mc('A','SS',full.ssA),   mc('A','df',full.dfA),   mc('A','MS',full.msA),   mc('A','F',full.fA)],
     [full.factorNameB,  mc('B','SS',full.ssB),   mc('B','df',full.dfB),   mc('B','MS',full.msB),   mc('B','F',full.fB)],
     [intLabel,          mc('AxB','SS',full.ssAB), mc('AxB','df',full.dfAB),mc('AxB','MS',full.msAB),mc('AxB','F',full.fAB)],
-    ['Error',           mc('error','SS',full.ssE),mc('error','df',full.dfE),mc('error','MS',full.msE),'—'],
+    ['Within Treatments', mc('error','SS',full.ssE),mc('error','df',full.dfE),mc('error','MS',full.msE),'—'],
     ['Total',           mc('total','SS',full.ssTotal),mc('total','df',full.dfTotal),'—','—'],
     [],
     [],
@@ -1606,7 +1616,7 @@ export function downloadTwoWayAnovaPracticeExcel(): void {
     [full.factorNameA,  r2(full.ssA),    full.dfA,  r2(full.msA),  r2(full.fA)],
     [full.factorNameB,  r2(full.ssB),    full.dfB,  r2(full.msB),  r2(full.fB)],
     [intLabel,          r2(full.ssAB),   full.dfAB, r2(full.msAB), r2(full.fAB)],
-    ['Error',           r2(full.ssE),    full.dfE,  r2(full.msE),  '—'],
+    ['Within Treatments', r2(full.ssE),  full.dfE,  r2(full.msE),  '—'],
     ['Total',           r2(full.ssTotal),full.dfTotal,'—','—'],
     [],
     ['Missing Values (step-by-step)'],
@@ -1614,6 +1624,11 @@ export function downloadTwoWayAnovaPracticeExcel(): void {
     [],
     ['Decisions (α = ' + full.alpha + ')'],
     ...decisionStatements.map(s => [s]),
+    [],
+    ['Effect Size (Partial η²)'],
+    [`η²_${full.factorNameA} = ${r2(full.ssA)} / (${r2(full.ssA)} + ${r2(full.ssE)}) = ${full.etaA.toFixed(3)}`],
+    [`η²_${full.factorNameB} = ${r2(full.ssB)} / (${r2(full.ssB)} + ${r2(full.ssE)}) = ${full.etaB.toFixed(3)}`],
+    [`η²_A×B = ${r2(full.ssAB)} / (${r2(full.ssAB)} + ${r2(full.ssE)}) = ${full.etaAB.toFixed(3)}`],
   ];
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

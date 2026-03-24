@@ -380,7 +380,7 @@ def _build_independent_anova_table(
             }] + rows
 
     rows.append({
-        "Source": "Within",
+        "Source": "Within Treatments",
         "SS": SS_Within,
         "df": df_Within,
         "MS": MS_Within,
@@ -1051,7 +1051,8 @@ def generate_one_way_repeated_measures_anova(
         "p-value": [p_value, np.nan, np.nan, np.nan, np.nan]
     }).round(3)
 
-    return wide_df, anova_table, decision
+    eta_squared = ss_between_treatments / (ss_between_treatments + ss_error)
+    return wide_df, anova_table, eta_squared, decision
 
 
 
