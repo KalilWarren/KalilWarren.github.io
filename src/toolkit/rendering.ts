@@ -28,7 +28,8 @@ export function recordsTable(
     h += `<tr${rowClass ? ` class="${rowClass}"` : ''}>`;
     keys.forEach(k => {
       const raw = (row as Record<string, unknown>)[k];
-      const v   = fmt(raw);
+      const isBsMs = isSub && src === 'Between Subjects' && k === 'MS';
+      const v   = fmt(isBsMs ? null : raw);
       let cell  = String(v);
       if (k === 'Statistic' && typeof raw === 'string') {
         const rowTip = STAT_ROW_TIPS[raw] ? tipHTML(STAT_ROW_TIPS[raw]) : '';

@@ -1,9 +1,9 @@
 /* ── One-Way Repeated-Measures ANOVA Student Practice Module ── */
 /*
  * Masking patterns mirror toolkit problems.ts maskRmaAnovaTable():
- *   easy:   hide MSBT, MSBS, MSE, F
+ *   easy:   hide MSBT, MSE, F
  *   medium: hide DFBT, DFBS, DFE, SSE, MSBT, F
- *   hard:   hide SSBT, SSBS, SSE, SST, DFT, MSE
+ *   hard:   hide SSBT, SSE, SST, DFT, MSE
  */
 
 /* ── Types ── */
@@ -138,11 +138,11 @@ function fInv(alpha: number, df1: number, df2: number): number {
 
 function getMasked(difficulty: Difficulty): Set<MaskedField> {
   if (difficulty === 'easy')
-    return new Set<MaskedField>(['MSBT', 'MSBS', 'MSE', 'F']);
+    return new Set<MaskedField>(['MSBT', 'MSE', 'F']);
   if (difficulty === 'medium')
     return new Set<MaskedField>(['DFBT', 'DFBS', 'DFE', 'SSE', 'MSBT', 'F']);
   /* hard */
-  return new Set<MaskedField>(['SSBT', 'SSBS', 'SSE', 'SST', 'DFT', 'MSE']);
+  return new Set<MaskedField>(['SSBT', 'SSE', 'SST', 'DFT', 'MSE']);
 }
 
 /* ── Scenarios ── */
@@ -354,7 +354,7 @@ function buildTableHtml(p: RmaProblem): string {
         <td style="${tdStyle}text-align:left;padding-left:1.5rem;">Between Subjects</td>
         ${cell('SSBS', t.SSBS)}
         ${cell('DFBS', t.DFBS, true)}
-        ${cell('MSBS', t.MSBS)}
+        ${dashCell()}
         ${dashCell()}
       </tr>
       <tr>
@@ -582,7 +582,7 @@ function renderSolution(p: RmaProblem): void {
               <td style="${tdL}padding-left:1.5rem;">Between Subjects</td>
               <td style="${tdS}">${r2(t.SSBS).toFixed(2)}</td>
               <td style="${tdS}">${t.DFBS}</td>
-              <td style="${tdS}">${r2(t.MSBS).toFixed(2)}</td>
+              ${dash}
               ${dash}
             </tr>
             <tr>

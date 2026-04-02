@@ -2325,7 +2325,6 @@ function maskRmaAnovaTable(
   if (difficulty === 'easy') {
     missing = [
       { row: 'bt',    col: 'MS', value: r2(msBT),  formula: `MS_treatments = SS_treatments / df_treatments = ${r2(ssBT)} / ${dfBT} = ${r2(msBT)}` },
-      { row: 'bs',    col: 'MS', value: r2(msBS),  formula: `MS_subjects   = SS_subjects / df_subjects = ${r2(ssBS)} / ${dfBS} = ${r2(msBS)}` },
       { row: 'error', col: 'MS', value: r2(msErr), formula: `MS_error      = SS_error / df_error = ${r2(ssErr)} / ${dfErr} = ${r2(msErr)}` },
       { row: 'bt',    col: 'F',  value: r2(fStat), formula: `F = MS_treatments / MS_error = ${r2(msBT)} / ${r2(msErr)} = ${r2(fStat)}` },
     ];
@@ -2342,7 +2341,6 @@ function maskRmaAnovaTable(
     /* hard */
     missing = [
       { row: 'bt',    col: 'SS',  value: r2(ssBT),   formula: `SS_treatments = MS_treatments × df_treatments = ${r2(msBT)} × ${dfBT} = ${r2(ssBT)}` },
-      { row: 'bs',    col: 'SS',  value: r2(ssBS),   formula: `SS_subjects   = MS_subjects × df_subjects = ${r2(msBS)} × ${dfBS} = ${r2(ssBS)}` },
       { row: 'error', col: 'SS',  value: r2(ssErr),  formula: `SS_error      = MS_error × df_error = ${r2(msErr)} × ${dfErr} = ${r2(ssErr)}` },
       { row: 'total', col: 'SS',  value: r2(ssTotal),formula: `SS_total      = SS_treatments + SS_subjects + SS_error = ${r2(ssBT)} + ${r2(ssBS)} + ${r2(ssErr)} = ${r2(ssTotal)}` },
       { row: 'total', col: 'df',  value: dfTotal,    formula: `df_total      = df_treatments + df_subjects + df_error = ${dfBT} + ${dfBS} + ${dfErr} = ${dfTotal}` },
@@ -2366,7 +2364,7 @@ function renderRmaAnovaStudentTable(full: RmaAnovaFullTable, masked: Set<string>
 <tbody>
 <tr><td>Between Treatments</td>${cell('bt','SS',full.ssBT)}${cell('bt','df',full.dfBT)}${cell('bt','MS',full.msBT)}${cell('bt','F',full.fStat)}</tr>
 <tr><td>Within Treatment</td><td>${r2(full.ssBS + full.ssErr)}</td><td>${full.dfBS + full.dfErr}</td><td>—</td><td>—</td></tr>
-<tr><td style="padding-left:1.5rem;">Between Subjects</td>${cell('bs','SS',full.ssBS)}${cell('bs','df',full.dfBS)}${cell('bs','MS',full.msBS)}<td>—</td></tr>
+<tr><td style="padding-left:1.5rem;">Between Subjects</td>${cell('bs','SS',full.ssBS)}${cell('bs','df',full.dfBS)}<td>—</td><td>—</td></tr>
 <tr><td style="padding-left:1.5rem;">Error</td>${cell('error','SS',full.ssErr)}${cell('error','df',full.dfErr)}${cell('error','MS',full.msErr)}<td>—</td></tr>
 <tr><td>Total</td>${cell('total','SS',full.ssTotal)}${cell('total','df',full.dfTotal)}<td>—</td><td>—</td></tr>
 </tbody></table>`;
@@ -2381,7 +2379,7 @@ function renderRmaAnovaFullTable(full: RmaAnovaFullTable): string {
 <tbody>
 <tr><td>Between Treatments</td><td>${r2(full.ssBT)}</td><td>${full.dfBT}</td><td>${r2(full.msBT)}</td><td>${r2(full.fStat)}</td></tr>
 <tr><td>Within Treatment</td><td>${r2(full.ssBS + full.ssErr)}</td><td>${full.dfBS + full.dfErr}</td><td>—</td><td>—</td></tr>
-<tr><td style="padding-left:1.5rem;">Between Subjects</td><td>${r2(full.ssBS)}</td><td>${full.dfBS}</td><td>${r2(full.msBS)}</td><td>—</td></tr>
+<tr><td style="padding-left:1.5rem;">Between Subjects</td><td>${r2(full.ssBS)}</td><td>${full.dfBS}</td><td>—</td><td>—</td></tr>
 <tr><td style="padding-left:1.5rem;">Error</td><td>${r2(full.ssErr)}</td><td>${full.dfErr}</td><td>${r2(full.msErr)}</td><td>—</td></tr>
 <tr><td>Total</td><td>${r2(full.ssTotal)}</td><td>${full.dfTotal}</td><td>—</td><td>—</td></tr>
 </tbody></table>`;
@@ -2528,7 +2526,7 @@ export function downloadRmaAnovaPracticeExcel(): void {
     ['Source', 'SS', 'df', 'MS', 'F'],
     ['Between Treatments', mc('bt','SS',full.ssBT), mc('bt','df',full.dfBT), mc('bt','MS',full.msBT), mc('bt','F',full.fStat)],
     ['Within Treatment',   r2(full.ssBS + full.ssErr), full.dfBS + full.dfErr, '—', '—'],
-    ['  Between Subjects', mc('bs','SS',full.ssBS), mc('bs','df',full.dfBS), mc('bs','MS',full.msBS), '—'],
+    ['  Between Subjects', mc('bs','SS',full.ssBS), mc('bs','df',full.dfBS), '—', '—'],
     ['  Error',            mc('error','SS',full.ssErr), mc('error','df',full.dfErr), mc('error','MS',full.msErr), '—'],
     ['Total',              mc('total','SS',full.ssTotal), mc('total','df',full.dfTotal), '—', '—'],
     [],
@@ -2539,7 +2537,7 @@ export function downloadRmaAnovaPracticeExcel(): void {
     ['Source', 'SS', 'df', 'MS', 'F'],
     ['Between Treatments', r2(full.ssBT), full.dfBT, r2(full.msBT), r2(full.fStat)],
     ['Within Treatment',   r2(full.ssBS + full.ssErr), full.dfBS + full.dfErr, '—', '—'],
-    ['  Between Subjects', r2(full.ssBS), full.dfBS, r2(full.msBS), '—'],
+    ['  Between Subjects', r2(full.ssBS), full.dfBS, '—', '—'],
     ['  Error',            r2(full.ssErr), full.dfErr, r2(full.msErr), '—'],
     ['Total',              r2(full.ssTotal), full.dfTotal, '—', '—'],
     [],
