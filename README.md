@@ -73,6 +73,16 @@ After generating a problem, the toolkit automatically surfaces a **Student Probl
 
 Each parameter section also includes a **Batch Generator** for producing multiple datasets or student problems in one click, with optional **Parameter Sweep** support to systematically vary any numeric parameter across the batch.
 
+### Tooltip System
+
+Statistical terms throughout the toolkit are annotated with **ⓘ** icons. Hovering over an icon displays a plain-English explanation of that term (e.g., what SS, MS, df, F, η², or Cohen's d mean and how they are computed). Tooltips appear on:
+
+- **Column headers** in results tables (SS, df, MS, F, p-value)
+- **Row labels** in results tables (N, Z Score, t Score, Cohen's d, R-Squared, r, df, etc.)
+- **Parameter labels** in test configuration forms (α, n, Population Mean, Population SD)
+
+Tooltip content is centralized in `src/toolkit/tooltips.ts` and injected at runtime by `initTooltips()`.
+
 ### How It Works
 
 The app loads `toolkit/Engine_v1.0.0.py` at runtime into a Pyodide Python environment running in the browser. NumPy, SciPy, and Pandas are loaded via Pyodide's package system. All computation happens locally in the user's browser tab.
@@ -245,7 +255,32 @@ For factorial designs, the table also includes a **Between** header row and a fu
 
 ---
 
-#### 6. Pearson Correlation — `generate_pearson_correlation()`
+#### 6. One-Way Repeated-Measures ANOVA — `generate_one_way_repeated_measures_anova()`
+
+One-way within-subjects ANOVA. Generates scores for each subject across conditions by summing a fixed condition mean, a random subject effect, and random within-cell error. Partitions SS_Total into SS_Between_Treatments, SS_Between_Subjects, and SS_Error, then tests the treatment effect with an F-ratio.
+
+**Parameters:**
+
+| Parameter | Default | Description |
+|---|---|---|
+| `data` | `None` | Pre-existing data matrix (rows = subjects, columns = conditions). If `None`, data is generated from the parameters below |
+| `n_subjects` | `12` | Number of subjects |
+| `condition_means` | `[10, 15, 20]` | Population mean for each condition; length determines the number of conditions |
+| `subject_sd` | `4` | SD of random between-subject effects |
+| `error_sd` | `2` | SD of random within-cell error |
+| `labels` | `None` | Condition labels (e.g., `["Pre", "Mid", "Post"]`); defaults to `["C1", "C2", …]` |
+| `alpha` | `0.05` | Significance level |
+| `seed` | `None` | Random seed for reproducibility |
+
+**Returns:** wide-format dataset DataFrame (subjects × conditions), ANOVA summary table DataFrame, decision string
+
+**ANOVA table includes:** Source (Between Treatments, Within Treatment, Between Subjects, Error, Total), SS, df, MS, F, p-value
+
+> **Note:** MS_Between_Subjects is computed internally but is not used in the F-ratio (F = MS_BT / MS_Error). It is displayed as `—` in all toolkit and student module views.
+
+---
+
+#### 7. Pearson Correlation — `generate_pearson_correlation()`
 
 Generates X and Y datasets and computes a full Pearson correlation, including SS_X, SS_Y, SP_XY, r, r², and a significance test of r against a null ρ₀ using a t transformation.
 
@@ -267,7 +302,7 @@ Generates X and Y datasets and computes a full Pearson correlation, including SS
 
 ---
 
-#### 7. Simple Linear Regression — `generate_1_predictor_regression()`
+#### 8. Simple Linear Regression — `generate_1_predictor_regression()`
 
 Single-predictor OLS regression. Computes the slope (b) and intercept (a) via least-squares formulas, partitions SS_Y into SS_Regression and SS_Residual, and tests the model with an F-test. Returns both an ANOVA-style summary table and the fitted equation string.
 
@@ -341,9 +376,11 @@ Each ANOVA generator also includes a **🎲 Random Scenario** button that fills 
 | Two-Way ANOVA | Easy | All SS and df shown; MS and F values hidden |
 | | Moderate | Main SS terms, df_total shown; interaction/error SS, all MS, F hidden |
 | | Hard | df values and F shown; all SS and MS hidden |
-| One-Way RM ANOVA | Easy | All SS and df shown; MS_BT, MS_BS, MS_Error, and F hidden |
-| | Moderate | SS_BT, SS_BS, SS_Total shown; SS_Error, all df, MS_BT, and F hidden |
-| | Hard | All df and MS values shown; all SS values and df_Total hidden |
+| One-Way RM ANOVA | Easy | All SS and df shown; MS_BT, MS_Error, and F hidden |
+| | Moderate | SS_BT, SS_BS, SS_Total, df_Total shown; SS_Error, df_BT, df_BS, df_Error, MS_BT, and F hidden |
+| | Hard | SS_BS and all df shown (except df_Total); MS_BT shown; SS_BT, SS_Error, SS_Total, df_Total, and MS_Error hidden |
+
+> **Note:** MS_Between_Subjects always displays as `—` at all difficulty levels. It is computed internally but is not used in the F-ratio (F = MS_BT / MS_Error), so students are never asked to fill it in.
 | Simple Linear Regression | Easy | All SS and df shown; MS_regression, MS_residual, F hidden |
 | | Moderate | SS_regression, df_regression, df_residual, SS_total, df_total shown; SS_residual, all MS, F hidden |
 | | Hard | df_regression, MS_regression, F, df_residual shown; all SS (except via F/MS), MS_residual, df_total hidden |
