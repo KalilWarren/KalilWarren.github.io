@@ -10,6 +10,7 @@ export default defineConfig({
         research: resolve(__dirname, 'research.html'),
         toolkit:  resolve(__dirname, 'toolkit.html'),
         student:  resolve(__dirname, 'student.html'),
+        '404':    resolve(__dirname, '404.html'),
       },
     },
   },

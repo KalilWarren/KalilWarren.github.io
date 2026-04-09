@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found | Kalil Warren</title>
+  <meta name="robots" content="noindex" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .not-found-section {
+      text-align: center;
+      padding: 4rem 1rem;
+    }
+    .not-found-section h1 {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    .not-found-section p {
+      color: var(--text-light);
+      margin-bottom: 2rem;
+    }
+    .not-found-links {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header>
+    <div class="header-inner">
+      <span class="site-name">Kalil Warren</span>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="research.html">Research</a></li>
+          <li><a href="cv.html">CV</a></li>
+          <li class="nav-dropdown">
+            <a href="toolkit.html">StatTeacher Toolkit</a>
+            <ul class="nav-dropdown-menu">
+              <li><a href="toolkit.html">Instructor</a></li>
+              <li><a href="student.html">Student</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="page-container">
+    <section class="not-found-section">
+      <h1>404 &mdash; Page Not Found</h1>
+      <p>It looks like this page doesn&rsquo;t exist or may have moved.</p>
+      <div class="not-found-links">
+        <a href="index.html" class="btn btn-solid">&larr; Back to Home</a>
+        <a href="research.html" class="btn btn-outline">View Research</a>
+        <a href="mailto:knwarren@email.sc.edu" class="btn btn-outline">Contact</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>
+      &copy; <span id="year"></span> Kalil Warren &mdash;
+      PhD Student, Psychology (Cognitive &amp; Neural Sciences), University of South Carolina
+    </p>
+    <p style="margin-top: 0.4rem;">
+      <a href="mailto:knwarren@email.sc.edu">knwarren@email.sc.edu</a>
+    </p>
+  </footer>
+
+  <script type="module" src="/src/year.ts"></script>
+</body>
+</html>
