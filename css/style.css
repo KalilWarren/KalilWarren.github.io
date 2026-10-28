@@ -338,7 +338,7 @@ nav a.active {
 .page-container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 3rem 1.5rem 4rem;
+  padding: 2.25rem 1.5rem 4rem;
 }
 
 /* Title row used by Research and CV */
@@ -347,21 +347,21 @@ nav a.active {
   grid-template-columns: 1fr auto;
   gap: 2rem;
   align-items: end;
-  padding-bottom: 2rem;
-  margin-bottom: 3rem;
+  padding-bottom: 1.4rem;
+  margin-bottom: 2.25rem;
   border-bottom: 1px solid var(--border);
 }
 
 .page-head h1 {
-  font-size: 3.4rem;
-  letter-spacing: -0.02em;
+  font-size: 2.5rem;
+  letter-spacing: -0.015em;
   line-height: 1;
-  margin-bottom: 1rem;
+  margin-bottom: 0.7rem;
 }
 
 .dek {
   font-family: var(--serif);
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   line-height: 1.5;
   color: var(--text-light);
   max-width: 58ch;
@@ -1206,7 +1206,7 @@ footer a {
     align-items: start;
   }
   .page-head h1 {
-    font-size: 2.5rem;
+    font-size: 2.1rem;
   }
   .page-title {
     font-size: 2.1rem;
