@@ -1035,53 +1035,6 @@ footer a {
 .mt-3 { margin-top: 1.5rem; }
 
 /* --- Nav Dropdown --- */
-.nav-dropdown {
-  position: relative;
-}
-
-.nav-dropdown > a::after {
-  content: ' ▾';
-  font-size: 0.75em;
-  opacity: 0.6;
-}
-
-.nav-dropdown-menu {
-  display: none;
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  box-shadow: 0 8px 24px rgba(28, 26, 23, 0.10);
-  min-width: 160px;
-  padding: 0.3rem 0;
-  z-index: 200;
-  list-style: none;
-}
-
-.nav-dropdown:hover .nav-dropdown-menu,
-.nav-dropdown:focus-within .nav-dropdown-menu {
-  display: block;
-}
-
-.nav-dropdown-menu a {
-  display: block;
-  padding: 0.5rem 1rem;
-  border-bottom: 0;
-  font-size: 0.7rem;
-  color: var(--text-light);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.nav-dropdown-menu a:hover,
-.nav-dropdown-menu a.active {
-  background-color: var(--light-gold);
-  color: var(--text);
-  text-decoration: none;
-}
-
 /* --- Hero Button Dropdown (legacy) --- */
 .btn-dropdown {
   position: relative;
