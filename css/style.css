@@ -113,12 +113,20 @@ h2.label::after,
 /* --- Header / Masthead --- */
 header {
   background-color: rgba(247, 243, 236, 0.92);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
+}
+/* The blur lives on a pseudo-element: a backdrop-filter on the header itself makes
+   WebKit clip the dropdown menu that hangs below it. */
+header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .header-inner {
@@ -126,7 +134,7 @@ header {
   margin: 0 auto;
   padding: 0 1.5rem;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   height: 64px;
 }
@@ -138,11 +146,18 @@ header {
   color: var(--text);
   letter-spacing: 0.01em;
   white-space: nowrap;
+  align-self: center;
+}
+
+nav,
+nav ul {
+  height: 100%;
 }
 
 nav ul {
   list-style: none;
   display: flex;
+  align-items: center;
   gap: 0.25rem;
 }
 
@@ -1038,6 +1053,9 @@ footer a {
 /* --- Nav Dropdown --- */
 .nav-dropdown {
   position: relative;
+  align-self: stretch;      /* full header height, so the menu hangs from the header's bottom edge */
+  display: flex;
+  align-items: center;
 }
 
 .nav-dropdown > a::after {
@@ -1049,7 +1067,7 @@ footer a {
 .nav-dropdown-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 1px);    /* flush with the header's bottom border: no gap to hover across */
   right: 0;
   background: var(--white);
   border: 1px solid var(--border);
