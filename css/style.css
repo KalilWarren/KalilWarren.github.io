@@ -134,7 +134,7 @@ header::before {
   margin: 0 auto;
   padding: 0 1.5rem;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: space-between;
   height: 64px;
 }
@@ -146,18 +146,11 @@ header::before {
   color: var(--text);
   letter-spacing: 0.01em;
   white-space: nowrap;
-  align-self: center;
-}
-
-nav,
-nav ul {
-  height: 100%;
 }
 
 nav ul {
   list-style: none;
   display: flex;
-  align-items: center;
   gap: 0.25rem;
 }
 
@@ -1053,9 +1046,6 @@ footer a {
 /* --- Nav Dropdown --- */
 .nav-dropdown {
   position: relative;
-  align-self: stretch;      /* full header height, so the menu hangs from the header's bottom edge */
-  display: flex;
-  align-items: center;
 }
 
 .nav-dropdown > a::after {
@@ -1067,7 +1057,7 @@ footer a {
 .nav-dropdown-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 1px);    /* flush with the header's bottom border: no gap to hover across */
+  top: calc(100% + 6px);
   right: 0;
   background: var(--white);
   border: 1px solid var(--border);
