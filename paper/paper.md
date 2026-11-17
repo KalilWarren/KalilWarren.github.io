@@ -51,7 +51,7 @@ Because the toolkit runs entirely in the browser with no installation or account
 
 # Implementation
 
-StatTeacher Toolkit is a fully client-side web application built with TypeScript and compiled via Vite. Statistical computation is performed by a Python engine (`Engine_v1.0.0.py`) executed in the browser through Pyodide v0.26.4, which provides access to NumPy, SciPy, and Pandas without any server-side dependencies. Communication between TypeScript and Python occurs via JSON serialization. Critical values are computed using SciPy's percent-point functions for the z, t, and F distributions. The zero-install, client-side architecture ensures accessibility for students who may lack the technical background to install statistical software and eliminates institutional IT barriers to adoption.
+StatTeacher Toolkit is a fully client-side web application built with TypeScript and compiled via Vite. Statistical computation is performed by a Python engine (`Engine_v1.1.0.py`) executed in the browser through Pyodide v0.26.4, which provides access to NumPy, SciPy, and Pandas without any server-side dependencies. Communication between TypeScript and Python occurs via JSON serialization. Critical values are computed using SciPy's percent-point functions for the z, t, and F distributions. The zero-install, client-side architecture ensures accessibility for students who may lack the technical background to install statistical software and eliminates institutional IT barriers to adoption.
 
 # Acknowledgements
 
@@ -60,6 +60,6 @@ The author thanks Dr. Brandon Waldon, in whose Python course this project origin
  
 # AI Usage Disclosure
  
-The Python statistical engine (`Engine_v1.0.0.py`) was written entirely by the author without the use of generative AI tools. For the TypeScript front-end and web interface, the author used Claude (Anthropic) to assist with code generation, refactoring, and debugging during development. Claude was also used to assist with drafting and editing this manuscript. All AI-generated code and text were thoroughly reviewed, modified, and validated by the author. All architectural decisions, statistical logic, pedagogical design, and software design choices were made by the author.
+The Python statistical engine as originally released (`Engine_v1.0.0.py`) was written entirely by the author without the use of generative AI tools, and that file is preserved unchanged in the repository. Version 1.1.0 of the engine (`Engine_v1.1.0.py`), which the application now loads, adds an option to set the population correlation for the Pearson and regression generators, labels confidence intervals with their actual confidence level, and includes two small corrections. These changes, and an automated test suite that checks the engine and the Student Practice module against SciPy, were written with the assistance of Claude (Anthropic). For the TypeScript front-end and web interface, the author used Claude to assist with code generation, refactoring, and debugging during development. Claude was also used to assist with drafting and editing this manuscript. All AI-generated code and text were reviewed and validated by the author. All architectural decisions, statistical logic, pedagogical design, and software design choices were made by the author.
 
 # References
