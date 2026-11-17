@@ -174,30 +174,6 @@ def _z_critical(alpha=0.05, two_tailed=True):
     else:
         return norm.ppf(1 - alpha)
 
-def _ci_label(alpha=0.05, two_tailed=True):
-    """
-    Label for the confidence interval reported beside a test, e.g. "95% CI".
-
-    The interval is built from the same critical value as the test, so its
-    confidence level is 1 - alpha for a two-tailed test and 1 - 2 * alpha for
-    a one-tailed test (alpha = 0.05 one-tailed gives a 90% interval).
-
-    Parameters
-    ----------
-    alpha : float, optional
-        Significance level of the test. Default is 0.05.
-    two_tailed : bool, optional
-        Whether the test is two-tailed. Default is True.
-
-    Returns
-    -------
-    str
-        The label, such as "95% CI", "99% CI" or "97.5% CI".
-    """
-    level = (1 - alpha if two_tailed else 1 - 2 * alpha) * 100
-    return f"{round(level, 4):g}% CI"
-
-
 def _t_critical(df, alpha=0.05, two_tailed=True):
     """
     Compute the critical t value for a given degrees of freedom and alpha level.
@@ -493,8 +469,8 @@ def generate_z_score_problem(dataset=None,
     
     df_out = pd.DataFrame({
         "Statistic": ["N", "Population Mean", "Population SD", "Sample Mean", "Standard Error",
-                      "Z Score", "Z_Critical", "Decision","Cohen's d", _ci_label(alpha, two_tailed) + " Upper",
-                      _ci_label(alpha, two_tailed) + " Lower"],
+                      "Z Score", "Z_Critical", "Decision","Cohen's d", "95% CI Upper",
+                      "95% CI Lower"],
         "Value": [n,
                   round(population_mean, 2),
                   round(population_std, 2),
@@ -578,7 +554,7 @@ def generate_t_test_problem(dataset=None,
     df_out = pd.DataFrame({
         "Statistic": ["N", "Sample SD", "Sample Mean", "Standard Error",
                       "t Score", "t_Critical", "Decision","Cohen's d", "R-Squared",
-                      _ci_label(alpha, two_tailed) + " Upper", _ci_label(alpha, two_tailed) + " Lower"],
+                      "95% CI Upper", "95% CI Lower"],
         "Value": [n,
                   round(sample_std, 2),
                   round(sample_mean, 2),
@@ -679,7 +655,7 @@ def generate_independent_t_test_problem(
         "Statistic": ["N1", "Sample SD1", "Sample Mean1", "df1", "Sum of Squares1",
                       "N2", "Sample SD2", "Sample Mean2", "df2", "Sum of Squares2", 
                       "Sum Of Product", "Standard Error", "t Score", "t_Critical", 
-                      "Decision","Cohen's d", "R-Squared", _ci_label(alpha, two_tailed) + " Upper", _ci_label(alpha, two_tailed) + " Lower"],
+                      "Decision","Cohen's d", "R-Squared", "95% CI Upper", "95% CI Lower"],
         "Value": [n1,
                   round(sample_std1, 2),
                   round(sample_mean1, 2),
@@ -782,7 +758,7 @@ def generate_repeated_t_test_problem(
     df_out = pd.DataFrame({
         "Statistic": ["N", "Differences SD", "Differences Mean", "Standard Error",
                       "t Score", "t_Critical", "Decision","Cohen's d", "R-Squared",
-                      _ci_label(alpha, two_tailed) + " Upper", _ci_label(alpha, two_tailed) + " Lower"],
+                      "95% CI Upper", "95% CI Lower"],
         "Value": [n,
                   round(std_differences, 2),
                   round(mean_differences, 2),
@@ -1031,10 +1007,7 @@ def generate_one_way_repeated_measures_anova(
             raise ValueError("labels must match the number of columns in data.")
 
     # STEP 2: Build wide-format DataFrame
-    # Round first, so the ANOVA table below is computed from exactly the scores
-    # that are returned and a student working from the dataset reproduces it.
-    data = np.round(data, 3)
-    wide_df = pd.DataFrame(data, columns=labels)
+    wide_df = pd.DataFrame(np.round(data, 3), columns=labels)
     wide_df.insert(0, "subject", np.arange(1, n_subjects + 1))
 
     # STEP 3: ANOVA calculations
@@ -1083,51 +1056,10 @@ def generate_one_way_repeated_measures_anova(
 
 
 
-def _correlated_normal_data(x_mean, x_std, y_mean, y_std, n, true_r, seed=None):
-    """
-    Generate X and Y from normal populations whose correlation is true_r.
-
-    Y is built as true_r * Zx + sqrt(1 - true_r**2) * Ze, where Zx is the
-    standardized X draw and Ze is an independent standard normal draw, then
-    rescaled to y_mean and y_std. The sample correlation varies around true_r
-    from sample to sample, more so when n is small. Values are rounded to whole
-    numbers, like generate_normal_data.
-
-    Parameters
-    ----------
-    x_mean, x_std : float
-        Population mean and standard deviation of X.
-    y_mean, y_std : float
-        Population mean and standard deviation of Y.
-    n : int
-        Sample size.
-    true_r : float
-        Population correlation between X and Y, from -1 to 1.
-    seed : int or None, optional
-        Random seed for reproducibility. Default is None.
-
-    Returns
-    -------
-    numpy.ndarray
-        X dataset.
-    numpy.ndarray
-        Y dataset.
-    """
-    if not -1 <= true_r <= 1:
-        raise ValueError("true_r must be between -1 and 1.")
-    if seed is not None:
-        np.random.seed(seed)
-    z_x = np.random.normal(size=n)
-    z_e = np.random.normal(size=n)
-    z_y = true_r * z_x + np.sqrt(1 - true_r**2) * z_e
-    return np.round(x_mean + x_std * z_x), np.round(y_mean + y_std * z_y)
-
-
 def generate_pearson_correlation(x_dataset=None, y_dataset=None,
                                  x_mean=10, x_std=1, y_mean=20, y_std=3,
                                  tx_effect_switch=True, tx_effect=10, noise_sd=3,
-                                 ro=0, n=10, alpha=0.05, seed=None, two_tailed=True,
-                                 true_r=None):
+                                 ro=0, n=10, alpha=0.05, seed=None, two_tailed=True):
     """
     Generate a Pearson correlation practice problem with two synthetic datasets.
 
@@ -1162,14 +1094,6 @@ def generate_pearson_correlation(x_dataset=None, y_dataset=None,
         Random seed for reproducibility. Default is None.
     two_tailed : bool, optional
         If True, performs a two-tailed test. Default is True.
-    true_r : float or None, optional
-        Population correlation between X and Y, from -1 to 1. When given (and
-        no datasets are supplied), X and Y are generated so that their
-        population correlation is true_r, with or without a seed. Treatment
-        noise, if switched on, is added afterwards and pulls the correlation
-        toward zero. Default is None, which generates X and Y separately: with
-        a seed they share the same random draws and are almost perfectly
-        correlated; without one they are unrelated.
 
     Returns
     -------
@@ -1181,9 +1105,6 @@ def generate_pearson_correlation(x_dataset=None, y_dataset=None,
         Results table with statistics: n, df, mean X/Y, SS_X, SS_Y, SP_XY,
         r, r-squared, standard error, t, critical t, and decision.
     """
-    if true_r is not None and x_dataset is None and y_dataset is None:
-        x_dataset, y_dataset = _correlated_normal_data(x_mean, x_std, y_mean, y_std,
-                                                       n, true_r, seed)
     if x_dataset is None:
         x_dataset = generate_normal_data(x_mean, x_std, n, seed)
     if y_dataset is None:
@@ -1235,7 +1156,7 @@ def generate_pearson_correlation(x_dataset=None, y_dataset=None,
 def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
                                     x_mean=10, x_std=1, y_mean=20, y_std=3,
                                     tx_effect_switch=True, tx_effect=10, noise_sd=3,
-                                    n=10, alpha=0.05, seed=None, true_r=None):
+                                    n=10, alpha=0.05, seed=None):
     """
     Generate a simple (one-predictor) linear regression practice problem.
 
@@ -1266,13 +1187,6 @@ def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
         Significance level. Default is 0.05.
     seed : int or None, optional
         Random seed for reproducibility. Default is None.
-    true_r : float or None, optional
-        Population correlation between X and Y, from -1 to 1. When given (and
-        no datasets are supplied), X and Y are generated so that their
-        population correlation is true_r, with or without a seed. Treatment
-        noise, if switched on, is added afterwards and pulls the correlation
-        toward zero. Default is None, which generates X and Y separately (see
-        generate_pearson_correlation).
 
     Returns
     -------
@@ -1286,9 +1200,6 @@ def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
     str
         Regression equation string in the format "Y=bX+a".
     """
-    if true_r is not None and x_dataset is None and y_dataset is None:
-        x_dataset, y_dataset = _correlated_normal_data(x_mean, x_std, y_mean, y_std,
-                                                       n, true_r, seed)
     if x_dataset is None:
         x_dataset = generate_normal_data(x_mean, x_std, n, seed)
     if y_dataset is None:
@@ -1353,8 +1264,7 @@ def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
         "Decision": None
     })
     
-    # Show a negative intercept as "Y=bX-a" instead of "Y=bX+-a"
-    regression_equation = f"Y={b}X{'+' if a >= 0 else '-'}{abs(a)}"
+    regression_equation = f"Y={b}X+{a}"
     
     return y_dataset, x_dataset, pd.DataFrame(rows), regression_equation
 

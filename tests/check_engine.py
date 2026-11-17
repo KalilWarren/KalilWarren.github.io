@@ -1,6 +1,6 @@
 """Cross-check the StatTeacher Python engine against SciPy.
 
-Runs every generate_* function in public/toolkit/Engine_v1.0.0.py over a range
+Runs every generate_* function in public/toolkit/Engine_v1.1.0.py over a range
 of seeds and settings, then recomputes each reported statistic from the dataset
 the engine returned, using SciPy's own tests or a separate NumPy calculation.
 
@@ -19,7 +19,7 @@ from scipy import stats
 
 warnings.filterwarnings('ignore')
 
-ENGINE = pathlib.Path(__file__).resolve().parent.parent / 'public' / 'toolkit' / 'Engine_v1.0.0.py'
+ENGINE = pathlib.Path(__file__).resolve().parent.parent / 'public' / 'toolkit' / 'Engine_v1.1.0.py'
 eng = {}
 exec(compile(ENGINE.read_text(encoding='utf-8'), str(ENGINE), 'exec'), eng)
 

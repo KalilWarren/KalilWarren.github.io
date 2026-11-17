@@ -14,6 +14,7 @@ Academic research profile for **Kalil Warren**, PhD Candidate in Psychology (Cog
 ├── research.html           — Research statement, projects with figures, publications
 ├── teaching.html           — Teaching approach, courses, StatTeacher Toolkit, service
 ├── cv.html                 — Full curriculum vitae
+├── news.html               — Complete news list (the homepage shows the five newest)
 ├── toolkit.html            — StatTeacher Toolkit (instructor view)
 ├── student.html            — Student Practice page
 ├── 404.html                — Not-found page
@@ -22,7 +23,8 @@ Academic research profile for **Kalil Warren**, PhD Candidate in Psychology (Cog
 ├── public/                 — Copied to the site root as-is
 │   ├── assets/             — Headshot, CV PDF, research figures, toolkit screenshots
 │   ├── toolkit/
-│   │   └── Engine_v1.0.0.py — StatTeacher statistical engine (served as-is)
+│   │   ├── Engine_v1.1.0.py — StatTeacher statistical engine (served as-is; the one the toolkit loads)
+│   │   └── Engine_v1.0.0.py — Engine as originally submitted, kept unchanged for reference
 │   ├── favicon.svg, favicon.ico, apple-touch-icon.png
 │   └── sitemap.xml, robots.txt
 ├── src/
@@ -93,7 +95,7 @@ Tooltip content is centralized in `src/toolkit/tooltips.ts` and injected at runt
 
 ### How It Works
 
-The app loads `toolkit/Engine_v1.0.0.py` at runtime into a Pyodide Python environment running in the browser. NumPy, SciPy, and Pandas are loaded via Pyodide's package system. All computation happens locally in the user's browser tab.
+The app loads `toolkit/Engine_v1.1.0.py` at runtime into a Pyodide Python environment running in the browser. NumPy, SciPy, and Pandas are loaded via Pyodide's package system. All computation happens locally in the user's browser tab.
 
 **Technology stack:**
 - Python 3 (via [Pyodide v0.26.4](https://pyodide.org))
@@ -144,7 +146,9 @@ Every page has **StatTeacher Toolkit** (`toolkit.html`, the instructor view with
 
 ---
 
-## Engine Reference (`Engine_v1.0.0.py`)
+## Engine Reference (`Engine_v1.1.0.py`)
+
+Changes between versions are listed in [`CHANGELOG.md`](CHANGELOG.md). `Engine_v1.0.0.py` is kept in the repository unchanged.
 
 ### Dependencies
 

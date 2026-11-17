@@ -14,8 +14,8 @@ export async function initPyodide(): Promise<void> {
     await state.pyodide.loadPackage(['numpy', 'scipy', 'pandas']);
 
     setLoadMsg('Loading StatTeacher Engine…');
-    const resp = await fetch('toolkit/Engine_v1.0.0.py');
-    if (!resp.ok) throw new Error('Could not fetch toolkit/Engine_v1.0.0.py');
+    const resp = await fetch('toolkit/Engine_v1.1.0.py');
+    if (!resp.ok) throw new Error('Could not fetch toolkit/Engine_v1.1.0.py');
     state.pyodide.runPython(await resp.text());
 
     /* Helper that replaces NaN/numpy types before JSON serialisation.
