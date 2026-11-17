@@ -1007,7 +1007,10 @@ def generate_one_way_repeated_measures_anova(
             raise ValueError("labels must match the number of columns in data.")
 
     # STEP 2: Build wide-format DataFrame
-    wide_df = pd.DataFrame(np.round(data, 3), columns=labels)
+    # Round first, so the ANOVA table below is computed from exactly the scores
+    # that are returned and a student working from the dataset reproduces it.
+    data = np.round(data, 3)
+    wide_df = pd.DataFrame(data, columns=labels)
     wide_df.insert(0, "subject", np.arange(1, n_subjects + 1))
 
     # STEP 3: ANOVA calculations
@@ -1264,7 +1267,8 @@ def generate_1_predictor_regression(x_dataset=None, y_dataset=None,
         "Decision": None
     })
     
-    regression_equation = f"Y={b}X+{a}"
+    # Show a negative intercept as "Y=bX-a" instead of "Y=bX+-a"
+    regression_equation = f"Y={b}X{'+' if a >= 0 else '-'}{abs(a)}"
     
     return y_dataset, x_dataset, pd.DataFrame(rows), regression_equation
 

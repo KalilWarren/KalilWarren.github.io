@@ -239,7 +239,10 @@ function uncheckRadios(name: string): void {
 /* ── Generate problem ── */
 
 export function generateProblem(): TwoWayProblem {
-  for (let attempt = 0; attempt < 100; attempt++) {
+  // Chosen once, so that redrawing below does not make hard problems rarer
+  const difficulty = rChoice<Difficulty>(['easy', 'medium', 'hard']);
+
+  for (let attempt = 0; attempt < 200; attempt++) {
     const aLevels  = rChoice([2, 3, 4]);
     const bLevels  = rChoice([2, 3]);
     const nPerCell = rChoice([4, 5, 6, 8]);
@@ -255,7 +258,6 @@ export function generateProblem(): TwoWayProblem {
     const sdAB = Math.random() < 0.70 ? rInt(0, sdWithin)          : rInt(Math.min(sdWithin + 1, 20), 20);
 
     const alpha      = rWeighted([0.10, 0.05, 0.01], [0.2, 0.7, 0.1]);
-    const difficulty = rChoice<Difficulty>(['easy', 'medium', 'hard']);
     const scenario   = rChoice(SCENARIOS);
 
     // Simulate main effects + centered interaction
@@ -324,6 +326,9 @@ export function generateProblem(): TwoWayProblem {
     // Quality control
     if (MSE < 0.001 || SSE <= 0) continue;
     if (!isFinite(FA) || !isFinite(FB) || !isFinite(FAB)) continue;
+    // Hard problems hide MS_Error, which students recover as MS_effect / F_effect.
+    // An F that displays as nearly zero makes that impossible, so draw again.
+    if (difficulty === 'hard' && Math.min(r2(FA), r2(FB), r2(FAB)) < 0.1) continue;
 
     const FcritA  = r3(fInv(alpha, DFA,  DFE));
     const FcritB  = r3(fInv(alpha, DFB,  DFE));
@@ -345,7 +350,7 @@ export function generateProblem(): TwoWayProblem {
   }
 
   // Fallback: should virtually never reach here
-  throw new Error('Two-way ANOVA generation failed after 100 attempts');
+  throw new Error('Two-way ANOVA generation failed after 200 attempts');
 }
 
 /* ── Build interactive ANOVA table HTML ── */
@@ -512,32 +517,78 @@ function readRadio(name: string): string | null {
 
 /* ── Grade answers ── */
 
+/* ── Grading tolerance ──
+ * Students work from a table rounded to two decimals, so a correct method can land
+ * some distance from the unrounded key, most of all when a hidden cell has to be
+ * backed out by dividing by F. Each masked cell is accepted within the base
+ * tolerance plus the furthest a correct calculation from the displayed values
+ * can be from the key. tests/check_student.py checks this against a simulated
+ * student for every difficulty. */
+
+const TOL  = 0.05;    // base tolerance for a table cell
+const HALF = 0.005;   // half-width of a value displayed to two decimals
+
+/** Largest gap between num/den worked from 2-dp displayed values and its true value. */
+function ratioSlack(num: number, den: number, value: number): number {
+  const n = r2(num), d = r2(den);
+  if (d <= HALF) return Infinity;
+  return Math.max((n + HALF) / (d - HALF) - value, value - (n - HALF) / (d + HALF));
+}
+
+export function cellTolerance(p: TwoWayProblem, field: MaskedField): number {
+  const t = p.table;
+  if (p.difficulty === 'hard') {
+    // Shown: MS and F for each effect, and every df.
+    // MS_E = MS_effect / F_effect (from any effect), SS = MS × df, SS_T = sum of the SS
+    const mse = Math.max(
+      ratioSlack(t.MSA,  t.FA,  t.MSE),
+      ratioSlack(t.MSB,  t.FB,  t.MSE),
+      ratioSlack(t.MSAB, t.FAB, t.MSE),
+    ) + HALF;
+    const ssa  = HALF * t.DFA;
+    const ssb  = HALF * t.DFB;
+    const ssab = HALF * t.DFAB;
+    const sse  = mse * t.DFE;
+    if (field === 'MSE')  return TOL + mse;
+    if (field === 'SSA')  return TOL + ssa;
+    if (field === 'SSB')  return TOL + ssb;
+    if (field === 'SSAB') return TOL + ssab;
+    if (field === 'SSE')  return TOL + sse;
+    if (field === 'SST')  return TOL + ssa + ssb + ssab + sse;
+    return TOL;
+  }
+  // Easy and medium: F = MS_effect / MS_E, from mean squares the student may have rounded
+  if (field === 'FA')  return TOL + 2 * ratioSlack(t.MSA,  t.MSE, t.FA);
+  if (field === 'FB')  return TOL + 2 * ratioSlack(t.MSB,  t.MSE, t.FB);
+  if (field === 'FAB') return TOL + 2 * ratioSlack(t.MSAB, t.MSE, t.FAB);
+  return TOL;
+}
+
 export function gradeAnswers(p: TwoWayProblem): GradeResult {
   const t = p.table;
-  const TOL = 0.05;
 
   const cells: Partial<Record<MaskedField, boolean>> = {};
   for (const field of p.masked) {
     const val = readNum(`twp-input-${field}`);
     let ok: boolean;
     switch (field) {
-      case 'SSA':  ok = !isNaN(val) && Math.abs(val - t.SSA)  <= TOL; break;
-      case 'SSB':  ok = !isNaN(val) && Math.abs(val - t.SSB)  <= TOL; break;
-      case 'SSAB': ok = !isNaN(val) && Math.abs(val - t.SSAB) <= TOL; break;
-      case 'SSE':  ok = !isNaN(val) && Math.abs(val - t.SSE)  <= TOL; break;
-      case 'SST':  ok = !isNaN(val) && Math.abs(val - t.SST)  <= TOL; break;
+      case 'SSA':  ok = !isNaN(val) && Math.abs(val - t.SSA)  <= cellTolerance(p, 'SSA'); break;
+      case 'SSB':  ok = !isNaN(val) && Math.abs(val - t.SSB)  <= cellTolerance(p, 'SSB'); break;
+      case 'SSAB': ok = !isNaN(val) && Math.abs(val - t.SSAB) <= cellTolerance(p, 'SSAB'); break;
+      case 'SSE':  ok = !isNaN(val) && Math.abs(val - t.SSE)  <= cellTolerance(p, 'SSE'); break;
+      case 'SST':  ok = !isNaN(val) && Math.abs(val - t.SST)  <= cellTolerance(p, 'SST'); break;
       case 'DFA':  ok = val === t.DFA;  break;
       case 'DFB':  ok = val === t.DFB;  break;
       case 'DFAB': ok = val === t.DFAB; break;
       case 'DFE':  ok = val === t.DFE;  break;
       case 'DFT':  ok = val === t.DFT;  break;
-      case 'MSA':  ok = !isNaN(val) && Math.abs(val - t.MSA)  <= TOL; break;
-      case 'MSB':  ok = !isNaN(val) && Math.abs(val - t.MSB)  <= TOL; break;
-      case 'MSAB': ok = !isNaN(val) && Math.abs(val - t.MSAB) <= TOL; break;
-      case 'MSE':  ok = !isNaN(val) && Math.abs(val - t.MSE)  <= TOL; break;
-      case 'FA':   ok = !isNaN(val) && Math.abs(val - t.FA)   <= TOL; break;
-      case 'FB':   ok = !isNaN(val) && Math.abs(val - t.FB)   <= TOL; break;
-      case 'FAB':  ok = !isNaN(val) && Math.abs(val - t.FAB)  <= TOL; break;
+      case 'MSA':  ok = !isNaN(val) && Math.abs(val - t.MSA)  <= cellTolerance(p, 'MSA'); break;
+      case 'MSB':  ok = !isNaN(val) && Math.abs(val - t.MSB)  <= cellTolerance(p, 'MSB'); break;
+      case 'MSAB': ok = !isNaN(val) && Math.abs(val - t.MSAB) <= cellTolerance(p, 'MSAB'); break;
+      case 'MSE':  ok = !isNaN(val) && Math.abs(val - t.MSE)  <= cellTolerance(p, 'MSE'); break;
+      case 'FA':   ok = !isNaN(val) && Math.abs(val - t.FA)   <= cellTolerance(p, 'FA'); break;
+      case 'FB':   ok = !isNaN(val) && Math.abs(val - t.FB)   <= cellTolerance(p, 'FB'); break;
+      case 'FAB':  ok = !isNaN(val) && Math.abs(val - t.FAB)  <= cellTolerance(p, 'FAB'); break;
       default:     ok = false;
     }
     cells[field] = ok;

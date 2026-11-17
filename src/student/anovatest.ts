@@ -226,7 +226,7 @@ function uncheckRadios(name: string): void {
 
 /* ── Generate problem ── */
 
-export function generateProblem(): AnovaProblem {
+export function generateProblem(forced?: Difficulty): AnovaProblem {
   const k        = rChoice([3, 4, 5]);
   const nPerCell = rChoice([6, 8, 10, 12]);
   const N        = k * nPerCell;
@@ -241,7 +241,7 @@ export function generateProblem(): AnovaProblem {
     : rInt(Math.min(sdWithin + 1, 20), 20);
 
   const alpha      = rWeighted([0.10, 0.05, 0.01], [0.2, 0.7, 0.1]);
-  const difficulty = rChoice<Difficulty>(['easy', 'medium', 'hard']);
+  const difficulty = forced ?? rChoice<Difficulty>(['easy', 'medium', 'hard']);
   const scenario   = rChoice(SCENARIOS);
 
   // Simulate group data
@@ -260,6 +260,10 @@ export function generateProblem(): AnovaProblem {
   const MSB = SSB / DFB;
   const MSW = SSW / DFW;
   const F   = MSB / MSW;
+
+  // Hard problems hide MS_Within, which students recover as MS_Between / F.
+  // An F that displays as nearly zero makes that impossible, so draw again.
+  if (difficulty === 'hard' && r2(F) < 0.1) return generateProblem(difficulty);
 
   const Fcrit        = r3(fInv(alpha, DFB, DFW));
   const decision_true: 'reject' | 'fail' = F >= Fcrit ? 'reject' : 'fail';
@@ -386,24 +390,59 @@ function readRadio(name: string): string | null {
 
 /* ── Grade answers ── */
 
+/* ── Grading tolerance ──
+ * Students work from a table rounded to two decimals, so a correct method can land
+ * some distance from the unrounded key, most of all when a hidden cell has to be
+ * backed out by dividing by F. Each masked cell is accepted within the base
+ * tolerance plus the furthest a correct calculation from the displayed values
+ * can be from the key. tests/check_student.py checks this against a simulated
+ * student for every difficulty. */
+
+const TOL  = 0.05;    // base tolerance for a table cell
+const HALF = 0.005;   // half-width of a value displayed to two decimals
+
+/** Largest gap between num/den worked from 2-dp displayed values and its true value. */
+function ratioSlack(num: number, den: number, value: number): number {
+  const n = r2(num), d = r2(den);
+  if (d <= HALF) return Infinity;
+  return Math.max((n + HALF) / (d - HALF) - value, value - (n - HALF) / (d + HALF));
+}
+
+export function cellTolerance(p: AnovaProblem, field: MaskedField): number {
+  const t = p.table;
+  if (p.difficulty === 'hard') {
+    // Shown: MS_B, F and both df.  MS_W = MS_B / F, SS = MS × df, SS_T = SS_B + SS_W
+    const msw = ratioSlack(t.MSB, t.F, t.MSW) + HALF;
+    const ssb = HALF * t.DFB;
+    const ssw = msw * t.DFW;
+    if (field === 'MSW') return TOL + msw;
+    if (field === 'SSB') return TOL + ssb;
+    if (field === 'SSW') return TOL + ssw;
+    if (field === 'SST') return TOL + ssb + ssw;
+    return TOL;
+  }
+  // Easy and medium: F = MS_B / MS_W, from mean squares the student may have rounded
+  if (field === 'F') return TOL + 2 * ratioSlack(t.MSB, t.MSW, t.F);
+  return TOL;
+}
+
 export function gradeAnswers(p: AnovaProblem): GradeResult {
   const t = p.table;
-  const TOL = 0.05;
 
   const cells: Partial<Record<MaskedField, boolean>> = {};
   for (const field of p.masked) {
     const val = readNum(`ap-input-${field}`);
     let ok: boolean;
     switch (field) {
-      case 'SSB': ok = !isNaN(val) && Math.abs(val - t.SSB) <= TOL; break;
-      case 'SSW': ok = !isNaN(val) && Math.abs(val - t.SSW) <= TOL; break;
-      case 'SST': ok = !isNaN(val) && Math.abs(val - t.SST) <= TOL; break;
+      case 'SSB': ok = !isNaN(val) && Math.abs(val - t.SSB) <= cellTolerance(p, 'SSB'); break;
+      case 'SSW': ok = !isNaN(val) && Math.abs(val - t.SSW) <= cellTolerance(p, 'SSW'); break;
+      case 'SST': ok = !isNaN(val) && Math.abs(val - t.SST) <= cellTolerance(p, 'SST'); break;
       case 'DFB': ok = val === t.DFB; break;
       case 'DFW': ok = val === t.DFW; break;
       case 'DFT': ok = val === t.DFT; break;
-      case 'MSB': ok = !isNaN(val) && Math.abs(val - t.MSB) <= TOL; break;
-      case 'MSW': ok = !isNaN(val) && Math.abs(val - t.MSW) <= TOL; break;
-      case 'F':   ok = !isNaN(val) && Math.abs(val - t.F)   <= TOL; break;
+      case 'MSB': ok = !isNaN(val) && Math.abs(val - t.MSB) <= cellTolerance(p, 'MSB'); break;
+      case 'MSW': ok = !isNaN(val) && Math.abs(val - t.MSW) <= cellTolerance(p, 'MSW'); break;
+      case 'F':   ok = !isNaN(val) && Math.abs(val - t.F)   <= cellTolerance(p, 'F'); break;
       default:    ok = false;
     }
     cells[field] = ok;

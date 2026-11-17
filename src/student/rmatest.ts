@@ -227,7 +227,7 @@ function uncheckRadios(name: string): void {
 
 /* ── Generate problem ── */
 
-export function generateProblem(): RmaProblem {
+export function generateProblem(forced?: Difficulty): RmaProblem {
   const nSubjects    = rChoice([5, 6, 7, 8, 10]);
   const nConditions  = rChoice([3, 4, 5]);
   const N            = nSubjects * nConditions;
@@ -243,7 +243,7 @@ export function generateProblem(): RmaProblem {
   const errorSD     = rInt(2, 10);
 
   const alpha      = rWeighted([0.10, 0.05, 0.01], [0.2, 0.7, 0.1]);
-  const difficulty = rChoice<Difficulty>(['easy', 'medium', 'hard']);
+  const difficulty = forced ?? rChoice<Difficulty>(['easy', 'medium', 'hard']);
   const scenario   = rChoice(SCENARIOS);
 
   // Generate data matrix [subject × condition]
@@ -280,6 +280,10 @@ export function generateProblem(): RmaProblem {
   const MSBS = SSBS / DFBS;
   const MSE  = Math.max(SSE, 0.001) / DFE;
   const F    = MSBT / MSE;
+
+  // Hard problems hide MS_Error, which students recover as MS_BT / F.
+  // An F that displays as nearly zero makes that impossible, so draw again.
+  if (difficulty === 'hard' && r2(F) < 0.1) return generateProblem(difficulty);
 
   const Fcrit        = r3(fInv(alpha, DFBT, DFE));
   const decision_true: 'reject' | 'fail' = F >= Fcrit ? 'reject' : 'fail';
@@ -426,27 +430,63 @@ function readRadio(name: string): string | null {
 
 /* ── Grade answers ── */
 
+/* ── Grading tolerance ──
+ * Students work from a table rounded to two decimals, so a correct method can land
+ * some distance from the unrounded key, most of all when a hidden cell has to be
+ * backed out by dividing by F. Each masked cell is accepted within the base
+ * tolerance plus the furthest a correct calculation from the displayed values
+ * can be from the key. tests/check_student.py checks this against a simulated
+ * student for every difficulty. */
+
+const TOL  = 0.05;    // base tolerance for a table cell
+const HALF = 0.005;   // half-width of a value displayed to two decimals
+
+/** Largest gap between num/den worked from 2-dp displayed values and its true value. */
+function ratioSlack(num: number, den: number, value: number): number {
+  const n = r2(num), d = r2(den);
+  if (d <= HALF) return Infinity;
+  return Math.max((n + HALF) / (d - HALF) - value, value - (n - HALF) / (d + HALF));
+}
+
+export function cellTolerance(p: RmaProblem, field: MaskedField): number {
+  const t = p.table;
+  if (p.difficulty === 'hard') {
+    // Shown: MS_BT, F, SS_BS and every df.
+    // MS_E = MS_BT / F, SS = MS × df, SS_T = SS_BT + SS_BS + SS_E
+    const mse  = ratioSlack(t.MSBT, t.F, t.MSE) + HALF;
+    const ssbt = HALF * t.DFBT;
+    const sse  = mse * t.DFE;
+    if (field === 'MSE')  return TOL + mse;
+    if (field === 'SSBT') return TOL + ssbt;
+    if (field === 'SSE')  return TOL + sse;
+    if (field === 'SST')  return TOL + ssbt + HALF + sse;
+    return TOL;
+  }
+  // Easy and medium: F = MS_BT / MS_E, from mean squares the student may have rounded
+  if (field === 'F') return TOL + 2 * ratioSlack(t.MSBT, t.MSE, t.F);
+  return TOL;
+}
+
 export function gradeAnswers(p: RmaProblem): GradeResult {
   const t = p.table;
-  const TOL = 0.05;
 
   const cells: Partial<Record<MaskedField, boolean>> = {};
   for (const field of p.masked) {
     const val = readNum(`rmp-input-${field}`);
     let ok: boolean;
     switch (field) {
-      case 'SSBT': ok = !isNaN(val) && Math.abs(val - t.SSBT) <= TOL; break;
-      case 'SSBS': ok = !isNaN(val) && Math.abs(val - t.SSBS) <= TOL; break;
-      case 'SSE':  ok = !isNaN(val) && Math.abs(val - t.SSE)  <= TOL; break;
-      case 'SST':  ok = !isNaN(val) && Math.abs(val - t.SST)  <= TOL; break;
+      case 'SSBT': ok = !isNaN(val) && Math.abs(val - t.SSBT) <= cellTolerance(p, 'SSBT'); break;
+      case 'SSBS': ok = !isNaN(val) && Math.abs(val - t.SSBS) <= cellTolerance(p, 'SSBS'); break;
+      case 'SSE':  ok = !isNaN(val) && Math.abs(val - t.SSE)  <= cellTolerance(p, 'SSE'); break;
+      case 'SST':  ok = !isNaN(val) && Math.abs(val - t.SST)  <= cellTolerance(p, 'SST'); break;
       case 'DFBT': ok = val === t.DFBT; break;
       case 'DFBS': ok = val === t.DFBS; break;
       case 'DFE':  ok = val === t.DFE;  break;
       case 'DFT':  ok = val === t.DFT;  break;
-      case 'MSBT': ok = !isNaN(val) && Math.abs(val - t.MSBT) <= TOL; break;
-      case 'MSBS': ok = !isNaN(val) && Math.abs(val - t.MSBS) <= TOL; break;
-      case 'MSE':  ok = !isNaN(val) && Math.abs(val - t.MSE)  <= TOL; break;
-      case 'F':    ok = !isNaN(val) && Math.abs(val - t.F)    <= TOL; break;
+      case 'MSBT': ok = !isNaN(val) && Math.abs(val - t.MSBT) <= cellTolerance(p, 'MSBT'); break;
+      case 'MSBS': ok = !isNaN(val) && Math.abs(val - t.MSBS) <= cellTolerance(p, 'MSBS'); break;
+      case 'MSE':  ok = !isNaN(val) && Math.abs(val - t.MSE)  <= cellTolerance(p, 'MSE'); break;
+      case 'F':    ok = !isNaN(val) && Math.abs(val - t.F)    <= cellTolerance(p, 'F'); break;
       default:     ok = false;
     }
     cells[field] = ok;
