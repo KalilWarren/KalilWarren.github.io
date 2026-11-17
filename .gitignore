@@ -4,3 +4,6 @@ StatTeacher_Toolkit_Technical_Report.md
 CLAUDE.md
 .DS_Store
 .Rhistory
+
+# Word source for the CV; only the PDF is published
+public/assets/*.docx
