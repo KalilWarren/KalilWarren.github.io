@@ -18,7 +18,7 @@ import {
   generateRmaAnovaProblem,
 } from './problems.ts';
 import { gv } from './ui.ts';
-import { fPValue } from './stats.ts';
+import { fPValue, ciLevel } from './stats.ts';
 import { Z_T_SCENARIOS, IND_T_SCENARIOS, REP_T_SCENARIOS, PEARSON_REG_SCENARIOS, ANOVA_SCENARIOS, rScenario } from './scenarios.ts';
 import type {
   TestType,
@@ -459,7 +459,7 @@ function buildPromptAndKey(testType: TestType): {
           ['4. Decision'], ['', decStr],
           [],
           ['5. Interpretation'], [d.interp],
-          ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+          [`${ciLevel(d.alpha, d.twoTailed)}% CI:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
         ],
         instructorKey: d.interp,
         decision:      decStr,
@@ -483,12 +483,12 @@ function buildPromptAndKey(testType: TestType): {
       const cohenFml = `(M − μ₀) / s = (${d.xbar} − ${d.mu0}) / ${d.sampleSD} = ${d.cohenD}`;
       const rSqStr   = `t² / (t² + df) = ${d.tScore}² / (${d.tScore}² + ${d.df}) = ${parseFloat(String(d.rSq)).toFixed(3)} (${d.rSqPct}% variance explained)`;
       const q3T = d.esType === 'r_squared' ? 'Determine the p-value and compute r².'
-                : d.esType === 'ci'        ? `Determine the p-value and compute the ${(1 - d.alpha) * 100 | 0}% confidence interval.`
+                : d.esType === 'ci'        ? `Determine the p-value and compute the ${ciLevel(d.alpha, d.twoTailed)}% confidence interval.`
                 :                           "Determine the p-value and compute Cohen's d.";
       const esKeyRowsT: (string | number | null)[][] = d.esType === 'r_squared'
         ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ['r²:', rSqStr]]
         : d.esType === 'ci'
-        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${(1 - d.alpha) * 100 | 0}% CI:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${ciLevel(d.alpha, d.twoTailed)}% CI:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
         : [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ["Cohen's d:", cohenFml]];
       return {
         problemRows: [
@@ -541,12 +541,12 @@ function buildPromptAndKey(testType: TestType): {
         `${d.group2}: n = ${d.n2}, M = ${d.m2} ${d.unit}, s = ${d.sd2} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether ${d.group1} and ${d.group2} ${d.testPhrasePlain}.`;
       const q3Ind = d.esType === 'r_squared' ? 'Determine the p-value and compute r².'
-                  : d.esType === 'ci'        ? `Determine the p-value and compute the ${(1 - d.alpha) * 100 | 0}% confidence interval for μ₁ − μ₂.`
+                  : d.esType === 'ci'        ? `Determine the p-value and compute the ${ciLevel(d.alpha, d.twoTailed)}% confidence interval for μ₁ − μ₂.`
                   :                           "Determine the p-value and compute Cohen's d.";
       const esKeyRowsInd: (string | number | null)[][] = d.esType === 'r_squared'
         ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ['r²:', rSqStr]]
         : d.esType === 'ci'
-        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${(1 - d.alpha) * 100 | 0}% CI for (μ₁ − μ₂):`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${ciLevel(d.alpha, d.twoTailed)}% CI for (μ₁ − μ₂):`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
         : [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ["Cohen's d:", `${d.cohenD}`]];
       return {
         problemRows: [
@@ -598,12 +598,12 @@ function buildPromptAndKey(testType: TestType): {
         `and a standard deviation of s_D = ${d.sdDiff} ${d.unit}. ` +
         `Using α = ${d.alpha} (${d.tailLabel}), test whether there is ${d.testPhrasePlain}.`;
       const q3Rm = d.esType === 'r_squared' ? 'Determine the p-value and compute r².'
-                 : d.esType === 'ci'        ? `Determine the p-value and compute the ${(1 - d.alpha) * 100 | 0}% confidence interval for μ_D.`
+                 : d.esType === 'ci'        ? `Determine the p-value and compute the ${ciLevel(d.alpha, d.twoTailed)}% confidence interval for μ_D.`
                  :                           "Determine the p-value and compute Cohen's d.";
       const esKeyRowsRm: (string | number | null)[][] = d.esType === 'r_squared'
         ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ['r²:', rSqStr]]
         : d.esType === 'ci'
-        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${(1 - d.alpha) * 100 | 0}% CI for μ_D:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
+        ? [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], [`${ciLevel(d.alpha, d.twoTailed)}% CI for μ_D:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`]]
         : [['p-value:', `p ${pvalStr}  →  p ${d.pCompare}`], ["Cohen's d:", `M_D / s_D = ${d.meanDiff} / ${d.sdDiff} = ${d.cohenD}`]];
       return {
         problemRows: [

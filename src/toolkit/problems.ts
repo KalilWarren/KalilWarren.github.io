@@ -1,6 +1,6 @@
 import { state } from './state.ts';
 import { gv } from './ui.ts';
-import { pValue, tPValue, fPValue, statsDict } from './stats.ts';
+import { pValue, tPValue, fPValue, statsDict, ciLevel } from './stats.ts';
 import type {
   AnovaDifficulty,
   AnovaFullTable, AnovaMissingCell,
@@ -43,8 +43,8 @@ export function generateZTestProblem(): void {
   const zCrit  = stats['Z_Critical'];
   const cohenD = stats["Cohen's d"];
   const decision = stats['Decision'];
-  const ciUp   = stats['95% CI Upper'];
-  const ciLo   = stats['95% CI Lower'];
+  const ciUp   = stats['CI Upper'];
+  const ciLo   = stats['CI Lower'];
 
   const alpha     = state.lastZTestContext?.alpha     ?? 0.05;
   const twoTailed = state.lastZTestContext?.twoTailed ?? true;
@@ -133,7 +133,7 @@ export function generateZTestProblem(): void {
   <div class="key-section">
     <strong>5. Interpretation</strong>
     <p>${interp}</p>
-    <p>95% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
+    <p>${ciLevel(alpha, twoTailed)}% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>
   </div>
 </div>`;
 
@@ -181,8 +181,8 @@ export function generateTTestProblem(): void {
   const cohenD   = stats["Cohen's d"];
   const rSq      = stats['R-Squared'];
   const decision = stats['Decision'];
-  const ciUp     = stats['95% CI Upper'];
-  const ciLo     = stats['95% CI Lower'];
+  const ciUp     = stats['CI Upper'];
+  const ciLo     = stats['CI Lower'];
   const df       = Number(n) - 1;
 
   const alpha     = state.lastTTestContext?.alpha     ?? 0.05;
@@ -208,7 +208,7 @@ export function generateTTestProblem(): void {
   const esType = resolveEffectSizeType();
   const esQ3 = esType === 'cohen_d'   ? `Determine the <em>p</em>-value and compute Cohen's <em>d</em>.`
              : esType === 'r_squared' ? `Determine the <em>p</em>-value and compute <em>r</em>&sup2;.`
-             :                         `Determine the <em>p</em>-value and compute the ${(1 - alpha) * 100 | 0}% confidence interval for μ.`;
+             :                         `Determine the <em>p</em>-value and compute the ${ciLevel(alpha, twoTailed)}% confidence interval for μ.`;
 
   /* Student problem text */
   const problemHTML = `
@@ -252,7 +252,7 @@ export function generateTTestProblem(): void {
     ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
        <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>`
     : `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-       <p>${(1 - alpha) * 100 | 0}% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
+       <p>${ciLevel(alpha, twoTailed)}% CI: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
 
   const keyHTML = `
 <div class="key-box">
@@ -344,8 +344,8 @@ export function generateIndTTestProblem(): void {
   const cohenD   = stats["Cohen's d"];
   const rSq      = stats['R-Squared'];
   const decision = stats['Decision'];
-  const ciUp     = stats['95% CI Upper'];
-  const ciLo     = stats['95% CI Lower'];
+  const ciUp     = stats['CI Upper'];
+  const ciLo     = stats['CI Lower'];
   const df       = Number(df1) + Number(df2);
 
   const alpha     = state.lastIndTTestContext?.alpha     ?? 0.05;
@@ -376,7 +376,7 @@ export function generateIndTTestProblem(): void {
   const esType = resolveEffectSizeType();
   const esQ3 = esType === 'cohen_d'   ? `Determine the <em>p</em>-value and compute Cohen's <em>d</em>.`
              : esType === 'r_squared' ? `Determine the <em>p</em>-value and compute <em>r</em>&sup2;.`
-             :                         `Determine the <em>p</em>-value and compute the ${(1 - alpha) * 100 | 0}% confidence interval for μ₁ − μ₂.`;
+             :                         `Determine the <em>p</em>-value and compute the ${ciLevel(alpha, twoTailed)}% confidence interval for μ₁ − μ₂.`;
 
   /* Student problem text */
   const problemHTMLWithEs = `
@@ -420,7 +420,7 @@ export function generateIndTTestProblem(): void {
     ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
        <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>`
     : `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-       <p>${(1 - alpha) * 100 | 0}% CI for (μ₁ − μ₂): [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
+       <p>${ciLevel(alpha, twoTailed)}% CI for (μ₁ − μ₂): [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
 
   const keyHTML = `
 <div class="key-box">
@@ -505,8 +505,8 @@ export function generateRmTTestProblem(): void {
   const cohenD   = stats["Cohen's d"];
   const rSq      = stats['R-Squared'];
   const decision = stats['Decision'];
-  const ciUp     = stats['95% CI Upper'];
-  const ciLo     = stats['95% CI Lower'];
+  const ciUp     = stats['CI Upper'];
+  const ciLo     = stats['CI Lower'];
   const df       = Number(n) - 1;
 
   const alpha     = state.lastRmTTestContext?.alpha     ?? 0.05;
@@ -536,7 +536,7 @@ export function generateRmTTestProblem(): void {
   const esType = resolveEffectSizeType();
   const esQ3 = esType === 'cohen_d'   ? `Determine the <em>p</em>-value and compute Cohen's <em>d</em>.`
              : esType === 'r_squared' ? `Determine the <em>p</em>-value and compute <em>r</em>&sup2;.`
-             :                         `Determine the <em>p</em>-value and compute the ${(1 - alpha) * 100 | 0}% confidence interval for μ<sub>D</sub>.`;
+             :                         `Determine the <em>p</em>-value and compute the ${ciLevel(alpha, twoTailed)}% confidence interval for μ<sub>D</sub>.`;
 
   /* Student problem text */
   const problemHTML = `
@@ -575,7 +575,7 @@ export function generateRmTTestProblem(): void {
     ? `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
        <p>r&sup2; = t&sup2;&nbsp;/&nbsp;(t&sup2;&nbsp;+&nbsp;df) = ${parseFloat(String(rSq)).toFixed(3)} (${rSqPct}% of variance explained)</p>`
     : `<p>p ${pval.startsWith('<') ? pval : '= ' + pval} &nbsp;&rarr;&nbsp; p ${pCompare}</p>
-       <p>${(1 - alpha) * 100 | 0}% CI for μ<sub>D</sub>: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
+       <p>${ciLevel(alpha, twoTailed)}% CI for μ<sub>D</sub>: [${ciLo},&nbsp;${ciUp}]&nbsp;${unit}</p>`;
 
   const keyHTML = `
 <div class="key-box">
@@ -707,7 +707,7 @@ export function downloadProblemExcel(): void {
       ['4. Decision'], ['', decStr],
       [],
       ['5. Interpretation'], [d.interp],
-      ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+      [`${ciLevel(d.alpha, d.twoTailed)}% CI:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
     ];
     sheetName = 'Z-Test Problem';
     fileName  = `statteacher_zproblem_${Date.now()}.xlsx`;
@@ -754,7 +754,7 @@ export function downloadProblemExcel(): void {
       ['4. Decision'], ['', decStr],
       [],
       ['5. Interpretation'], [d.interp],
-      ['95% CI:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+      [`${ciLevel(d.alpha, d.twoTailed)}% CI:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
     ];
     sheetName = 'T-Test Problem';
     fileName  = `statteacher_tproblem_${Date.now()}.xlsx`;
@@ -799,7 +799,7 @@ export function downloadProblemExcel(): void {
       ['4. Decision'], ['', decStr],
       [],
       ['5. Interpretation'], [d.interp],
-      ['95% CI for (μ₁ − μ₂):', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+      [`${ciLevel(d.alpha, d.twoTailed)}% CI for (μ₁ − μ₂):`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
     ];
     sheetName = 'Ind T-Test Problem';
     fileName  = `statteacher_ind_tproblem_${Date.now()}.xlsx`;
@@ -855,7 +855,7 @@ export function downloadProblemExcel(): void {
       ['4. Decision'], ['', decStr],
       [],
       ['5. Interpretation'], [d.interp],
-      ['95% CI for μ_D:', `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
+      [`${ciLevel(d.alpha, d.twoTailed)}% CI for μ_D:`, `[${d.ciLo}, ${d.ciUp}] ${d.unit}`],
     ];
     sheetName = 'RM T-Test Problem';
     fileName  = `statteacher_rm_tproblem_${Date.now()}.xlsx`;

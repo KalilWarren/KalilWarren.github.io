@@ -174,6 +174,30 @@ def _z_critical(alpha=0.05, two_tailed=True):
     else:
         return norm.ppf(1 - alpha)
 
+def _ci_label(alpha=0.05, two_tailed=True):
+    """
+    Label for the confidence interval reported beside a test, e.g. "95% CI".
+
+    The interval is built from the same critical value as the test, so its
+    confidence level is 1 - alpha for a two-tailed test and 1 - 2 * alpha for
+    a one-tailed test (alpha = 0.05 one-tailed gives a 90% interval).
+
+    Parameters
+    ----------
+    alpha : float, optional
+        Significance level of the test. Default is 0.05.
+    two_tailed : bool, optional
+        Whether the test is two-tailed. Default is True.
+
+    Returns
+    -------
+    str
+        The label, such as "95% CI", "99% CI" or "97.5% CI".
+    """
+    level = (1 - alpha if two_tailed else 1 - 2 * alpha) * 100
+    return f"{round(level, 4):g}% CI"
+
+
 def _t_critical(df, alpha=0.05, two_tailed=True):
     """
     Compute the critical t value for a given degrees of freedom and alpha level.
@@ -469,8 +493,8 @@ def generate_z_score_problem(dataset=None,
     
     df_out = pd.DataFrame({
         "Statistic": ["N", "Population Mean", "Population SD", "Sample Mean", "Standard Error",
-                      "Z Score", "Z_Critical", "Decision","Cohen's d", "95% CI Upper",
-                      "95% CI Lower"],
+                      "Z Score", "Z_Critical", "Decision","Cohen's d", _ci_label(alpha, two_tailed) + " Upper",
+                      _ci_label(alpha, two_tailed) + " Lower"],
         "Value": [n,
                   round(population_mean, 2),
                   round(population_std, 2),
@@ -554,7 +578,7 @@ def generate_t_test_problem(dataset=None,
     df_out = pd.DataFrame({
         "Statistic": ["N", "Sample SD", "Sample Mean", "Standard Error",
                       "t Score", "t_Critical", "Decision","Cohen's d", "R-Squared",
-                      "95% CI Upper", "95% CI Lower"],
+                      _ci_label(alpha, two_tailed) + " Upper", _ci_label(alpha, two_tailed) + " Lower"],
         "Value": [n,
                   round(sample_std, 2),
                   round(sample_mean, 2),
@@ -655,7 +679,7 @@ def generate_independent_t_test_problem(
         "Statistic": ["N1", "Sample SD1", "Sample Mean1", "df1", "Sum of Squares1",
                       "N2", "Sample SD2", "Sample Mean2", "df2", "Sum of Squares2", 
                       "Sum Of Product", "Standard Error", "t Score", "t_Critical", 
-                      "Decision","Cohen's d", "R-Squared", "95% CI Upper", "95% CI Lower"],
+                      "Decision","Cohen's d", "R-Squared", _ci_label(alpha, two_tailed) + " Upper", _ci_label(alpha, two_tailed) + " Lower"],
         "Value": [n1,
                   round(sample_std1, 2),
                   round(sample_mean1, 2),
@@ -758,7 +782,7 @@ def generate_repeated_t_test_problem(
     df_out = pd.DataFrame({
         "Statistic": ["N", "Differences SD", "Differences Mean", "Standard Error",
                       "t Score", "t_Critical", "Decision","Cohen's d", "R-Squared",
-                      "95% CI Upper", "95% CI Lower"],
+                      _ci_label(alpha, two_tailed) + " Upper", _ci_label(alpha, two_tailed) + " Lower"],
         "Value": [n,
                   round(std_differences, 2),
                   round(mean_differences, 2),

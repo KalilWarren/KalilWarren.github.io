@@ -94,6 +94,22 @@ export function fPValue(f: number, df1: number, df2: number): string {
 /** Convert a records array [{ Statistic, Value }, …] to a plain key→value dict. */
 export function statsDict(records: StatRecord[]): Record<string, string | number | null> {
   const d: Record<string, string | number | null> = {};
-  records.forEach(row => { d[row.Statistic] = row.Value; });
+  records.forEach(row => {
+    d[row.Statistic] = row.Value;
+    // The engine names the interval by its level ("95% CI Upper", "99% CI Upper", …);
+    // expose it under a level-free key as well so callers need not know the level.
+    const ci = /^[\d.]+% CI (Upper|Lower)$/.exec(row.Statistic);
+    if (ci) d[`CI ${ci[1]}`] = row.Value;
+  });
   return d;
+}
+
+/**
+ * Confidence level, in percent, of the interval the engine reports beside a test.
+ * It is built from the test's own critical value, so it is 1 − α for a two-tailed
+ * test and 1 − 2α for a one-tailed test. Mirrors _ci_label() in the engine.
+ */
+export function ciLevel(alpha: number, twoTailed: boolean): string {
+  const level = (twoTailed ? 1 - alpha : 1 - 2 * alpha) * 100;
+  return String(parseFloat(level.toFixed(4)));
 }

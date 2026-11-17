@@ -178,7 +178,7 @@ One-sample Z-test using a **known population standard deviation**.
 
 **Returns:** dataset (NumPy array), results DataFrame
 
-**Results table includes:** N, Population Mean, Population SD, Sample Mean, Standard Error, Z Score, Z Critical, Decision, Cohen's d, 95% CI Upper, 95% CI Lower
+**Results table includes:** N, Population Mean, Population SD, Sample Mean, Standard Error, Z Score, Z Critical, Decision, Cohen's d, CI Upper, CI Lower (labelled with the interval's confidence level, e.g. "95% CI Upper")
 
 ---
 
@@ -190,7 +190,7 @@ One-sample t-test using the **sample standard deviation** (population SD is unkn
 
 **Returns:** dataset (NumPy array), results DataFrame
 
-**Results table includes:** N, Sample SD, Sample Mean, Standard Error, t Score, t Critical, Decision, Cohen's d, R-Squared, 95% CI Upper, 95% CI Lower
+**Results table includes:** N, Sample SD, Sample Mean, Standard Error, t Score, t Critical, Decision, Cohen's d, R-Squared, CI Upper, CI Lower (labelled with the interval's confidence level, e.g. "95% CI Upper")
 
 ---
 
@@ -211,7 +211,7 @@ Two-group independent-samples t-test using **pooled variance**. Supports unequal
 
 **Returns:** dataset1, dataset2 (NumPy arrays), results DataFrame
 
-**Results table includes:** N1, Sample SD1, Sample Mean1, df1, Sum of Squares1, N2, Sample SD2, Sample Mean2, df2, Sum of Squares2, Sum of Product (pooled variance), Standard Error, t Score, t Critical, Decision, Cohen's d, R-Squared, 95% CI Upper, 95% CI Lower
+**Results table includes:** N1, Sample SD1, Sample Mean1, df1, Sum of Squares1, N2, Sample SD2, Sample Mean2, df2, Sum of Squares2, Sum of Product (pooled variance), Standard Error, t Score, t Critical, Decision, Cohen's d, R-Squared, CI Upper, CI Lower (labelled with the interval's confidence level, e.g. "95% CI Upper")
 
 ---
 
@@ -234,7 +234,7 @@ Paired/repeated-measures t-test. Generates pre-treatment baseline scores and der
 
 **Returns:** pre-treatment array, post-treatment array, results DataFrame
 
-**Results table includes:** N, Differences SD, Differences Mean, Standard Error, t Score, t Critical, Decision, Cohen's d, R-Squared, 95% CI Upper, 95% CI Lower
+**Results table includes:** N, Differences SD, Differences Mean, Standard Error, t Score, t Critical, Decision, Cohen's d, R-Squared, CI Upper, CI Lower (labelled with the interval's confidence level, e.g. "95% CI Upper")
 
 ---
 

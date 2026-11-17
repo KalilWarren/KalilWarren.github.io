@@ -56,11 +56,22 @@ def decision(stat, crit):
     return 'Reject Null' if abs(stat) > crit else 'Fail to Reject Null'
 
 
+def ci_rows(test, r, alpha, two, ctx):
+    """Return (upper, lower), checking the rows are labelled with the real confidence level."""
+    level = (1 - alpha if two else 1 - 2 * alpha) * 100
+    label = f'{round(level, 4):g}% CI'
+    if f'{label} Upper' not in r or f'{label} Lower' not in r:
+        found = [k for k in r if 'CI' in str(k)]
+        failures[test].append(('confidence interval label', found, f'{label} Upper / Lower', ctx))
+        return float('nan'), float('nan')
+    return r[f'{label} Upper'], r[f'{label} Lower']
+
+
 def near_cutoff(stat, crit):
     return abs(abs(stat) - crit) < 0.006
 
 
-SETTINGS = list(itertools.product(SEEDS, (0.05, 0.01), (True, False)))
+SETTINGS = list(itertools.product(SEEDS, (0.05, 0.01, 0.025), (True, False)))
 
 
 def test_z():
@@ -81,8 +92,8 @@ def test_z():
         close(name, 'z', r['Z Score'], z, 0.006, ctx)
         close(name, 'z critical', r['Z_Critical'], crit, 1e-4, ctx)
         close(name, "Cohen's d", r["Cohen's d"], (m - mu) / sigma, 0.006, ctx)
-        close(name, 'CI upper', r['95% CI Upper'], m + crit * se, 0.006, ctx)
-        close(name, 'CI lower', r['95% CI Lower'], m - crit * se, 0.006, ctx)
+        close(name, 'CI upper', ci_rows(name, r, alpha, two, ctx)[0], m + crit * se, 0.006, ctx)
+        close(name, 'CI lower', ci_rows(name, r, alpha, two, ctx)[1], m - crit * se, 0.006, ctx)
         if not near_cutoff(z, crit):
             same(name, 'decision', r['Decision'], decision(z, crit), ctx)
 
@@ -106,8 +117,8 @@ def test_t():
         close(name, 't critical', r['t_Critical'], crit, 1e-4, ctx)
         close(name, "Cohen's d", r["Cohen's d"], (m - mu) / s, 0.006, ctx)
         close(name, 'r-squared', r['R-Squared'], t * t / (t * t + df), 1e-4, ctx)
-        close(name, 'CI upper', r['95% CI Upper'], m + crit * se, 0.006, ctx)
-        close(name, 'CI lower', r['95% CI Lower'], m - crit * se, 0.006, ctx)
+        close(name, 'CI upper', ci_rows(name, r, alpha, two, ctx)[0], m + crit * se, 0.006, ctx)
+        close(name, 'CI lower', ci_rows(name, r, alpha, two, ctx)[1], m - crit * se, 0.006, ctx)
         if not near_cutoff(t, crit):
             same(name, 'decision', r['Decision'], decision(t, crit), ctx)
 
@@ -134,8 +145,8 @@ def test_ind():
         close(name, 't critical', r['t_Critical'], crit, 1e-4, ctx)
         close(name, "Cohen's d", r["Cohen's d"], diff / sp, 0.006, ctx)
         close(name, 'r-squared', r['R-Squared'], t * t / (t * t + df), 1e-4, ctx)
-        close(name, 'CI upper', r['95% CI Upper'], diff + crit * se, 0.006, ctx)
-        close(name, 'CI lower', r['95% CI Lower'], diff - crit * se, 0.006, ctx)
+        close(name, 'CI upper', ci_rows(name, r, alpha, two, ctx)[0], diff + crit * se, 0.006, ctx)
+        close(name, 'CI lower', ci_rows(name, r, alpha, two, ctx)[1], diff - crit * se, 0.006, ctx)
         if not near_cutoff(t, crit):
             same(name, 'decision', r['Decision'], decision(t, crit), ctx)
 
@@ -159,8 +170,8 @@ def test_rep():
         close(name, 't critical', r['t_Critical'], crit, 1e-4, ctx)
         close(name, "Cohen's d", r["Cohen's d"], md / sd, 0.006, ctx)
         close(name, 'r-squared', r['R-Squared'], t * t / (t * t + df), 1e-4, ctx)
-        close(name, 'CI upper', r['95% CI Upper'], md + crit * se, 0.006, ctx)
-        close(name, 'CI lower', r['95% CI Lower'], md - crit * se, 0.006, ctx)
+        close(name, 'CI upper', ci_rows(name, r, alpha, two, ctx)[0], md + crit * se, 0.006, ctx)
+        close(name, 'CI lower', ci_rows(name, r, alpha, two, ctx)[1], md - crit * se, 0.006, ctx)
         if not near_cutoff(t, crit):
             same(name, 'decision', r['Decision'], decision(t, crit), ctx)
 
