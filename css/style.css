@@ -578,6 +578,67 @@ nav a.active {
   color: var(--text-light);
 }
 
+/* Screenshots and figures inside page content */
+.figure {
+  margin: 1.75rem 0;
+}
+.figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.figure figcaption {
+  margin-top: 0.6rem;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-light);
+}
+
+/* Figures inside a research project entry */
+.project-body::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.project-body .figure {
+  margin: 1.25rem 0 0.25rem;
+  max-width: 72ch;
+}
+.project-body .figure img {
+  background: #fff;
+}
+.project-body .figure--right {
+  width: 40%;
+  margin: 0.3rem 0 1rem 1.75rem;
+}
+
+/* A figure that sits to the right with the text wrapping around it.
+   The text block is widened so the wrapped column stays readable. */
+.prose--wrap {
+  max-width: none;
+}
+.prose--wrap::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.figure--right {
+  float: right;
+  clear: right;
+  width: 46%;
+  margin: 0.4rem 0 1.25rem 2rem;
+}
+@media (max-width: 720px) {
+  .figure--right {
+    float: none;
+    width: 100%;
+    margin: 1.5rem 0;
+  }
+}
+
 /* Teaching page: course entries with a short description */
 .course-list--detailed li {
   padding: 0.9rem 0;
