@@ -578,6 +578,16 @@ nav a.active {
   color: var(--text-light);
 }
 
+/* Teaching page: course entries with a short description */
+.course-list--detailed li {
+  padding: 0.9rem 0;
+}
+.course-list--detailed p {
+  margin: 0.45rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
 /* Numbered interests in two columns */
 .interest-list {
   list-style: none;
