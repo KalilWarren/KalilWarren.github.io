@@ -1,6 +1,6 @@
 # kalilwarren.github.io
 
-Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cognitive & Neural Sciences) at the University of South Carolina.
+Academic research profile for **Kalil Warren**, PhD Candidate in Psychology (Cognitive & Neural Sciences) at the University of South Carolina.
 
 **Live site:** [https://kalilwarren.github.io](https://kalilwarren.github.io)
 
@@ -10,21 +10,23 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 
 ```
 /
-├── index.html              — Homepage (bio, research interests, news)
-├── research.html           — Research statement, projects, publications
+├── index.html              — Homepage (bio, selected work, news)
+├── research.html           — Research statement, projects with figures, publications
+├── teaching.html           — Teaching approach, courses, StatTeacher Toolkit, service
 ├── cv.html                 — Full curriculum vitae
-├── toolkit.html            — StatTeacher Toolkit (Instructor view)
+├── toolkit.html            — StatTeacher Toolkit (instructor view)
 ├── student.html            — Student Practice page
+├── 404.html                — Not-found page
 ├── css/
-│   └── style.css           — Site-wide styles (including nav dropdown)
-├── assets/
-│   ├── Picture1.jpg        — Headshot
-│   └── *.pdf               — CV PDF
-├── public/
-│   └── toolkit/
-│       └── Engine_v1.0.0.py — StatTeacher statistical engine (served as-is)
+│   └── style.css           — Site-wide styles
+├── public/                 — Copied to the site root as-is
+│   ├── assets/             — Headshot, CV PDF, research figures, toolkit screenshots
+│   ├── toolkit/
+│   │   └── Engine_v1.0.0.py — StatTeacher statistical engine (served as-is)
+│   ├── favicon.svg, favicon.ico, apple-touch-icon.png
+│   └── sitemap.xml, robots.txt
 ├── src/
-│   ├── year.ts             — Current-year display (used by all pages)
+│   ├── year.ts             — Current-year display (used by the content pages)
 │   ├── toolkit/
 │   │   ├── index.ts        — Entry point; registers all event listeners
 │   │   ├── init.ts         — Pyodide initialization and py() helper
@@ -51,12 +53,18 @@ Academic research profile for **Kalil Warren**, PhD Student in Psychology (Cogni
 │       ├── rmatest.ts      — One-way repeated-measures ANOVA problem generator and grader
 │       ├── pearsontest.ts  — Pearson correlation problem generator and grader
 │       └── regtest.ts      — Simple linear regression problem generator and grader
+├── tests/
+│   ├── run.mjs             — Test runner (`npm test`)
+│   ├── generate.mjs        — Generates seeded problems from the student modules
+│   ├── check_student.py    — Recomputes every student answer key with SciPy
+│   ├── check_engine.py     — Recomputes the engine's output with SciPy
+│   └── requirements.txt    — Python packages the tests need
 ├── package.json            — npm scripts and dev dependencies
 ├── tsconfig.json           — TypeScript compiler configuration
 ├── vite.config.ts          — Vite multi-page build configuration
 └── .github/
     └── workflows/
-        └── deploy.yml      — GitHub Actions CI/CD pipeline
+        └── deploy.yml      — GitHub Actions: test, build and deploy
 ```
 
 ---
@@ -125,15 +133,14 @@ Problems are generated entirely in the browser with back-calculation: the test t
 
 Grading tolerances:
 - Numeric answers (t, z, d, R²): ±0.02
-- Critical values: ±0.005
+- Critical values: ±0.005 to ±0.02, depending on the test
+- ANOVA and regression table cells: ±0.05, widened where needed to cover rounding. Tables are shown to two decimals, so a cell that has to be worked out from other displayed cells (for example MS_Error = MS_Between / F in hard problems) is accepted anywhere a correct calculation from those displayed values can land.
 - CI bounds: ±0.05 per bound
 - df and decision: exact
 
 ### Navigation
 
-The **StatTeacher Toolkit** nav item on every page now opens a dropdown with two options:
-- **Instructor** → `toolkit.html` (the full toolkit with Python/Pyodide engine)
-- **Student** → `student.html` (the lightweight practice page)
+Every page has **StatTeacher Toolkit** (`toolkit.html`, the instructor view with the Python/Pyodide engine) and **Student Practice** (`student.html`, the lightweight practice page) as separate links in the header.
 
 ---
 
@@ -448,20 +455,38 @@ Multiple swept parameters are **zipped**: problem i gets the i-th value from eac
 
 ---
 
+## Testing
+
+```bash
+pip install -r tests/requirements.txt   # numpy, scipy, pandas (first time only)
+npm test                                # about ten seconds
+```
+
+The statistics are implemented twice: in Python for the instructor toolkit, and in TypeScript for the student page. `npm test` checks both against SciPy.
+
+- **Student answer keys.** 2,000 problems are generated from each of the nine student modules with a fixed random seed. For every problem, SciPy recomputes the test statistic, critical value, decision, effect sizes and confidence interval from the values a student is shown. A key fails if it differs by more than the tolerance the page uses for grading. For the table problems, the test also fills in the hidden cells the way a student would from the displayed two-decimal values, and fails if a correct answer would be marked wrong.
+- **Python engine.** Each `generate_*` function is run over 40 seeds and several settings. Every reported statistic is recomputed from the returned dataset with SciPy's own tests (`ttest_1samp`, `ttest_ind`, `ttest_rel`, `f_oneway`, `pearsonr`, `linregress`) or a separate NumPy calculation.
+
+`npm test -- 5000` changes the number of problems per module, and `SEED=7 npm test` draws different ones.
+
+---
+
 ## Deployment
 
-The site is built with **Vite** and deployed to **GitHub Pages** via GitHub Actions. Every push to `main` triggers the CI/CD pipeline:
+The site is built with **Vite** and deployed to **GitHub Pages** via GitHub Actions. Every push to `main` triggers the pipeline:
 
-1. `npm ci` — installs dependencies
-2. `tsc --noEmit` — type-checks all TypeScript source files
-3. `vite build` — compiles TypeScript and outputs static files to `dist/`
-4. The `dist/` directory is deployed to GitHub Pages
+1. `npm ci` installs dependencies
+2. `npm test` runs the statistics tests; a failure stops the deploy
+3. `tsc --noEmit` type-checks all TypeScript source files
+4. `vite build` compiles TypeScript and outputs static files to `dist/`
+5. The `dist/` directory is deployed to GitHub Pages
 
 ### Local development
 
 ```bash
 npm install        # install dev dependencies (first time only)
 npm run dev        # start local dev server at http://localhost:5173
+npm test           # statistics tests (needs Python with numpy, scipy, pandas)
 npm run build      # type-check + production build → dist/
 npm run preview    # preview the production build locally
 ```
@@ -471,7 +496,7 @@ npm run preview    # preview the production build locally
 ```bash
 git add <files>
 git commit -m "Your update message"
-git push           # GitHub Actions handles the build and deploy automatically
+git push           # GitHub Actions tests, builds and deploys automatically
 ```
 
 ---
