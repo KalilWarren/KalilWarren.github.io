@@ -415,16 +415,6 @@ nav a.active {
   color: var(--navy);
 }
 
-.coda {
-  max-width: 64ch;
-  font-size: 1.08rem;
-  font-style: italic;
-  color: var(--text-light);
-  border-left: 2px solid var(--navy);
-  padding-left: 1.25rem;
-  margin-top: 0.5rem;
-}
-
 /* --- Side rail with in-page contents (Research, CV) --- */
 .layout-rail {
   display: grid;
@@ -577,6 +567,20 @@ nav a.active {
   display: block;
   font-size: 0.9rem;
   color: var(--text-light);
+}
+
+/* Link under a shortened list ("All news") */
+.more-link {
+  margin-top: 1rem;
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+/* News archive page: one readable column */
+.news-archive {
+  max-width: 44rem;
 }
 
 /* Screenshots and figures inside page content */
@@ -747,34 +751,6 @@ nav a.active {
 
 .link-list a:hover {
   color: var(--navy);
-}
-
-/* --- Research page: numbered threads --- */
-.thread {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 1.5rem;
-  margin-top: 2rem;
-  max-width: 72ch;
-}
-
-.thread-num {
-  font-family: var(--serif);
-  font-size: 2.4rem;
-  font-weight: 500;
-  line-height: 1;
-  color: var(--navy);
-  padding-top: 0.15rem;
-}
-
-.thread-body h3 {
-  font-size: 1.4rem;
-  margin-bottom: 0.5rem;
-}
-
-.thread-body p {
-  font-size: 1.04rem;
-  margin-bottom: 0;
 }
 
 /* --- Research page: projects --- */
@@ -1238,13 +1214,9 @@ footer a {
   .interest-list {
     columns: 1;
   }
-  .thread,
   .project {
     grid-template-columns: 1fr;
     gap: 0.5rem;
-  }
-  .thread-num {
-    font-size: 1.6rem;
   }
   .pub {
     grid-template-columns: 1fr;

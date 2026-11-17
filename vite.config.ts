@@ -9,6 +9,7 @@ export default defineConfig({
         cv:       resolve(__dirname, 'cv.html'),
         research: resolve(__dirname, 'research.html'),
         teaching: resolve(__dirname, 'teaching.html'),
+        news:     resolve(__dirname, 'news.html'),
         toolkit:  resolve(__dirname, 'toolkit.html'),
         student:  resolve(__dirname, 'student.html'),
         '404':    resolve(__dirname, '404.html'),
