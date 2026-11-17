@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StatTeacher Toolkit | Kalil Warren</title>
-  <meta name="description" content="StatTeacher Toolkit — a browser-based application by Kalil Warren for generating and practicing psychological statistics problems. Designed for instructors and students." />
+  <meta name="description" content="The StatTeacher Toolkit is a browser-based application by Kalil Warren for generating and practicing psychological statistics problems, made for instructors and students." />
   <meta name="author" content="Kalil Warren" />
   <meta property="og:title" content="StatTeacher Toolkit | Kalil Warren" />
-  <meta property="og:description" content="StatTeacher Toolkit — free browser-based statistics problem generator for psychology instructors. Powered by Python (Pyodide); no installation required." />
+  <meta property="og:description" content="A free, browser-based statistics problem generator for psychology instructors. It runs on Python (Pyodide), with nothing to install." />
   <meta property="og:url" content="https://kalilwarren.github.io/toolkit.html" />
   <meta property="og:type" content="website" />
   <link rel="canonical" href="https://kalilwarren.github.io/toolkit.html" />
@@ -387,6 +387,7 @@
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="research.html">Research</a></li>
+          <li><a href="teaching.html">Teaching</a></li>
           <li><a href="cv.html">CV</a></li>
           <li><a href="toolkit.html" class="active">StatTeacher Toolkit</a></li>
           <li><a href="student.html">Student Practice</a></li>
@@ -403,23 +404,24 @@
     <div class="card">
       <h2>About the App</h2>
       <p>
-        The <strong>StatTeacher Toolkit</strong> is an interactive statistics problem generator
-        built for instructors and students. Configure population parameters, generate synthetic
-        datasets with controlled properties, and compute complete statistical results &mdash;
-        including test statistics, critical values, effect sizes, and confidence intervals &mdash;
-        all directly in your browser. No server required.
+        The <strong>StatTeacher Toolkit</strong> makes statistics problems for instructors and
+        students. You set the population parameters, and it generates a dataset with those
+        properties and works out the complete results, including the test statistic, critical
+        value, effect size, and confidence interval. Everything runs in your browser, so there is
+        nothing to install.
       </p>
       <p>
-        Select a statistical test, adjust the parameters, and click <em>Generate Problem</em> to
-        produce a practice dataset with a full results table ready for lecture, homework, or exams.
-        Results can be downloaded as a CSV file.
+        Pick a statistical test, adjust the parameters, and click <em>Generate Problem</em>. You
+        get a practice dataset and a full results table that you can use in lecture, homework, or
+        exams. You can also download the results as a CSV file.
       </p>
       <p>
-        After generating a problem, a <strong>Student Problem Generator</strong> card appears
-        automatically. Narrative tests (Z-test, t-tests, Pearson) produce a plain-English scenario
-        with step-by-step questions and an instructor key. Table-based tests (ANOVA,
-        Repeated-Measures ANOVA, regression) produce a partially blanked summary table at
-        Easy, Moderate, or Hard difficulty. All worksheets and keys can be exported as Excel files.
+        Once you generate a problem, a <strong>Student Problem Generator</strong> card appears.
+        For the narrative tests (Z-test, t-tests, Pearson) it writes a plain-English scenario
+        with step-by-step questions and an instructor key. For the table-based tests (ANOVA,
+        Repeated-Measures ANOVA, regression) it gives you a summary table with some cells left
+        blank, at Easy, Moderate, or Hard difficulty. You can export every worksheet and key as
+        an Excel file.
       </p>
       <div class="tags mt-2">
         <span class="tag">Python &middot; Pyodide</span>
@@ -435,8 +437,8 @@
     <div class="card" id="loading-card">
       <h2>Loading Statistical Engine</h2>
       <p>
-        Setting up the Python environment in your browser via Pyodide.
-        This takes about 15&ndash;30 seconds on first load.
+        Python is being set up in your browser with Pyodide.
+        The first load takes about 15&ndash;30 seconds.
       </p>
       <div class="loading-bar"><div class="loading-bar-fill"></div></div>
       <p id="loading-msg" class="text-muted" style="font-size:0.88rem;">Initializing&hellip;</p>
