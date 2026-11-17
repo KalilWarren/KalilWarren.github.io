@@ -311,7 +311,51 @@ def test_regression():
             same(name, 'decision', reg['Decision'], 'Reject Null' if f > crit else 'Fail to Reject Null', ctx)
 
 
-TESTS = [test_z, test_t, test_ind, test_rep, test_anova_oneway, test_anova_twoway, test_rma, test_pearson, test_regression]
+def test_true_correlation():
+    name = 'true correlation setting'
+    pearson, regression = eng['generate_pearson_correlation'], eng['generate_1_predictor_regression']
+    base = dict(x_mean=50, x_std=10, y_mean=100, y_std=15, tx_effect_switch=False)
+
+    # 1. With a large sample, the sample r lands on the requested value
+    for rho in (-0.9, -0.5, 0.0, 0.3, 0.6, 0.9):
+        for seed in (None, 1, 2, 3):
+            ctx = dict(true_r=rho, seed=seed)
+            x, y, _ = pearson(n=4000, seed=seed, true_r=rho, **base); runs[name] += 1
+            close(name, 'Pearson sample r at n=4000', stats.pearsonr(x, y).statistic, rho, 0.06, ctx)
+            close(name, 'X mean', np.mean(x), 50, 1.0, ctx)
+            close(name, 'Y SD', np.std(y, ddof=1), 15, 1.0, ctx)
+            y2, x2, _, _ = regression(n=4000, seed=seed, true_r=rho, **base); runs[name] += 1
+            close(name, 'regression sample r at n=4000', stats.pearsonr(x2, y2).statistic, rho, 0.06, ctx)
+
+    # 2. At a classroom sample size, r varies around the requested value without bias
+    for rho in (-0.6, 0.4, 0.8):
+        rs = [stats.pearsonr(*pearson(n=25, seed=s, true_r=rho, **base)[:2]).statistic for s in range(1, 401)]
+        runs[name] += 1
+        close(name, 'mean sample r over 400 seeds at n=25', float(np.mean(rs)), rho, 0.04, dict(true_r=rho))
+
+    # 3. A seed reproduces the same dataset
+    a = pearson(n=20, seed=11, true_r=0.5, **base); b = pearson(n=20, seed=11, true_r=0.5, **base)
+    runs[name] += 1
+    same(name, 'same seed, same data', (list(a[0]), list(a[1])), (list(b[0]), list(b[1])), dict(seed=11))
+
+    # 4. The extremes and invalid values
+    x, y, _ = pearson(n=200, seed=5, true_r=1, x_mean=50, x_std=10, y_mean=50, y_std=10, tx_effect_switch=False)
+    runs[name] += 1
+    close(name, 'true_r = 1', stats.pearsonr(x, y).statistic, 1.0, 1e-9, {})
+    for bad in (1.5, -2):
+        runs[name] += 1
+        try:
+            pearson(n=10, true_r=bad, **base)
+            failures[name].append(('rejects out-of-range true_r', 'accepted', 'ValueError', dict(true_r=bad)))
+        except ValueError:
+            pass
+
+    # 5. Leaving it out keeps the original behaviour
+    x, y, _ = pearson(n=30, seed=7, **base); runs[name] += 1
+    close(name, 'no true_r, seeded: X and Y share draws', stats.pearsonr(x, y).statistic, 1.0, 0.02, dict(seed=7))
+
+
+TESTS = [test_z, test_t, test_ind, test_rep, test_anova_oneway, test_anova_twoway, test_rma, test_pearson, test_regression, test_true_correlation]
 
 
 def main():

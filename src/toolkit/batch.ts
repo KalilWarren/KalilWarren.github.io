@@ -96,6 +96,7 @@ const SWEEPABLE_PARAMS: Record<TestType, Array<{ label: string; id: string }>> =
     { label: 'Y SD',                id: 'pear-y-std'     },
     { label: 'n (Sample Size)',     id: 'pear-n'         },
     { label: 'ρ₀ (Null Rho)',       id: 'pear-ro'        },
+    { label: 'ρ (True Correlation)', id: 'pear-true-r'   },
     { label: 'Treatment Effect',    id: 'pear-tx-effect' },
     { label: 'Noise SD',            id: 'pear-noise-sd'  },
     { label: 'α (Alpha)',           id: 'pear-alpha'     },
@@ -106,6 +107,7 @@ const SWEEPABLE_PARAMS: Record<TestType, Array<{ label: string; id: string }>> =
     { label: 'Y Mean',              id: 'reg-y-mean'    },
     { label: 'Y SD',                id: 'reg-y-std'     },
     { label: 'n (Sample Size)',     id: 'reg-n'         },
+    { label: 'ρ (True Correlation)', id: 'reg-true-r'   },
     { label: 'Treatment Effect',    id: 'reg-tx-effect' },
     { label: 'Noise SD',            id: 'reg-noise-sd'  },
     { label: 'α (Alpha)',           id: 'reg-alpha'     },
@@ -386,9 +388,9 @@ function buildParamsUsed(testType: TestType): string {
     case 'rma_anova':
       return `n_subjects=${gv('rma-n-subjects')}, condition_means=${gv('rma-condition-means')}, subject_sd=${gv('rma-subject-sd')}, error_sd=${gv('rma-error-sd')}, α=${gv('rma-alpha')}`;
     case 'pearson':
-      return `x_mean=${gv('pear-x-mean')}, x_std=${gv('pear-x-std')}, y_mean=${gv('pear-y-mean')}, y_std=${gv('pear-y-std')}, n=${gv('pear-n')}, ρ₀=${gv('pear-ro')}, α=${gv('pear-alpha')}`;
+      return `x_mean=${gv('pear-x-mean')}, x_std=${gv('pear-x-std')}, y_mean=${gv('pear-y-mean')}, y_std=${gv('pear-y-std')}, n=${gv('pear-n')}, ρ₀=${gv('pear-ro')}${gv('pear-true-r').trim() ? `, true ρ=${gv('pear-true-r')}` : ''}, α=${gv('pear-alpha')}`;
     case 'regression':
-      return `x_mean=${gv('reg-x-mean')}, x_std=${gv('reg-x-std')}, y_mean=${gv('reg-y-mean')}, y_std=${gv('reg-y-std')}, n=${gv('reg-n')}, α=${gv('reg-alpha')}`;
+      return `x_mean=${gv('reg-x-mean')}, x_std=${gv('reg-x-std')}, y_mean=${gv('reg-y-mean')}, y_std=${gv('reg-y-std')}, n=${gv('reg-n')}${gv('reg-true-r').trim() ? `, true ρ=${gv('reg-true-r')}` : ''}, α=${gv('reg-alpha')}`;
   }
 }
 

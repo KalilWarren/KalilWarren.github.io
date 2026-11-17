@@ -302,6 +302,7 @@ Generates X and Y datasets and computes a full Pearson correlation, including SS
 | `alpha` | `0.05` | Significance level |
 | `two_tailed` | `True` | Two-tailed vs. one-tailed test |
 | `seed` | `None` | Random seed |
+| `true_r` | `None` | Population correlation between X and Y (−1 to 1). When set, X and Y are generated with that true correlation, with or without a seed; the sample r varies around it. Treatment noise, if on, pulls r toward zero. When `None`, X and Y are generated separately: with a seed they share the same random draws and correlate almost perfectly, and without one they are unrelated. |
 
 **Returns:** X array, Y array, results DataFrame
 
@@ -322,8 +323,9 @@ Single-predictor OLS regression. Computes the slope (b) and intercept (a) via le
 | `n` | `10` | Sample size |
 | `alpha` | `0.05` | Significance level |
 | `seed` | `None` | Random seed |
+| `true_r` | `None` | Population correlation between X and Y (−1 to 1). When set, X and Y are generated with that true correlation, with or without a seed; the sample r varies around it. Treatment noise, if on, pulls r toward zero. When `None`, X and Y are generated separately: with a seed they share the same random draws and correlate almost perfectly, and without one they are unrelated. |
 
-**Returns:** Y array, X array, regression ANOVA table DataFrame, equation string (e.g., `"Y=2.34X+5.12"`)
+**Returns:** Y array, X array, regression ANOVA table DataFrame, equation string (e.g., `"Y=2.34X+5.12"`, or `"Y=2.34X-5.12"` for a negative intercept)
 
 **Regression table includes:** Source (Regression, Residual, Total), SS, df, MS, F, Decision
 

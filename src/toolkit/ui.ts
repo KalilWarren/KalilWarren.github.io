@@ -15,6 +15,15 @@ export function seed(id: string): string {
   return v === '' ? 'None' : String(parseInt(v, 10));
 }
 
+/**
+ * Return a Python-safe optional number: 'None' if the field is blank or not a
+ * number, otherwise the parsed value as a string.
+ */
+export function optNum(id: string): string {
+  const v = parseFloat((document.getElementById(id) as HTMLInputElement).value);
+  return isNaN(v) ? 'None' : String(v);
+}
+
 /** Convert a two/one tail dropdown value to a Python boolean string. */
 export function tail(id: string): string {
   return (document.getElementById(id) as HTMLSelectElement).value === 'two'

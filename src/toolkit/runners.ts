@@ -1,5 +1,5 @@
 import { py } from './init.ts';
-import { gv, seed, tail, txSwitch } from './ui.ts';
+import { gv, optNum, seed, tail, txSwitch } from './ui.ts';
 import type {
   ZTestResult,
   TTestResult,
@@ -138,7 +138,8 @@ _x, _y, _r = generate_pearson_correlation(
     noise_sd=${gv('pear-noise-sd')},
     alpha=${gv('pear-alpha')},
     seed=_s,
-    two_tailed=${tail('pear-tail')}
+    two_tailed=${tail('pear-tail')},
+    true_r=${optNum('pear-true-r')}
 )
 _to_json({'type':'pearson','x_data':_x.tolist(),'y_data':_y.tolist(),'results':_r.to_dict(orient='records')})
 `) as PearsonResult;
@@ -157,7 +158,8 @@ _y, _x, _tbl, _eq = generate_1_predictor_regression(
     tx_effect=${gv('reg-tx-effect')},
     noise_sd=${gv('reg-noise-sd')},
     alpha=${gv('reg-alpha')},
-    seed=_s
+    seed=_s,
+    true_r=${optNum('reg-true-r')}
 )
 _to_json({'type':'regression','y_data':_y.tolist(),'x_data':_x.tolist(),'table':_tbl.to_dict(orient='records'),'equation':_eq})
 `) as RegressionResult;
