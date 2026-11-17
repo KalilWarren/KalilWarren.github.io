@@ -70,60 +70,23 @@
             <p>
               When we understand language, we build a mental model of what is being described: who is
               involved, where they are, what happened. I want to know how the brain builds that model,
-              how it holds on to it, and how it falls apart. I come at this from three directions.
+              how it holds on to it, and how it falls apart.
+            </p>
+            <p>
+              I come at this from three directions. In my dissertation I study
+              <a href="#project-spatial-memory">where a voice came from</a>: how listeners keep track
+              of the locations of speakers while they follow a story. I study
+              <a href="#project-error-profiles">what breaks after a stroke</a>, using the kinds of
+              naming errors that people with aphasia make. And I
+              <a href="#project-llm-perturbation">damage language models on purpose</a>, to see
+              whether they fail the way a person does.
+            </p>
+            <p>
+              A newer line of work borrows methods from the study of human conversation to ask a
+              different question: when two AI agents talk to each other,
+              <a href="#project-ai-oversight">can people, or other AI systems, keep up?</a>
             </p>
           </div>
-
-          <div class="thread">
-            <div class="thread-num">I</div>
-            <div class="thread-body">
-              <h3>What breaks after a stroke</h3>
-              <p>
-                A stroke can damage the language system in many ways, and the way it fails says
-                something about how it was put together. I use lesion-symptom mapping and connected
-                speech to ask whether the <em>kinds</em> of naming errors a person makes (a related word,
-                a similar-sounding word, a non-word, no answer) point to where the lesion is more
-                reliably than the number of errors does.
-              </p>
-            </div>
-          </div>
-
-          <div class="thread">
-            <div class="thread-num">II</div>
-            <div class="thread-body">
-              <h3>Breaking a language model the same way</h3>
-              <p>
-                Can a large language model be damaged so that it fails the way a person does? I perturb parts
-                of a model&rsquo;s architecture (attention heads, MLP layers, the residual stream) and look for
-                the changes in discourse that show up in aphasia and mild cognitive impairment. I then
-                compare the model&rsquo;s behavior with speech and cognitive data from the Aging Brain Cohort at
-                the University of South Carolina (ABC@UofSC), a sample of healthy and preclinical older
-                adults. In this work I treat cognitive decline as a continuum instead of a yes-or-no
-                diagnosis.
-              </p>
-            </div>
-          </div>
-
-          <div class="thread">
-            <div class="thread-num">III</div>
-            <div class="thread-body">
-              <h3>Where a voice came from</h3>
-              <p>
-                My dissertation asks how listeners keep track of where voices and sounds come from while they
-                follow what is being said, and how that spatial record interacts with reference and discourse.
-                Participants listen to stories over a ring of loudspeakers, and I measure what they remember
-                about location and how it affects their comprehension. Readers tie words to places on a
-                page. I want to know whether listeners do the same with sound, which would make it a
-                general part of how we understand discourse.
-              </p>
-            </div>
-          </div>
-
-          <p class="coda">
-            A newer line of work borrows methods from the study of human conversation to ask a
-            different question: when two AI agents talk to each other, can people, or other AI
-            systems, keep up?
-          </p>
         </section>
 
         <!-- Current Projects -->
@@ -180,10 +143,15 @@
                 <figcaption>Each gray point is one participant. Positive values mean a faster response when the probe came from the direction where the referent was first heard. From Warren &amp; Almor, in prep.</figcaption>
               </figure>
               <p>
-                This is my dissertation project, with Dr. Amit Almor. It looks at how people take in
-                and remember where a voice or sound is coming from while they listen to spoken language.
-                Using behavioral and neuroimaging methods, I test how much of that spatial information
-                ends up in the mental model a listener builds of what they are hearing.
+                This is my dissertation project, with Dr. Amit Almor. It asks how listeners keep track
+                of where voices and sounds come from while they follow what is being said, and how
+                that spatial record interacts with reference and discourse. Participants listen to
+                stories over a ring of loudspeakers, and I measure what they remember about location
+                and how it affects their comprehension.
+              </p>
+              <p>
+                Readers tie words to places on a page. I want to know whether listeners do the same
+                with sound, which would make it a general part of how we understand discourse.
               </p>
               <p>
                 I have presented this work at <em>Human Sentence Processing 2026</em> (Cambridge, MA),
@@ -204,13 +172,19 @@
                 <span class="tag">Connected Speech</span>
               </div>
               <p>
-                People with aphasia after a stroke make different kinds of naming errors. This project
-                asks whether a person&rsquo;s mix of error types holds steady across two standard tests, the
-                Philadelphia Naming Test (PNT) and the Western Aphasia Battery-Revised (WAB-R). If it
-                does, that mix may be a more reliable behavioral marker of where the lesion is than
-                overall accuracy. I use lesion-symptom mapping (LSM) to test this. The manuscript is
-                under review at <em>Brain Communications</em>, with co-authors Roger Newman-Norlund, Saeed
-                Ahmadi, Nadra Salman, Yong Yang, Regan Willis, Xiang Guan, and Julius Fridriksson.
+                A stroke can damage the language system in many ways, and the way it fails says
+                something about how it was put together. People with aphasia make different kinds of
+                naming errors: a related word, a similar-sounding word, a non-word, or no answer at
+                all. This project asks whether a person&rsquo;s mix of error types holds steady across
+                two standard tests, the Philadelphia Naming Test (PNT) and the Western Aphasia
+                Battery-Revised (WAB-R). If it does, that mix may be a more reliable behavioral marker
+                of where the lesion is than overall accuracy. I use lesion-symptom mapping (LSM) to
+                test this.
+              </p>
+              <p>
+                The manuscript is under review at <em>Brain Communications</em>, with co-authors
+                Roger Newman-Norlund, Saeed Ahmadi, Nadra Salman, Yong Yang, Regan Willis, Xiang Guan,
+                and Julius Fridriksson.
               </p>
               <figure class="figure">
                 <a href="assets/research-error-profiles.webp" target="_blank" rel="noopener"><img src="assets/research-error-profiles.webp" width="1430" height="314" loading="lazy"
@@ -232,13 +206,17 @@
                 <span class="tag">Discourse Analysis</span>
               </div>
               <p>
-                Here I&rsquo;m building a way to model mild cognitive impairment (MCI) by perturbing the
-                internal parts of large language models, such as attention heads, MLP layers, and the
-                residual stream. I compare the resulting changes in the model&rsquo;s discourse with
-                linguistic and cognitive data from the Aging Brain Cohort at the University of South
-                Carolina (ABC@UofSC), across three kinds of discourse: picture description, story
-                retelling, and procedural discourse. I use MoCA scores as a continuous measure of
-                cognition, not as a cutoff for an MCI label.
+                Can a large language model be damaged so that it fails the way a person does? I
+                perturb the internal parts of a model, such as attention heads, MLP layers, and the
+                residual stream, and look for the changes in discourse that show up in aphasia and
+                mild cognitive impairment (MCI).
+              </p>
+              <p>
+                I compare the model&rsquo;s output with linguistic and cognitive data from the Aging
+                Brain Cohort at the University of South Carolina (ABC@UofSC), a sample of healthy and
+                preclinical older adults, across three kinds of discourse: picture description, story
+                retelling, and procedural discourse. I treat cognitive decline as a continuum, using
+                MoCA scores as a continuous measure instead of a cutoff for an MCI label.
               </p>
             </div>
           </article>
