@@ -106,23 +106,25 @@ function tInv(p: number, df: number): number {
 
 /* ── Scenario bank ── */
 
-const SCENARIOS: Array<{ variable: string; population: string; unit: string }> = [
+/* `mu` narrows the base mean to values that are realistic for the variable;
+   without it the base mean is drawn from 40–120. */
+const SCENARIOS: Array<{ variable: string; population: string; unit: string; mu?: [number, number] }> = [
   // Original 12
   { variable: 'test anxiety scores',              population: 'undergraduate students',      unit: 'points'           },
-  { variable: 'reaction time',                    population: 'young adults',                unit: 'ms'               },
-  { variable: 'daily step count',                 population: 'office workers',              unit: 'steps'            },
+  { variable: 'time to complete a puzzle',       population: 'young adults',                unit: 'seconds', mu: [40, 90]},
+  { variable: 'daily walking time',              population: 'office workers',              unit: 'minutes', mu: [40, 80]},
   { variable: 'reading comprehension scores',     population: 'fifth-grade students',        unit: 'points'           },
-  { variable: 'systolic blood pressure',          population: 'adults aged 30–50',           unit: 'mmHg'             },
-  { variable: 'weekly exercise duration',         population: 'college freshmen',            unit: 'minutes'          },
+  { variable: 'systolic blood pressure',         population: 'adults aged 30–50',           unit: 'mmHg', mu: [110, 120]},
+  { variable: 'weekly exercise duration',        population: 'college freshmen',            unit: 'minutes', mu: [60, 120]},
   { variable: 'life satisfaction scores',         population: 'graduate students',           unit: 'points'           },
   { variable: 'working memory capacity',          population: 'older adults',                unit: 'units'            },
-  { variable: 'sleep duration',                   population: 'shift workers',               unit: 'hours'            },
+  { variable: 'weekly sleep duration',           population: 'shift workers',               unit: 'hours', mu: [40, 55]},
   { variable: 'vocabulary test scores',           population: 'language learners',           unit: 'points'           },
   { variable: 'math anxiety ratings',             population: 'high school students',        unit: 'points'           },
   { variable: 'pain tolerance scores',            population: 'adult patients',              unit: 'units'            },
   // New 38
   { variable: 'working memory capacity',          population: 'college students',            unit: 'units'            },
-  { variable: 'attention span',                   population: 'college-aged adults',         unit: 'minutes'          },
+  { variable: 'sustained attention span',        population: 'college-aged adults',         unit: 'minutes', mu: [40, 60]},
   { variable: 'cognitive flexibility scores',     population: 'young adults',                unit: 'points'           },
   { variable: 'depression scores',                population: 'clinical outpatients',        unit: 'points'           },
   { variable: 'self-efficacy ratings',            population: 'graduate students',           unit: 'points'           },
@@ -133,27 +135,27 @@ const SCENARIOS: Array<{ variable: string; population: string; unit: string }> =
   { variable: 'stress reactivity scores',         population: 'adults',                      unit: 'points'           },
   { variable: 'emotional regulation scores',      population: 'adolescents',                 unit: 'points'           },
   { variable: 'intrinsic motivation ratings',     population: 'middle school students',      unit: 'points'           },
-  { variable: 'decision-making accuracy',         population: 'older adults',                unit: '%'                },
+  { variable: 'decision-making accuracy scores', population: 'older adults',                unit: 'points' },
   { variable: 'creative problem-solving scores',  population: 'undergraduate students',      unit: 'points'           },
-  { variable: 'verbal fluency scores',            population: 'adults',                      unit: 'words/min'        },
+  { variable: 'typing speed',                    population: 'adults',                      unit: 'words/min', mu: [40, 70]},
   { variable: 'spatial reasoning scores',         population: 'engineering students',        unit: 'points'           },
   { variable: 'executive function scores',        population: 'children aged 8–12',          unit: 'points'           },
   { variable: 'academic engagement ratings',      population: 'high school students',        unit: 'points'           },
-  { variable: 'resting heart rate',               population: 'sedentary adults',            unit: 'bpm'              },
+  { variable: 'resting heart rate',              population: 'sedentary adults',            unit: 'bpm', mu: [65, 85]},
   { variable: 'sleep quality index',              population: 'college students',            unit: 'points'           },
   { variable: 'fatigue severity scores',          population: 'adults with chronic illness', unit: 'points'           },
   { variable: 'chronic pain intensity ratings',   population: 'adult patients',              unit: 'points'           },
-  { variable: 'cortisol levels',                  population: 'adults under stress',         unit: 'nmol/L'           },
-  { variable: 'grip strength',                    population: 'older adults',                unit: 'kg'               },
-  { variable: 'body mass index',                  population: 'adults aged 25–45',           unit: 'kg/m²'            },
-  { variable: 'physical activity level',          population: 'adults',                      unit: 'MET-hours/week'   },
-  { variable: 'lung function',                    population: 'adults with asthma',          unit: '% predicted FEV1' },
-  { variable: 'resting metabolic rate',           population: 'healthy adults',              unit: 'kcal/day'         },
-  { variable: 'blood glucose levels',             population: 'pre-diabetic adults',         unit: 'mg/dL'            },
-  { variable: 'heart rate variability',           population: 'endurance athletes',          unit: 'ms'               },
+  { variable: 'diastolic blood pressure',        population: 'adults under stress',         unit: 'mmHg', mu: [70, 85]},
+  { variable: 'body weight',                     population: 'older adults',                unit: 'kg', mu: [65, 85]},
+  { variable: 'waist circumference',             population: 'adults aged 25–45',           unit: 'cm', mu: [80, 100]},
+  { variable: 'moderate physical activity',      population: 'adults',                      unit: 'minutes/week', mu: [60, 120]},
+  { variable: 'lung function',                   population: 'adults with asthma',          unit: '% predicted FEV1', mu: [65, 85]},
+  { variable: 'daily water intake',              population: 'healthy adults',              unit: 'oz', mu: [50, 80]},
+  { variable: 'blood glucose levels',            population: 'pre-diabetic adults',         unit: 'mg/dL', mu: [100, 115]},
+  { variable: 'heart rate variability',          population: 'endurance athletes',          unit: 'ms', mu: [50, 90]},
   { variable: 'exam performance scores',          population: 'undergraduate students',      unit: 'points'           },
-  { variable: 'GPA',                              population: 'college freshmen',            unit: 'points'           },
-  { variable: 'homework completion rates',        population: 'middle school students',      unit: '%'                },
+  { variable: 'first-semester exam scores',      population: 'college freshmen',            unit: 'points', mu: [60, 85] },
+  { variable: 'weekly homework time',            population: 'middle school students',      unit: 'minutes', mu: [60, 120] },
   { variable: 'classroom participation ratings',  population: 'eighth-grade students',       unit: 'points'           },
   { variable: 'critical thinking scores',         population: 'graduate students',           unit: 'points'           },
   { variable: 'academic self-efficacy scores',    population: 'high school seniors',         unit: 'points'           },
@@ -237,7 +239,8 @@ export function generateProblem(): IndProblem {
 
   // 8) Back-calculate M1, M2 from tTarget with small noise
   const baseMeanOpts: number[] = [];
-  for (let v = 40; v <= 120; v += 5) baseMeanOpts.push(v);
+  const [muLo, muHi] = scenario.mu ?? [40, 120];
+  for (let v = muLo; v <= muHi; v += 5) baseMeanOpts.push(v);
   const baseMean = rChoice(baseMeanOpts);
   const diffRaw  = tTarget * SEraw;
   const noise    = rUniform(-0.10 * spRaw, 0.10 * spRaw);

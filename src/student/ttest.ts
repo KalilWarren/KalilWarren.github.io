@@ -33,23 +33,25 @@ interface TProblem {
 
 /* ── Scenario bank ── */
 
-const SCENARIOS: Array<{ variable: string; pop: string; unit: string }> = [
+/* `mu` narrows the null-hypothesis mean to values that are realistic for the
+   variable; without it the mean is drawn from 40–120. */
+const SCENARIOS: Array<{ variable: string; pop: string; unit: string; mu?: [number, number] }> = [
   // Original 12
   { variable: 'test anxiety scores',              pop: 'undergraduate students',      unit: 'points'           },
-  { variable: 'reaction time',                    pop: 'young adults',                unit: 'ms'               },
-  { variable: 'daily step count',                 pop: 'office workers',              unit: 'steps'            },
+  { variable: 'time to complete a puzzle',       pop: 'young adults',                unit: 'seconds', mu: [40, 90]},
+  { variable: 'daily walking time',              pop: 'office workers',              unit: 'minutes', mu: [40, 80]},
   { variable: 'reading comprehension scores',     pop: 'fifth-grade students',        unit: 'points'           },
-  { variable: 'systolic blood pressure',          pop: 'adults aged 30–50',           unit: 'mmHg'             },
-  { variable: 'weekly exercise duration',         pop: 'college freshmen',            unit: 'minutes'          },
+  { variable: 'systolic blood pressure',         pop: 'adults aged 30–50',           unit: 'mmHg', mu: [110, 120]},
+  { variable: 'weekly exercise duration',        pop: 'college freshmen',            unit: 'minutes', mu: [60, 120]},
   { variable: 'life satisfaction scores',         pop: 'graduate students',           unit: 'points'           },
   { variable: 'working memory capacity',          pop: 'older adults',                unit: 'units'            },
-  { variable: 'sleep duration',                   pop: 'shift workers',               unit: 'hours'            },
+  { variable: 'weekly sleep duration',           pop: 'shift workers',               unit: 'hours', mu: [40, 55]},
   { variable: 'vocabulary test scores',           pop: 'language learners',           unit: 'points'           },
   { variable: 'math anxiety ratings',             pop: 'high school students',        unit: 'points'           },
   { variable: 'pain tolerance scores',            pop: 'adult patients',              unit: 'units'            },
   // New 38
   { variable: 'working memory capacity',          pop: 'college students',            unit: 'units'            },
-  { variable: 'attention span',                   pop: 'college-aged adults',         unit: 'minutes'          },
+  { variable: 'sustained attention span',        pop: 'college-aged adults',         unit: 'minutes', mu: [40, 60]},
   { variable: 'cognitive flexibility scores',     pop: 'young adults',                unit: 'points'           },
   { variable: 'depression scores',                pop: 'clinical outpatients',        unit: 'points'           },
   { variable: 'self-efficacy ratings',            pop: 'graduate students',           unit: 'points'           },
@@ -60,27 +62,27 @@ const SCENARIOS: Array<{ variable: string; pop: string; unit: string }> = [
   { variable: 'stress reactivity scores',         pop: 'adults',                      unit: 'points'           },
   { variable: 'emotional regulation scores',      pop: 'adolescents',                 unit: 'points'           },
   { variable: 'intrinsic motivation ratings',     pop: 'middle school students',      unit: 'points'           },
-  { variable: 'decision-making accuracy',         pop: 'older adults',                unit: '%'                },
+  { variable: 'decision-making accuracy scores', pop: 'older adults',                unit: 'points' },
   { variable: 'creative problem-solving scores',  pop: 'undergraduate students',      unit: 'points'           },
-  { variable: 'verbal fluency scores',            pop: 'adults',                      unit: 'words/min'        },
+  { variable: 'typing speed',                    pop: 'adults',                      unit: 'words/min', mu: [40, 70]},
   { variable: 'spatial reasoning scores',         pop: 'engineering students',        unit: 'points'           },
   { variable: 'executive function scores',        pop: 'children aged 8–12',          unit: 'points'           },
   { variable: 'academic engagement ratings',      pop: 'high school students',        unit: 'points'           },
-  { variable: 'resting heart rate',               pop: 'sedentary adults',            unit: 'bpm'              },
+  { variable: 'resting heart rate',              pop: 'sedentary adults',            unit: 'bpm', mu: [65, 85]},
   { variable: 'sleep quality index',              pop: 'college students',            unit: 'points'           },
   { variable: 'fatigue severity scores',          pop: 'adults with chronic illness', unit: 'points'           },
   { variable: 'chronic pain intensity ratings',   pop: 'adult patients',              unit: 'points'           },
-  { variable: 'cortisol levels',                  pop: 'adults under stress',         unit: 'nmol/L'           },
-  { variable: 'grip strength',                    pop: 'older adults',                unit: 'kg'               },
-  { variable: 'body mass index',                  pop: 'adults aged 25–45',           unit: 'kg/m²'            },
-  { variable: 'physical activity level',          pop: 'adults',                      unit: 'MET-hours/week'   },
-  { variable: 'lung function',                    pop: 'adults with asthma',          unit: '% predicted FEV1' },
-  { variable: 'resting metabolic rate',           pop: 'healthy adults',              unit: 'kcal/day'         },
-  { variable: 'blood glucose levels',             pop: 'pre-diabetic adults',         unit: 'mg/dL'            },
-  { variable: 'heart rate variability',           pop: 'endurance athletes',          unit: 'ms'               },
+  { variable: 'diastolic blood pressure',        pop: 'adults under stress',         unit: 'mmHg', mu: [70, 85]},
+  { variable: 'body weight',                     pop: 'older adults',                unit: 'kg', mu: [65, 85]},
+  { variable: 'waist circumference',             pop: 'adults aged 25–45',           unit: 'cm', mu: [80, 100]},
+  { variable: 'moderate physical activity',      pop: 'adults',                      unit: 'minutes/week', mu: [60, 120]},
+  { variable: 'lung function',                   pop: 'adults with asthma',          unit: '% predicted FEV1', mu: [65, 85]},
+  { variable: 'daily water intake',              pop: 'healthy adults',              unit: 'oz', mu: [50, 80]},
+  { variable: 'blood glucose levels',            pop: 'pre-diabetic adults',         unit: 'mg/dL', mu: [100, 115]},
+  { variable: 'heart rate variability',          pop: 'endurance athletes',          unit: 'ms', mu: [50, 90]},
   { variable: 'exam performance scores',          pop: 'undergraduate students',      unit: 'points'           },
-  { variable: 'GPA',                              pop: 'college freshmen',            unit: 'points'           },
-  { variable: 'homework completion rates',        pop: 'middle school students',      unit: '%'                },
+  { variable: 'first-semester exam scores',      pop: 'college freshmen',            unit: 'points', mu: [60, 85] },
+  { variable: 'weekly homework time',            pop: 'middle school students',      unit: 'minutes', mu: [60, 120] },
   { variable: 'classroom participation ratings',  pop: 'eighth-grade students',       unit: 'points'           },
   { variable: 'critical thinking scores',         pop: 'graduate students',           unit: 'points'           },
   { variable: 'academic self-efficacy scores',    pop: 'high school seniors',         unit: 'points'           },
@@ -141,8 +143,10 @@ function r4(x: number): number { return Math.round(x * 10000) / 10000; }
 
 export function generateProblem(): TProblem {
   // 1) Parameters
+  const scenario = rChoice(SCENARIOS);
+  const [muLo, muHi] = scenario.mu ?? [40, 120];
   const mu0options: number[] = [];
-  for (let v = 40; v <= 120; v += 5) mu0options.push(v);
+  for (let v = muLo; v <= muHi; v += 5) mu0options.push(v);
   const mu0    = rChoice(mu0options);
   const sigPop = rInt(6, 20);
   const n      = rChoice([10, 15, 20, 25, 30, 40, 60, 120]);
@@ -197,7 +201,6 @@ export function generateProblem(): TProblem {
   const effectType = rChoice<EffectType>(['cohen_d', 'r_squared', 'ci']);
 
   // 11) Scenario
-  const scenario   = rChoice(SCENARIOS);
   const testPhrase = tail === 'two'
     ? `differs from ${mu0} ${scenario.unit}`
     : tail === 'right'

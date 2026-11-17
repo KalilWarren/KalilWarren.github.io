@@ -157,57 +157,62 @@ function getMasked(difficulty: Difficulty): Set<MaskedField> {
 
 /* ── Context bank ── */
 
-const SCENARIOS = [
-  { variable_x: 'weekly exercise duration',       unit_x: 'minutes',        variable_y: 'resting heart rate',         unit_y: 'bpm',          population: 'sedentary adults' },
-  { variable_x: 'sleep duration',                 unit_x: 'hours',          variable_y: 'reaction time',              unit_y: 'ms',           population: 'young adults' },
-  { variable_x: 'anxiety score',                  unit_x: 'points',         variable_y: 'cortisol level',             unit_y: 'nmol/L',       population: 'adults under stress' },
-  { variable_x: 'weekly study hours',             unit_x: 'hours',          variable_y: 'exam score',                 unit_y: 'points',       population: 'undergraduate students' },
-  { variable_x: 'social support rating',          unit_x: 'points',         variable_y: 'depression score',           unit_y: 'points',       population: 'adults' },
-  { variable_x: 'daily step count',               unit_x: 'steps',          variable_y: 'body mass index',            unit_y: 'kg/m²',        population: 'office workers' },
-  { variable_x: 'screen time',                    unit_x: 'hours/day',      variable_y: 'sleep quality score',        unit_y: 'points',       population: 'college students' },
-  { variable_x: 'caffeine intake',                unit_x: 'mg/day',         variable_y: 'resting heart rate',         unit_y: 'bpm',          population: 'adults' },
-  { variable_x: 'mindfulness practice',           unit_x: 'min/week',       variable_y: 'anxiety score',              unit_y: 'points',       population: 'working adults' },
-  { variable_x: 'GPA',                            unit_x: 'points',         variable_y: 'academic self-efficacy',     unit_y: 'points',       population: 'college freshmen' },
-  { variable_x: 'stress score',                   unit_x: 'points',         variable_y: 'sleep duration',             unit_y: 'hours',        population: 'graduate students' },
-  { variable_x: 'pain intensity',                 unit_x: 'points',         variable_y: 'fatigue score',              unit_y: 'points',       population: 'adult patients' },
-  { variable_x: 'daily reading time',             unit_x: 'min/day',        variable_y: 'vocabulary score',           unit_y: 'points',       population: 'high school students' },
-  { variable_x: 'physical activity level',        unit_x: 'MET-hours/week', variable_y: 'systolic blood pressure',    unit_y: 'mmHg',         population: 'adults aged 40–60' },
-  { variable_x: 'social media use',               unit_x: 'hours/day',      variable_y: 'loneliness score',           unit_y: 'points',       population: 'undergraduate students' },
-  { variable_x: 'self-efficacy score',            unit_x: 'points',         variable_y: 'academic performance',       unit_y: 'points',       population: 'middle school students' },
-  { variable_x: 'emotional regulation score',     unit_x: 'points',         variable_y: 'relationship satisfaction',  unit_y: 'points',       population: 'adults' },
-  { variable_x: 'job satisfaction score',         unit_x: 'points',         variable_y: 'burnout score',              unit_y: 'points',       population: 'healthcare workers' },
-  { variable_x: 'hours of sleep',                 unit_x: 'hours',          variable_y: 'executive function score',   unit_y: 'points',       population: 'college students' },
-  { variable_x: 'grip strength',                  unit_x: 'kg',             variable_y: 'physical function score',    unit_y: 'points',       population: 'older adults' },
-  { variable_x: 'cortisol level',                 unit_x: 'nmol/L',         variable_y: 'working memory score',       unit_y: 'points',       population: 'adults under stress' },
-  { variable_x: 'meditation frequency',           unit_x: 'sessions/week',  variable_y: 'stress score',               unit_y: 'points',       population: 'adults' },
-  { variable_x: 'age',                            unit_x: 'years',          variable_y: 'reaction time',              unit_y: 'ms',           population: 'adults aged 20–70' },
-  { variable_x: 'exercise frequency',             unit_x: 'sessions/week',  variable_y: 'depression score',           unit_y: 'points',       population: 'adults' },
-  { variable_x: 'parent involvement score',       unit_x: 'points',         variable_y: 'child academic score',       unit_y: 'points',       population: 'elementary students' },
-  { variable_x: 'noise exposure',                 unit_x: 'dB',             variable_y: 'concentration score',        unit_y: 'points',       population: 'office workers' },
-  { variable_x: 'homework time',                  unit_x: 'min/day',        variable_y: 'GPA',                        unit_y: 'points',       population: 'high school students' },
-  { variable_x: 'optimism score',                 unit_x: 'points',         variable_y: 'resilience score',           unit_y: 'points',       population: 'adults' },
-  { variable_x: 'hours of sunlight exposure',     unit_x: 'hours/day',      variable_y: 'mood rating',                unit_y: 'points',       population: 'adults' },
-  { variable_x: 'sleep efficiency',               unit_x: '%',              variable_y: 'daytime fatigue score',      unit_y: 'points',       population: 'shift workers' },
-  { variable_x: 'intrinsic motivation',           unit_x: 'points',         variable_y: 'creative output score',      unit_y: 'points',       population: 'graduate students' },
-  { variable_x: 'peer support score',             unit_x: 'points',         variable_y: 'academic engagement',        unit_y: 'points',       population: 'middle school students' },
-  { variable_x: 'heart rate variability',         unit_x: 'ms',             variable_y: 'stress reactivity score',    unit_y: 'points',       population: 'endurance athletes' },
-  { variable_x: 'social interaction frequency',   unit_x: 'count/week',     variable_y: 'loneliness score',           unit_y: 'points',       population: 'older adults' },
-  { variable_x: 'pain score',                     unit_x: 'points',         variable_y: 'sleep quality score',        unit_y: 'points',       population: 'adult patients' },
-  { variable_x: 'dietary fiber intake',           unit_x: 'g/day',          variable_y: 'blood glucose level',        unit_y: 'mg/dL',        population: 'pre-diabetic adults' },
-  { variable_x: 'self-compassion score',          unit_x: 'points',         variable_y: 'anxiety score',              unit_y: 'points',       population: 'undergraduate students' },
-  { variable_x: 'perceived workload score',       unit_x: 'points',         variable_y: 'job performance rating',     unit_y: 'points',       population: 'full-time employees' },
-  { variable_x: 'vocabulary size',               unit_x: 'words known',     variable_y: 'reading comprehension',      unit_y: 'points',       population: 'language learners' },
-  { variable_x: 'attention span',                 unit_x: 'minutes',        variable_y: 'exam performance',           unit_y: 'points',       population: 'undergraduate students' },
-  { variable_x: 'parental warmth score',          unit_x: 'points',         variable_y: 'child self-esteem',          unit_y: 'points',       population: 'elementary students' },
-  { variable_x: 'weekly study sessions',          unit_x: 'count/week',     variable_y: 'exam performance',           unit_y: 'points',       population: 'undergraduate students' },
-  { variable_x: 'physical activity',              unit_x: 'steps/day',      variable_y: 'sleep quality score',        unit_y: 'points',       population: 'adults aged 30–50' },
-  { variable_x: 'tech skill score',               unit_x: 'points',         variable_y: 'remote work productivity',   unit_y: 'points',       population: 'remote workers' },
-  { variable_x: 'childhood SES score',            unit_x: 'points',         variable_y: 'cognitive flexibility score',unit_y: 'points',       population: 'young adults' },
-  { variable_x: 'resting heart rate',             unit_x: 'bpm',            variable_y: 'aerobic fitness score',      unit_y: 'points',       population: 'adults' },
-  { variable_x: 'daily fruit and vegetable intake', unit_x: 'servings/day', variable_y: 'energy level score',         unit_y: 'points',       population: 'college students' },
-  { variable_x: 'cognitive load score',           unit_x: 'points',         variable_y: 'decision accuracy',          unit_y: '%',            population: 'healthcare workers' },
-  { variable_x: 'emotional intelligence score',   unit_x: 'points',         variable_y: 'leadership effectiveness',   unit_y: 'points',       population: 'managers' },
-  { variable_x: 'number of hours worked per week',unit_x: 'hours',          variable_y: 'work-life balance score',    unit_y: 'points',       population: 'full-time employees' },
+/* `mu_x` / `mu_y` narrow each variable's mean to values that are realistic for it;
+   without them the mean is drawn from 40–120. */
+const SCENARIOS: Array<{
+  variable_x: string; unit_x: string; variable_y: string; unit_y: string; population: string;
+  mu_x?: [number, number]; mu_y?: [number, number];
+}> = [
+  { variable_x: 'weekly exercise duration',          unit_x: 'minutes',        variable_y: 'resting heart rate',                  unit_y: 'bpm',      population: 'sedentary adults', mu_x: [60, 120], mu_y: [60, 85] },
+  { variable_x: 'weekly sleep duration',             unit_x: 'hours',          variable_y: 'time to complete an attention task',  unit_y: 'seconds',  population: 'young adults', mu_x: [40, 55], mu_y: [40, 90] },
+  { variable_x: 'anxiety score',                     unit_x: 'points',         variable_y: 'diastolic blood pressure',            unit_y: 'mmHg',     population: 'adults under stress', mu_y: [70, 85] },
+  { variable_x: 'daily study time',                  unit_x: 'minutes',        variable_y: 'exam score',                          unit_y: 'points',   population: 'undergraduate students', mu_x: [40, 120] },
+  { variable_x: 'social support rating',             unit_x: 'points',         variable_y: 'depression score',                    unit_y: 'points',   population: 'adults' },
+  { variable_x: 'daily walking time',                unit_x: 'minutes',        variable_y: 'waist circumference',                 unit_y: 'cm',       population: 'office workers', mu_x: [40, 80], mu_y: [80, 100] },
+  { variable_x: 'screen time',                       unit_x: 'min/day',        variable_y: 'sleep quality score',                 unit_y: 'points',   population: 'college students', mu_x: [60, 120] },
+  { variable_x: 'caffeine intake',                   unit_x: 'mg/day',         variable_y: 'resting heart rate',                  unit_y: 'bpm',      population: 'adults', mu_y: [60, 85] },
+  { variable_x: 'mindfulness practice',              unit_x: 'min/week',       variable_y: 'anxiety score',                       unit_y: 'points',   population: 'working adults' },
+  { variable_x: 'high school grade average',         unit_x: '%',              variable_y: 'academic self-efficacy',              unit_y: 'points',   population: 'college freshmen', mu_x: [70, 85] },
+  { variable_x: 'stress score',                      unit_x: 'points',         variable_y: 'weekly sleep duration',               unit_y: 'hours',    population: 'graduate students', mu_y: [40, 55] },
+  { variable_x: 'pain intensity',                    unit_x: 'points',         variable_y: 'fatigue score',                       unit_y: 'points',   population: 'adult patients' },
+  { variable_x: 'daily reading time',                unit_x: 'min/day',        variable_y: 'vocabulary score',                    unit_y: 'points',   population: 'high school students', mu_x: [40, 90] },
+  { variable_x: 'moderate physical activity',        unit_x: 'min/week',       variable_y: 'systolic blood pressure',             unit_y: 'mmHg',     population: 'adults aged 40–60', mu_x: [60, 120], mu_y: [110, 120] },
+  { variable_x: 'social media use',                  unit_x: 'min/day',        variable_y: 'loneliness score',                    unit_y: 'points',   population: 'undergraduate students', mu_x: [60, 120] },
+  { variable_x: 'self-efficacy score',               unit_x: 'points',         variable_y: 'academic performance',                unit_y: 'points',   population: 'middle school students' },
+  { variable_x: 'emotional regulation score',        unit_x: 'points',         variable_y: 'relationship satisfaction',           unit_y: 'points',   population: 'adults' },
+  { variable_x: 'job satisfaction score',            unit_x: 'points',         variable_y: 'burnout score',                       unit_y: 'points',   population: 'healthcare workers' },
+  { variable_x: 'weekly hours of sleep',             unit_x: 'hours',          variable_y: 'executive function score',            unit_y: 'points',   population: 'college students', mu_x: [40, 55] },
+  { variable_x: 'body weight',                       unit_x: 'kg',             variable_y: 'physical function score',             unit_y: 'points',   population: 'older adults', mu_x: [65, 85] },
+  { variable_x: 'perceived stress score',            unit_x: 'points',         variable_y: 'working memory score',                unit_y: 'points',   population: 'adults under stress' },
+  { variable_x: 'weekly meditation time',            unit_x: 'minutes',        variable_y: 'stress score',                        unit_y: 'points',   population: 'adults', mu_x: [40, 120] },
+  { variable_x: 'age',                               unit_x: 'years',          variable_y: 'time to complete an attention task',  unit_y: 'seconds',  population: 'adults aged 20–70', mu_x: [40, 55], mu_y: [40, 90] },
+  { variable_x: 'weekly exercise time',              unit_x: 'minutes',        variable_y: 'depression score',                    unit_y: 'points',   population: 'adults', mu_x: [60, 120] },
+  { variable_x: 'parent involvement score',          unit_x: 'points',         variable_y: 'child academic score',                unit_y: 'points',   population: 'elementary students' },
+  { variable_x: 'noise exposure',                    unit_x: 'dB',             variable_y: 'concentration score',                 unit_y: 'points',   population: 'office workers', mu_x: [55, 85] },
+  { variable_x: 'homework time',                     unit_x: 'min/day',        variable_y: 'course grade',                        unit_y: '%',        population: 'high school students', mu_x: [40, 90], mu_y: [65, 80] },
+  { variable_x: 'optimism score',                    unit_x: 'points',         variable_y: 'resilience score',                    unit_y: 'points',   population: 'adults' },
+  { variable_x: 'time outdoors',                     unit_x: 'min/day',        variable_y: 'mood rating',                         unit_y: 'points',   population: 'adults', mu_x: [40, 120] },
+  { variable_x: 'sleep efficiency',                  unit_x: '%',              variable_y: 'daytime fatigue score',               unit_y: 'points',   population: 'shift workers', mu_x: [70, 85] },
+  { variable_x: 'intrinsic motivation',              unit_x: 'points',         variable_y: 'creative output score',               unit_y: 'points',   population: 'graduate students' },
+  { variable_x: 'peer support score',                unit_x: 'points',         variable_y: 'academic engagement',                 unit_y: 'points',   population: 'middle school students' },
+  { variable_x: 'heart rate variability',            unit_x: 'ms',             variable_y: 'stress reactivity score',             unit_y: 'points',   population: 'endurance athletes', mu_x: [50, 90] },
+  { variable_x: 'social interaction frequency',      unit_x: 'count/week',     variable_y: 'loneliness score',                    unit_y: 'points',   population: 'older adults', mu_x: [40, 80] },
+  { variable_x: 'pain score',                        unit_x: 'points',         variable_y: 'sleep quality score',                 unit_y: 'points',   population: 'adult patients' },
+  { variable_x: 'daily sugar intake',                unit_x: 'g/day',          variable_y: 'blood glucose level',                 unit_y: 'mg/dL',    population: 'pre-diabetic adults', mu_x: [40, 90], mu_y: [95, 115] },
+  { variable_x: 'self-compassion score',             unit_x: 'points',         variable_y: 'anxiety score',                       unit_y: 'points',   population: 'undergraduate students' },
+  { variable_x: 'perceived workload score',          unit_x: 'points',         variable_y: 'job performance rating',              unit_y: 'points',   population: 'full-time employees' },
+  { variable_x: 'vocabulary test score',             unit_x: 'points',         variable_y: 'reading comprehension',               unit_y: 'points',   population: 'language learners' },
+  { variable_x: 'sustained attention span',          unit_x: 'minutes',        variable_y: 'exam performance',                    unit_y: 'points',   population: 'undergraduate students', mu_x: [40, 60] },
+  { variable_x: 'parental warmth score',             unit_x: 'points',         variable_y: 'child self-esteem',                   unit_y: 'points',   population: 'elementary students' },
+  { variable_x: 'time spent reviewing notes',        unit_x: 'min/day',        variable_y: 'exam performance',                    unit_y: 'points',   population: 'undergraduate students', mu_x: [40, 90] },
+  { variable_x: 'daily active time',                 unit_x: 'minutes',        variable_y: 'sleep quality score',                 unit_y: 'points',   population: 'adults aged 30–50', mu_x: [40, 90] },
+  { variable_x: 'tech skill score',                  unit_x: 'points',         variable_y: 'remote work productivity',            unit_y: 'points',   population: 'remote workers' },
+  { variable_x: 'childhood SES score',               unit_x: 'points',         variable_y: 'cognitive flexibility score',         unit_y: 'points',   population: 'young adults' },
+  { variable_x: 'resting heart rate',                unit_x: 'bpm',            variable_y: 'aerobic fitness score',               unit_y: 'points',   population: 'adults', mu_x: [60, 85] },
+  { variable_x: 'weekly fruit and vegetable intake', unit_x: 'servings/week',  variable_y: 'energy level score',                  unit_y: 'points',   population: 'college students', mu_x: [40, 60] },
+  { variable_x: 'cognitive load score',              unit_x: 'points',         variable_y: 'decision accuracy',                   unit_y: '%',        population: 'healthcare workers', mu_y: [55, 75] },
+  { variable_x: 'emotional intelligence score',      unit_x: 'points',         variable_y: 'leadership effectiveness',            unit_y: 'points',   population: 'managers' },
+  { variable_x: 'number of hours worked per week',   unit_x: 'hours',          variable_y: 'work-life balance score',             unit_y: 'points',   population: 'full-time employees', mu_x: [40, 55] },
 ];
 
 /* ── DOM helpers ── */
@@ -247,11 +252,14 @@ export function generateProblem(): RegProblem {
   const { variable_x, unit_x, variable_y, unit_y, population: pop } = s;
 
   // Population moments
-  const gmOpts: number[] = [];
-  for (let v = 40; v <= 120; v += 5) gmOpts.push(v);
-  const muX = rChoice(gmOpts);
+  const meanOpts = ([lo, hi]: [number, number]): number[] => {
+    const opts: number[] = [];
+    for (let v = lo; v <= hi; v += 5) opts.push(v);
+    return opts;
+  };
+  const muX = rChoice(meanOpts(s.mu_x ?? [40, 120]));
   const sdX = rInt(6, 20);
-  const muY = rChoice(gmOpts);
+  const muY = rChoice(meanOpts(s.mu_y ?? [40, 120]));
   const sdY = rInt(6, 20);
 
   // df
