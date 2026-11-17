@@ -383,7 +383,7 @@ function effectSectionHtml(p: RepProblem): string {
   const level = Math.round((1 - p.alpha) * 100);
   if (p.effectTask === 'cohens_d') {
     return `
-      <div class="sp-section-label">5. Compute Cohen's d (Effect Size)</div>
+      <div class="sp-section-label">5. Compute Cohen's <span class="sym">d</span> (Effect Size)</div>
       <div class="sp-input-row">
         <label for="rp-answer-es">d = M<sub>D</sub> / s<sub>D</sub></label>
         <input type="number" step="0.01" id="rp-answer-es" class="sp-num-input"

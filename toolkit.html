@@ -52,6 +52,11 @@
       letter-spacing: 0.04em;
       margin-bottom: 0.3rem;
     }
+    /* Statistical symbols keep their own case: an uppercased μ, σ, α or ρ reads as M, Σ, A or P */
+    .form-group label .sym {
+      text-transform: none;
+      letter-spacing: 0;
+    }
     .form-group input,
     .form-group select {
       width: 100%;
@@ -474,15 +479,15 @@
         <p class="section-label">Z-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Population Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+            <label>Population Mean (<span class="sym">&mu;</span>) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
+            <label>Population SD (<span class="sym">&sigma;</span>) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+            <label>Sample Size (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-n" value="10" min="2" step="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
@@ -500,7 +505,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="z-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -522,15 +527,15 @@
         <p class="section-label">One-Sample t-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Population Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+            <label>Population Mean (<span class="sym">&mu;</span>) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
+            <label>Population SD (<span class="sym">&sigma;</span>) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used in z-tests to compute standard error." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+            <label>Sample Size (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-n" value="10" min="2" step="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
@@ -548,7 +553,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="t-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -572,15 +577,15 @@
           <div>
             <p class="group-label">Group 1</p>
             <div class="form-group">
-              <label>Population Mean 1 (&mu;₁) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ1): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+              <label>Population Mean 1 (<span class="sym">&mu;₁</span>) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ1): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-mean1" value="10" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 1 (&sigma;₁) <button type="button" class="tip-icon" data-tip="Population standard deviation (σ1). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
+              <label>Population SD 1 (<span class="sym">&sigma;₁</span>) <button type="button" class="tip-icon" data-tip="Population standard deviation (σ1). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-sd1" value="15" step="any" />
             </div>
             <div class="form-group">
-              <label>Sample Size (n₁) <button type="button" class="tip-icon" data-tip="Sample size n1 (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+              <label>Sample Size (<span class="sym">n₁</span>) <button type="button" class="tip-icon" data-tip="Sample size n1 (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-n1" value="10" min="2" step="1" />
             </div>
             <div class="form-group">
@@ -591,15 +596,15 @@
           <div>
             <p class="group-label">Group 2</p>
             <div class="form-group">
-              <label>Population Mean 2 (&mu;₂) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ2): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+              <label>Population Mean 2 (<span class="sym">&mu;₂</span>) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ2): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-mean2" value="20" step="any" />
             </div>
             <div class="form-group">
-              <label>Population SD 2 (&sigma;₂) <button type="button" class="tip-icon" data-tip="Population standard deviation (σ2). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
+              <label>Population SD 2 (<span class="sym">&sigma;₂</span>) <button type="button" class="tip-icon" data-tip="Population standard deviation (σ2). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-pop-sd2" value="15" step="any" />
             </div>
             <div class="form-group">
-              <label>Sample Size (n₂) <button type="button" class="tip-icon" data-tip="Sample size n2 (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+              <label>Sample Size (<span class="sym">n₂</span>) <button type="button" class="tip-icon" data-tip="Sample size n2 (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
               <input type="number" id="ind-n2" value="10" min="2" step="1" />
             </div>
             <div class="form-group">
@@ -610,7 +615,7 @@
         </div>
         <div class="form-grid" style="margin-top:0.25rem;">
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="ind-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -628,15 +633,15 @@
         <p class="section-label">Repeated-Measures t-Test Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Baseline Population Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+            <label>Baseline Population Mean (<span class="sym">&mu;</span>) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-pop-mean" value="0" step="any" />
           </div>
           <div class="form-group">
-            <label>Baseline Population SD (&sigma;) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
+            <label>Baseline Population SD (<span class="sym">&sigma;</span>) <button type="button" class="tip-icon" data-tip="Known population standard deviation (σ). Used to generate random samples from the population." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-pop-std" value="15" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+            <label>Sample Size (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-n" value="10" min="2" step="1" />
           </div>
           <div class="form-group">
@@ -648,7 +653,7 @@
             <input type="number" id="rep-noise-sd" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rep-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -675,11 +680,11 @@
             <p class="hint">Format: Name:Levels — e.g., <code>A:3</code> or <code>A:3,B:2</code></p>
           </div>
           <div class="form-group">
-            <label>Observations per Cell (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+            <label>Observations per Cell (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-n" value="10" min="2" step="1" />
           </div>
           <div class="form-group">
-            <label>Grand Mean (&mu;) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
+            <label>Grand Mean (<span class="sym">&mu;</span>) <button type="button" class="tip-icon" data-tip="Null hypothesis mean (μ₀): the population mean assumed true under H₀." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-mean" value="10" step="any" />
           </div>
           <div class="form-group">
@@ -691,7 +696,7 @@
             <input type="number" id="anova-effect" value="2.0" step="any" />
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="anova-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -706,7 +711,7 @@
         <p class="section-label">Repeated-Measures ANOVA Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>Number of Subjects (n) <button type="button" class="tip-icon" data-tip="Number of subjects measured across all conditions. Each subject contributes one observation per condition." aria-label="More info">ⓘ</button></label>
+            <label>Number of Subjects (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Number of subjects measured across all conditions. Each subject contributes one observation per condition." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rma-n-subjects" value="12" min="3" step="1" />
           </div>
           <div class="form-group">
@@ -722,7 +727,7 @@
             <input type="number" id="rma-error-sd" value="2" step="any" min="0" />
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="rma-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -741,36 +746,36 @@
         <p class="section-label">Pearson Correlation Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>X Mean (X&mu;)</label>
+            <label>X Mean (<span class="sym">&mu;<sub>X</sub></span>)</label>
             <input type="number" id="pear-x-mean" value="10" step="any" />
           </div>
           <div class="form-group">
-            <label>X SD (X&sigma;)</label>
+            <label>X SD (<span class="sym">&sigma;<sub>X</sub></span>)</label>
             <input type="number" id="pear-x-std" value="1" step="any" />
           </div>
           <div class="form-group">
-            <label>Y Mean (Y&mu;)</label>
+            <label>Y Mean (<span class="sym">&mu;<sub>Y</sub></span>)</label>
             <input type="number" id="pear-y-mean" value="20" step="any" />
           </div>
           <div class="form-group">
-            <label>Y SD (Y&sigma;)</label>
+            <label>Y SD (<span class="sym">&sigma;<sub>Y</sub></span>)</label>
             <input type="number" id="pear-y-std" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+            <label>Sample Size (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pear-n" value="10" min="3" step="1" />
           </div>
           <div class="form-group">
-            <label>Null ρ₀</label>
+            <label>Null Correlation (<span class="sym">ρ₀</span>)</label>
             <input type="number" id="pear-ro" value="0" step="any" min="-1" max="1" />
           </div>
           <div class="form-group">
-            <label>True Correlation <span style="font-weight:400;">(optional)</span> <button type="button" class="tip-icon" data-tip="Population correlation between X and Y, from -1 to 1. X and Y are generated so their true correlation is this value; the sample r will vary around it, more so with a small n. Treatment noise, if switched on, pulls r toward zero. Leave blank for the original behaviour, where X and Y are generated separately." aria-label="More info">ⓘ</button></label>
+            <label>True Correlation (<span class="sym">ρ</span>) <span style="font-weight:400;">(optional)</span> <button type="button" class="tip-icon" data-tip="Population correlation between X and Y, from -1 to 1. X and Y are generated so their true correlation is this value; the sample r will vary around it, more so with a small n. Treatment noise, if switched on, pulls r toward zero. Leave blank for the original behaviour, where X and Y are generated separately." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pear-true-r" placeholder="e.g. 0.5" step="0.05" min="-1" max="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
             <input type="checkbox" id="pear-tx-switch" checked />
-            <label for="pear-tx-switch">Apply Treatment Effect to Y (introduces X–Y covariance) <button type="button" class="tip-icon" data-tip="When checked, applies the treatment effect to generate outcome values that deviate from the null. Uncheck to simulate data under H₀." aria-label="More info">ⓘ</button></label>
+            <label for="pear-tx-switch">Apply Treatment Effect to Y (shifts Y and adds noise) <button type="button" class="tip-icon" data-tip="Adds the treatment effect and random noise to every Y value. This shifts the mean of Y and weakens its correlation with X; it does not create a relationship between them. Use True Correlation to set how strongly X and Y are related." aria-label="More info">ⓘ</button></label>
           </div>
           <div id="pear-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
             <div class="form-group">
@@ -783,7 +788,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="pear-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -805,32 +810,32 @@
         <p class="section-label">Simple Linear Regression Parameters</p>
         <div class="form-grid-3">
           <div class="form-group">
-            <label>X Mean (X&mu;)</label>
+            <label>X Mean (<span class="sym">&mu;<sub>X</sub></span>)</label>
             <input type="number" id="reg-x-mean" value="10" step="any" />
           </div>
           <div class="form-group">
-            <label>X SD (X&sigma;)</label>
+            <label>X SD (<span class="sym">&sigma;<sub>X</sub></span>)</label>
             <input type="number" id="reg-x-std" value="1" step="any" />
           </div>
           <div class="form-group">
-            <label>Y Mean (Y&mu;)</label>
+            <label>Y Mean (<span class="sym">&mu;<sub>Y</sub></span>)</label>
             <input type="number" id="reg-y-mean" value="20" step="any" />
           </div>
           <div class="form-group">
-            <label>Y SD (Y&sigma;)</label>
+            <label>Y SD (<span class="sym">&sigma;<sub>Y</sub></span>)</label>
             <input type="number" id="reg-y-std" value="3" step="any" />
           </div>
           <div class="form-group">
-            <label>Sample Size (n) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
+            <label>Sample Size (<span class="sym">n</span>) <button type="button" class="tip-icon" data-tip="Sample size (number of observations). Larger n reduces standard error and increases power." aria-label="More info">ⓘ</button></label>
             <input type="number" id="reg-n" value="10" min="3" step="1" />
           </div>
           <div class="form-group">
-            <label>True Correlation <span style="font-weight:400;">(optional)</span> <button type="button" class="tip-icon" data-tip="Population correlation between X and Y, from -1 to 1. X and Y are generated so their true correlation is this value; the sample r will vary around it, more so with a small n. Treatment noise, if switched on, pulls r toward zero. Leave blank for the original behaviour, where X and Y are generated separately." aria-label="More info">ⓘ</button></label>
+            <label>True Correlation (<span class="sym">ρ</span>) <span style="font-weight:400;">(optional)</span> <button type="button" class="tip-icon" data-tip="Population correlation between X and Y, from -1 to 1. X and Y are generated so their true correlation is this value; the sample r will vary around it, more so with a small n. Treatment noise, if switched on, pulls r toward zero. Leave blank for the original behaviour, where X and Y are generated separately." aria-label="More info">ⓘ</button></label>
             <input type="number" id="reg-true-r" placeholder="e.g. 0.5" step="0.05" min="-1" max="1" />
           </div>
           <div style="grid-column:1/-1;" class="tx-toggle-row">
             <input type="checkbox" id="reg-tx-switch" checked />
-            <label for="reg-tx-switch">Apply Treatment Effect to Y (introduces X–Y relationship) <button type="button" class="tip-icon" data-tip="When checked, applies the treatment effect to generate outcome values that deviate from the null. Uncheck to simulate data under H₀." aria-label="More info">ⓘ</button></label>
+            <label for="reg-tx-switch">Apply Treatment Effect to Y (shifts Y and adds noise) <button type="button" class="tip-icon" data-tip="Adds the treatment effect and random noise to every Y value. This shifts the mean of Y and weakens its correlation with X; it does not create a relationship between them. Use True Correlation to set how strongly X and Y are related." aria-label="More info">ⓘ</button></label>
           </div>
           <div id="reg-tx-fields" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 1.5rem;">
             <div class="form-group">
@@ -843,7 +848,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Alpha (&alpha;) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
+            <label>Alpha (<span class="sym">&alpha;</span>) <button type="button" class="tip-icon" data-tip="Significance level (Type I error rate). Commonly set to 0.05." aria-label="More info">ⓘ</button></label>
             <input type="number" id="reg-alpha" value="0.05" step="any" min="0.001" max="0.5" />
           </div>
           <div class="form-group">
@@ -1745,7 +1750,7 @@
           <p class="text-muted">
             One-sample Z-test (known &sigma;), one-sample t-test, independent-samples t-test,
             and repeated-measures t-test. All report Cohen's d, r&sup2;, standard error,
-            and a 95% confidence interval.
+            and a confidence interval.
           </p>
         </div>
         <div>

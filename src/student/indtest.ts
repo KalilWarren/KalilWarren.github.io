@@ -429,7 +429,7 @@ function shuffleArray<T>(arr: T[]): void {
 function effectSectionHtml(p: IndProblem): string {
   if (p.effectTask === 'cohens_d') {
     return `
-      <div class="sp-section-label">6. Compute Cohen's d (Effect Size)</div>
+      <div class="sp-section-label">6. Compute Cohen's <span class="sym">d</span> (Effect Size)</div>
       <div class="sp-input-row">
         <label for="ip-answer-es">d = (M₁ − M₂) / s<sub>p</sub></label>
         <input type="number" step="0.01" id="ip-answer-es" class="sp-num-input"

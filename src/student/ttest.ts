@@ -347,7 +347,7 @@ function effectSectionHtml(p: TProblem): string {
   const level = ciLevel(p.alpha);
   if (p.effectType === 'cohen_d') {
     return `
-      <div class="sp-section-label">5. Compute Cohen's d (Effect Size)</div>
+      <div class="sp-section-label">5. Compute Cohen's <span class="sym">d</span> (Effect Size)</div>
       <div class="sp-input-row">
         <label for="tp-answer-es">d = (M − μ₀) / s</label>
         <input type="number" step="0.01" id="tp-answer-es" class="sp-num-input"
